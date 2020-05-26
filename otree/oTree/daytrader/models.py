@@ -89,18 +89,6 @@ class Subsession(BaseSubsession):
             # player.number_of_glad_faces = sum(Json_action.from_string(player.company_state))
 
     def vars_for_admin_report(self):
-        graph_colors = [
-            [0.996, 0.875, 0.431, 1],  # Yellow
-            [0.302, 0.82, 0.208, 1],   # Green
-            [0.416, 0.953, 0.984, 1],  # Turkish
-            [0.686, 0.686, 0.686, 1],  # Grey
-            [0.984, 0.729, 0.816, 1],  # Pink
-            [0.98, 0.251, 0.329, 1],   # Red
-        ]
-        plt.rc('axes', prop_cycle=(cycler(color=graph_colors)))
-        fig = plt.figure(figsize=(4, 3))
-        ax = plt.axes()
-
         number_of_rounds = sum([1 if '{}{}'.format(self.session.vars['company_names'][0], r) in self.session.vars else 0 for r in range(1, Constants.num_rounds + 2)])
         number_of_companies = len(self.session.vars['company_names'])
 
