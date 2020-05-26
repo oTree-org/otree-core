@@ -587,6 +587,12 @@ table.table-debug td.debug-var-value {
   .report-container .rapport-header p {
     font-size: 16px;
   }
+  .report-container .rapport-header #badInfluenceTableReport {
+    width: 80%;
+  }
+  .report-container .rapport-header #badInfluenceTableReport .bad_influence-table-header {
+    font-size: 12px;
+  }
   .report-container .dropdown-questions {
     display: flex;
     justify-content: center;
