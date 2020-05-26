@@ -103,7 +103,7 @@ class Subsession(BaseSubsession):
             company_data[name]['stock_price'] = prices
             company_data[name]['state'] = self.session.vars['company_states'][idx]
 
-            price_table += [{'label': name, 'prices': [{'round': i + 1, 'price': float(p)} for i, p in enumerate(prices)]}]
+            price_table += [{'name': name, 'values': [float(p) for i, p in enumerate(prices)]}]
 
         names = self.session.vars['company_names']
         states = self.session.vars['company_states']
@@ -115,7 +115,11 @@ class Subsession(BaseSubsession):
             'company': list(zip(names, states, choices)),
             'round_list': round_list,
             'tilstand': states,
-            'price_table': json.dumps(price_table)
+            'graph_data': json.dumps({
+                'y': 'Priser',
+                'series': price_table,
+                'rounds': round_list
+                })
             }
 
 
