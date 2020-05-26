@@ -117,31 +117,11 @@ class Subsession(BaseSubsession):
 
             price_table += [{'label': name, 'prices': [{'round': i + 1, 'price': float(p)} for i, p in enumerate(prices)]}]
 
-        for company_name in self.session.vars['company_names']:
-            # find the number of rounds played by looking in the dict and store
-            # in tmp0:
-            tmp0 = sum([1
-                        if '{}{}'.format(company_name, r) in self.session.vars
-                        else 0
-                        for r in range(1, Constants.num_rounds + 2)])
-            prices = [self.session.vars['{}{}'.format(company_name, r)][0]
-                      for r in range(1, tmp0)]
-            x = np.linspace(1, len(prices), len(prices))
-            ax.plot(x, prices, marker='o', label=company_name)
-        ax.legend(loc='upper left', bbox_to_anchor=(1.04, 1))
-        ax.set_xlabel('runde', fontdict={'fontsize': 12})
-        ax.set_ylabel('pris', fontdict={'fontsize': 12})
-        ax.set_title('Aktieprisudvikling', fontsize='x-large')
-        fig.savefig('_static/daytrader/test.pdf', transparent=True,
-                    bbox_inches='tight', dpi=300)
-        fig.savefig('_static/daytrader/test.png', transparent=True,
-                    bbox_inches='tight', dpi=300)
-
         names = self.session.vars['company_names']
         states = self.session.vars['company_states']
         choices = [[self.session.vars['{}{}'.format(name, r)][3]
-                    for r in range(1, tmp0)] for name in names]
-        round_list = [r for r in range(1, tmp0 + 1)]
+                    for r in range(1, number_of_rounds)] for name in names]
+        round_list = [r for r in range(1, number_of_rounds + 1)]
 
         return {
             'company': list(zip(names, states, choices)),
