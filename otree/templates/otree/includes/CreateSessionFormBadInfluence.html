@@ -15,6 +15,104 @@
 
 <!-- Game/session view as active or admin with settings/config-->
 {% if user.is_authenticated and user.is_superuser %}
+
+<div class="create-game">
+    <div class="card">
+        <a href="{% url 'games' %}" class="back-button">Gå tilbage</a>
+        <header class="card-header">
+          Opret spil
+        </header>
+
+        <div class="card-body">
+            <div>
+                <p>Du har valgt spillet <b>Bad Influence</b></p>
+                <p>Før spillet bliver oprettet skal du vælge antal spillere, og derefter trykke <b>"Opret nyt spil"</b></p>
+            </div>
+        </div>
+        <div class="card-footer">
+
+<form id="form">
+        {% csrf_token %}
+                <div style="display: none;" >{% formfield form.session_config %}</div>
+                <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
+                <div class="footer-row ">
+                <div class="controls field-num_participants">
+                {{ form.num_participants }}
+                <div>
+                    <input class="btn btn-primary"
+                           value='Opret nyt spil'
+                           id="btn-create-session"
+                           type="submit">
+                </div>
+                </div>
+                <!-- Error handling for the form -->
+                {% if form.num_participants.errors %}
+                {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
+                {% endif %}
+                {% for config in configs %}
+                <div id="lcm-{{ config.name }}" class="lcm"
+                 style="display:none">
+               <!-- <p>Must be a multiple of {{ config.get_lcm }}</p></div> -->
+                {% endfor %}
+                <p class="help-block">{{ form.num_participants.help_text }}</p>
+                </div>
+                </div>
+            </form>
+    </div>
+</div>
+
+
+<!-- Game/session creation without login -->
+{% else %}
+
+<div class="create-game">
+    <div class="card">
+        <a href="{% url 'games' %}" class="back-button">Gå tilbage</a>
+        <header class="card-header">
+          Opret spil
+        </header>
+
+        <div class="card-body">
+            <div>
+                <p>Du har valgt spillet <b>Bad Influence</b></p>
+                <p>Før spillet bliver oprettet skal du vælge antal spillere, og derefter trykke <b>"Opret nyt spil"</b></p>
+            </div>
+        </div>
+        <div class="card-footer">
+
+<form id="form">
+        {% csrf_token %}
+                <div style="display: none;" >{% formfield form.session_config %}</div>
+                <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
+                <div class="footer-row ">
+                <div class="controls field-num_participants">
+                {{ form.num_participants }}
+                <div>
+                    <input class="btn btn-primary"
+                           value='Opret nyt spil'
+                           id="btn-create-session"
+                           type="submit">
+                </div>
+                </div>
+                <!-- Error handling for the form -->
+                {% if form.num_participants.errors %}
+                {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
+                {% endif %}
+                {% for config in configs %}
+                <div id="lcm-{{ config.name }}" class="lcm"
+                 style="display:none">
+               <!-- <p>Must be a multiple of {{ config.get_lcm }}</p></div> -->
+                {% endfor %}
+                <p class="help-block">{{ form.num_participants.help_text }}</p>
+                </div>
+                </div>
+            </form>
+    </div>
+</div>
+
+
+{% endif %}
+{% comment %}
 <form id="form-admin">
     {% csrf_token %}
     {% formfield form.session_config %}
@@ -99,60 +197,7 @@
 
     {% endfor %}
 </form>
-
-<!-- Game/session creation without login -->
-{% else %}
-
-<div class="create-game">
-    <div class="card">
-        <a href="{% url 'games' %}" class="back-button">Gå tilbage</a>
-        <header class="card-header">
-          Opret spil
-        </header>
-
-        <div class="card-body">
-            <div>
-                <p>Du har valgt spillet <b>Bad Influence</b></p>
-                <p>Før spillet bliver oprettet skal du vælge antal spillere, og derefter trykke <b>"Opret nyt spil"</b></p>
-            </div>
-        </div>
-        <div class="card-footer">
-
-<form id="form">
-        {% csrf_token %}
-                <div style="display: none;" >{% formfield form.session_config %}</div>
-                <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
-                <div class="footer-row ">
-                <div class="controls field-num_participants">
-                {{ form.num_participants }}
-                <div>
-                    <input class="btn btn-primary"
-                           value='Opret nyt spil'
-                           id="btn-create-session"
-                           type="submit">
-                </div>
-                </div>
-                <!-- Error handling for the form -->
-                {% if form.num_participants.errors %}
-                {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
-                {% endif %}
-                {% for config in configs %}
-                <div id="lcm-{{ config.name }}" class="lcm"
-                 style="display:none">
-               <!-- <p>Must be a multiple of {{ config.get_lcm }}</p></div> -->
-                {% endfor %}
-                <p class="help-block">{{ form.num_participants.help_text }}</p>
-                </div>
-                </div>
-            </form>
-    </div>
-</div>
-
-
-{% endif %}
-
-
-
+{% endcomment %}
 <script>
 
     function showSessionConfigInfo(sessionconfigname) {
