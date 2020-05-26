@@ -86,11 +86,12 @@ def url_patterns_from_builtin_module(module_name: str):
         if unrestricted:
             as_view = ViewCls.as_view()
         else:
+            as_view = login_required(ViewCls.as_view())
             # i want to use
             # staff_member_required decorator
             # but then .test_auth_level fails on client.get():
             # NoReverseMatch: 'admin' is not a registered namespace
-            as_view = login_required(ViewCls.as_view())
+           #
 
         url_pattern = ViewCls.url_pattern
         if callable(url_pattern):

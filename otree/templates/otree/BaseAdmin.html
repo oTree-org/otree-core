@@ -54,6 +54,9 @@ $(function () {
 {% endblock %}
 {% block body_main %}
     {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+
+ <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
+  <div class="container-fluid">
     <!-- Navbar when logged in as SUPERUSER or STAFF -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="top_menu1">
         <a class="navbar-brand" href="{% url 'games' %}">Multiplayer Dude</a>
@@ -99,7 +102,10 @@ $(function () {
                     {% endif %}
                 </ul>
             </div>
-        </nav>
+        </nav> -->
+     <div class="page-header" >
+        <h2>{% block title %}{% endblock %}</h2>
+    </div>
 {% else %}
 
   <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
@@ -133,9 +139,6 @@ $(function () {
 
     {% comment %}
 
-     <div class="page-header" >
-        <h2>{% block title %}{% endblock %}</h2>
-    </div>
 
       this exists so that if there is an error in oTree's channel consumers,
       such as data export or rooms, the user gets some notification rather than it silently

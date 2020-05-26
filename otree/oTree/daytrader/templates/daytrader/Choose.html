@@ -50,13 +50,17 @@
             </div>
             {% if subsession.round_number > 1 %}
                 <div class="daytrader-round-info">
-                <p class="daytrader-round-info">
+                <small>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</small>
+                <p>
                     Nu er du trader nummer {{ player.round_number }} og du skal nu handle aktier i firmaet
                     <b>'{{ player.company_name }}'. </b></p>
             {% else %}
-                <p class="daytrader-round-info">
+                 <div class="daytrader-round-info">
+                 <small>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</small>
+                <p>
                     Du er den første trader, og du skal nu handle aktier i firmaet
-                    '{{ player.company_name }}'. </p>
+                    <b>'{{ player.company_name }}'.</b> </p>
+                  <div>
             {% endif %}
 
             {% if subsession.round_number > 1 %}
@@ -77,7 +81,7 @@
                                      class="reveal-face">
                             </td>
                             <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
-                                {{ deals }} aktier
+                            {{ deals }} aktier.
                             </td>
                         </tr>
                     {% endfor %}
@@ -103,8 +107,8 @@
                 <div class="daytrader-submit-value">
                     <p class="daytrader-form-info"> Hvor mange aktier?
                         <br>
-                        <small> (du kan handle med maksimalt {{ player.can_buy }}
-                            aktier)</small></p>
+                        <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
+                            aktier)</b></small></p>
                     <div class="daytrader-formfield">
                         {% formfield player.choice_of_number_of_shares label=None %}
                     </div>

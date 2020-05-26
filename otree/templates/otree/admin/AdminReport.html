@@ -4,7 +4,7 @@
 
 {% block content %}
 
-{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+{% if user.is_authenticated and user.is_superuser %}
 {% include "otree/admin/Session.html" %}
     {{ block.super }}
     <form action="" method="get" role="form" class="form" id="form">

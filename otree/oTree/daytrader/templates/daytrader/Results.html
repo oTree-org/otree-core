@@ -27,7 +27,7 @@
             I tabellen kan du se, hvordan det gik.
         </p>
 
-        <table class="table daytrader-table table-responsive">
+        <table class="table daytrader-table table-responsive" id="tableResults">
             <tr class="table-corners">
                 <th class="daytrader-table-header border-corner-left"> firma</th>
                 <th class="daytrader-table-header"> tilstand</th>
@@ -75,7 +75,7 @@
                     resultTableRow.appendChild(tableDataCompany);
 
                     let sackContainer = document.createElement("div");
-                    sackContainer.className = "daytrader-sack-button-container";
+                    sackContainer.className = "results-sack-button-container";
                     sackContainer.style.display = "flex";
                     sackContainer.style.alignItems = "center";
 
@@ -167,7 +167,7 @@
             </script>
         </table>
 
-        <p class="daytrader-round-info">
+        <p class="daytrader-round-info results-desc">
             Du har tjent i alt {{ player.payoff }}.
             Gebyrer og kurtage ({{ kurtage_pct }}% af handelsværdi) beløber sig til {{ kurtage }}.
         </p>
@@ -175,7 +175,7 @@
             Din samlede fortjeneste er {{ ialt }}.
         </p>
         <p class="daytrader-round-info">
-            Tak for at handle hos os.
+           Tak for at De handlede med os
         </p>
     </div>
 

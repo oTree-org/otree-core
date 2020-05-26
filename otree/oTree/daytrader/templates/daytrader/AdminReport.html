@@ -31,7 +31,10 @@
 
     <p class="report-description">Nedenunder kan du se en tabel der viser firmaernes tilstande og spillets forløb</p>
 
-    <table id="tableReport" class="table daytrader-table">
+    <p class="report-description">Et grønt plus repræsenterer at gå long</p>
+    <p class="report-description">Et gult minus repræsenterer at gå short</p>
+
+    <table id="tableReport" class="table daytrader-table table-responsive">
         <tr id="removeLast" class="table-corners">
             <th class="daytrader-table-header border-corner-left"> firma</th>
             <th class="daytrader-table-header"> tilstand</th>
@@ -59,10 +62,10 @@
                 {% for state in valg %}
                     <td class="daytrader-table-data">
                         {% if state == 1 %}
-                            <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
+                            <img src="{% static 'daytrader/media/green-plus.svg' %}" alt="green plus"
                                  class="company-face">
                         {% else %}
-                            <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
+                            <img src="{% static 'daytrader/media/yellow-minus.svg' %}" alt="yellow minus"
                                  class="company-face">
                         {% endif %}
                     </td>
@@ -76,22 +79,17 @@
 {% endblock %}
 
 <script>
- // Remove last table column if row exceeds 2 columns
-  let rowLength = document.getElementById("removeLast");
-  let rowCount = document.getElementsByTagName("th").length;
+    // Remove last table column if row exceeds 2 columns
+    let rowLength = document.getElementById("removeLast");
+    let rowCount = document.getElementsByTagName("th").length;
+    let tableHeaders = document.getElementsByClassName("daytrader-table-header");
+    let table = document.getElementById("tableReport");
 
     if (rowCount > 2) {
         rowLength.deleteCell(-1);
     }
 
-
-
-
-
- /**
-  * let rowLength = document.getElementById("removeLast");
-  * rowLength.deleteCell(-1);
-  */
-
-
+    for (let item = 0; item < tableHeaders.length; item++) {
+        tableHeaders[tableHeaders.length - 1].style.borderRadius = "0 10px 10px 0";
+    }
 </script>

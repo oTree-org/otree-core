@@ -25,25 +25,25 @@
             </p>
             <div class="daytrader-sack-button-container">
                 <div class="daytrader-sack-buttons">
-
                     <table>
                         <tr>
                             <td></td>
-                            <td><img src="{% static 'daytrader/media/unknown-face-green.png' %}" alt="unknown face"
-                                     class="sack-btn"></td>
+                            <td id="sack-container-1"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                           alt="unknown face"
+                                                           class="sack-btn"></td>
                             <td></td>
                         </tr>
                         <tr>
-                            <td><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
-                                     alt="unknown face" class="sack-btn"></td>
+                            <td id="sack-container-2"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                           alt="unknown face" class="sack-btn"></td>
                             <td></td>
-                            <td><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
-                                     alt="unknown face" class="sack-btn"></td>
+                            <td id="sack-container-3"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                           alt="unknown face" class="sack-btn"></td>
                         </tr>
                     </table>
                 </div>
             </div>
-            <p>Prøv at trykke på et af spørgsmålstegnene i sækken, for at se om det er glad eller ked af det. Det er din private information om det firma.</p>
+            <p>Prøv at trykke på et af spørgsmålstegnene i sækken for at se din private info.</p>
         </div>
 
         <table class="table daytrader-table">
@@ -58,7 +58,7 @@
                 <td class="daytrader-table-data"> {{ 50|c }}</td>
                 <td class="daytrader-table-data">
                     <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="spørgsmålstegn"
-                         class="reveal-face" >
+                         class="reveal-face">
                 </td>
                 <td class="daytrader-table-data"> +23 aktier</td>
             </tr>
@@ -74,52 +74,151 @@
         </table>
 
 
-            <div class="daytrader-round-info">
-                <p>Foroven er en tabel over tidligere handler i firmaet. Du kan se, at de to første tradere også fik lov til at se et ansigt inde de lavede deres handel.</p>
+        <div class="daytrader-round-info">
+            <p>Foroven er en tabel over tidligere handler i firmaet. Du kan se, at de to første tradere også fik lov til
+                at se et ansigt inde de lavede deres handel.</p>
 
-                <p> Yderligere kan du se hvor meget de gik short eller long i tabellen.
-                    <br>
-                    <small>(Minus er <i class="short-modal-link">short</i>, plus er <i class="long-modal-link">long</i>)</small>
-                </p>
+            <p> Yderligere kan du se hvor meget de gik short eller long i tabellen.
+                <br>
+                <small>(Minus er <i class="short-modal-link">short</i>, plus er <i
+                        class="long-modal-link">long</i>)</small>
+            </p>
 
-                <p>De to forrige tradere har begge købt aktier i firmaet. Derfor konluderer du at de begge har set    <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
-                     class="company-face">ansigter. Du har selv set et<img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
-                           class="company-face">ansigt.</p>
-                <p><u>Hvad vil du gøre? Vil du <b>købe (gå long)</b> eller <b>sælge (gå short)</b>?</u></p>
-                <p>Det mest fornuftige ville være at gætte på, at firmaet er i god stand, og derfor køber du!</p>
-            </div>
+            <p>De to forrige tradere har begge købt aktier i firmaet. Derfor konluderer du at de begge har set <img
+                    src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
+                    class="company-face">ansigter. Du har selv set et<img
+                    src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
+                    class="company-face">ansigt.</p>
+            <p><u>Hvad vil du gøre? Vil du <b>købe (gå long)</b> eller <b>sælge (gå short)</b>?</u></p>
+            <p>Det mest fornuftige ville være at gætte på, at firmaet er i god stand, og derfor køber du!</p>
+        </div>
 
 
-     <div class="daytrader-next-btn-container">
+        <div class="daytrader-next-btn-container">
             <button class="daytrader-next-btn">
                 Gå long!
             </button>
-
         </div>
-
-       <div id="shortModal" class="short-modal">
+        <div id="shortModal" class="short-modal">
             <div class="short-modal-content">
-                  <div class="daytrader-round-info">
-                     <p>At gå short betyder at man låner aktier af sin broker for at sælge dem på markedet med det samme, fordi man tror at aktieprisen vil falde.</p>
-                    <p>Senere køber man aktierne igen og afleverer dem tilbage (man ”lukker sin position”). Forskellen på salgs- og købsprisen er ens fortjeneste (eller tab).</p>
+                <div class="daytrader-round-info">
+                    <p>At gå short betyder at man låner aktier af sin broker for at sælge dem på markedet med det samme,
+                        fordi man tror at aktieprisen vil falde.</p>
+                    <p>Senere køber man aktierne igen og afleverer dem tilbage (man ”lukker sin position”). Forskellen
+                        på salgs- og købsprisen er ens fortjeneste (eller tab).</p>
                 </div>
             </div>
         </div>
         <div id="longModal" class="long-modal">
             <div class="long-modal-content">
                 <div class="daytrader-round-info">
-                     <p>At gå long betyder at man køber aktier fordi man tror at de vil stige i værdi.
-                    Senere sælger man aktierne igen (man ”lukker sin position”).</p>
+                    <p>At gå long betyder at man køber aktier fordi man tror at de vil stige i værdi.
+                        Senere sælger man aktierne igen (man ”lukker sin position”).</p>
                     <p> Forskellen på købs- og salgsprisen er ens fortjeneste (eller tab).</p>
                 </div>
             </div>
         </div>
-
-
     </div>
 
-
     <script>
+
+        let containers = document.getElementsByClassName("faceContainer");
+        let drawn_face = {{ player.drawn_face|yesno:"true,false" }};
+        let states = document.getElementsByClassName("state-container");
+        let buttonContainer = document.getElementsByClassName("btn-container");
+        let group_ids = [];
+        let current_group_id = {{ group.id }};
+        let companyIds = document.getElementsByClassName("company-id");
+        let sackContainer1 = document.querySelector("#sack-container-1");
+        let sackContainer2 = document.querySelector("#sack-container-2");
+        let sackContainer3 = document.querySelector("#sack-container-3");
+
+        let containerSack = document.querySelector(".daytrader-sack-button-container");
+        let sackButtons = document.getElementsByClassName("sack-btn");
+
+        let radioButton = document.getElementsByClassName("form-check-input");
+        let inputContainer = document.querySelector(".daytrader-submit-value");
+
+        for (let button = 0; button < radioButton.length; button++) {
+            radioButton[button].onclick = event => {
+                inputContainer.style.display = "block";
+            }
+        }
+
+
+        function toggle(className, displayState) {
+            let elements = document.getElementsByClassName(className);
+
+            for (let i = 0; i < elements.length; i++) {
+                elements[i].style.display = displayState;
+            }
+        }
+
+        for (let i = 0; i < sackButtons.length; i++) {
+            sackButtons.id = "button" + i;
+            console.log(sackButtons[i].parentElement.getAttribute("id"));
+            sackButtons[i].onclick = event => {
+                console.log(sackButtons);
+                event.preventDefault();
+                let happyFace = document.createElement("img");
+                happyFace.className = "company-face-in-sack";
+                happyFace.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
+                let sadFace = document.createElement("img");
+                sadFace.className = "company-face-in-sack";
+                sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}";
+                let unknownFace1 = document.createElement("img");
+                unknownFace1.className = "company-face-in-sack";
+                unknownFace1.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
+                let unknownFace2 = document.createElement("img");
+                unknownFace2.className = "company-face-in-sack";
+                unknownFace2.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
+
+
+                if (sackButtons[i].parentElement.getAttribute("id") === "sack-container-1") {
+                    toggle("sack-btn", "none");
+                    if (drawn_face === true) {
+                        sackContainer1.appendChild(sadFace);
+                        sackContainer2.appendChild(unknownFace2);
+                        sackContainer3.appendChild(unknownFace1);
+                    } else if (drawn_face === false) {
+                        sackContainer1.appendChild(sadFace);
+                        sackContainer2.appendChild(unknownFace2);
+                        sackContainer3.appendChild(unknownFace1);
+                    }
+                }
+
+                if (sackButtons[i].parentElement.getAttribute("id") === "sack-container-2") {
+                    toggle("sack-btn", "none");
+                    if (drawn_face === true) {
+                        sackContainer1.appendChild(unknownFace2);
+                        sackContainer2.appendChild(sadFace);
+                        sackContainer3.appendChild(unknownFace1);
+                    } else if (drawn_face === false) {
+                        sackContainer1.appendChild(unknownFace2);
+                        sackContainer2.appendChild(sadFace);
+                        sackContainer3.appendChild(unknownFace1);
+                    }
+                }
+
+                if (sackButtons[i].parentElement.getAttribute("id") === "sack-container-3") {
+                    toggle("sack-btn", "none");
+                    if (drawn_face === true) {
+                        sackContainer1.appendChild(unknownFace1);
+                        sackContainer2.appendChild(unknownFace2);
+                        sackContainer3.appendChild(sadFace);
+                    } else if (drawn_face === false) {
+                        sackContainer1.appendChild(unknownFace1);
+                        sackContainer2.appendChild(unknownFace2);
+                        sackContainer3.appendChild(sadFace);
+                    }
+                }
+
+
+            }
+        }
+
+
+        // Definition modals - show/hide
         let shortModal = document.getElementById("shortModal");
         let longModal = document.getElementById("longModal");
         let shortLink = document.querySelector(".short-modal-link");
@@ -127,11 +226,11 @@
 
         shortLink.onclick = function () {
             shortModal.style.display = "block";
-        }
+        };
 
         longLink.onclick = function () {
             longModal.style.display = "block";
-        }
+        };
 
         window.onclick = function (event) {
             if (event.target === shortModal) {

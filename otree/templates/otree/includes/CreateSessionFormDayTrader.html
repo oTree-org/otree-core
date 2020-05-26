@@ -15,6 +15,7 @@
 
 <!-- Game/session view as active or admin with settings/config-->
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+
 <form id="form-admin">
     {% csrf_token %}
     {% formfield form.session_config %}
@@ -151,9 +152,94 @@
 
 
 {% endif %}
+{% comment %}
+<form id="form-admin">
+    {% csrf_token %}
+    {% formfield form.session_config %}
+
+    <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
+
+        <label class="col-form-label" for="id_num_participants">
+            {{ form.num_participants.label }}
+        </label>
+        <div class="controls field-num_participants">
+            {{ form.num_participants }}
+            {% if form.num_participants.errors %}
+                {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
+            {% endif %}
+            {% for config in configs %}
+            <div id="lcm-admin-{{ config.name }}" class="lcm"
+                 style="display:none">
+                <p>Must be a multiple of {{ config.get_lcm }}</p></div>
+            {% endfor %}
+            <p class="help-block">{{ form.num_participants.help_text }}</p>
+        </div>
+    </div>
+
+    {{ form.is_mturk }}
+    {{ form.room_name }}
+
+    <div>
+        <input class="btn btn-primary"
+               value='Opret nyt spil'
+               id="btn-create-session-admin"
+               type="submit">
+    </div>
+
+    <br>
+
+ <!--   <progress id="create-session-wait-admin" style="display:none"></progress>
+    <div id="create-session-error-admin" class="alert alert-danger" style="display:none"></div> -->
+    <br>
+    {% for config in configs %}
+
+    <div class="edit-config"
+         id="edit-config-admin-{{ config.name }}" style="display: none">
+        <h4>
+            <a data-toggle="collapse"
+               href="#edit-config-table-{{ config.name }}"
+               class="btn-block">
+                Configure session
+                <img src='{% static "main_platform/glyphicons/cogwheel.png" %}'>
+            </a>
+        </h4>
+
+        <div class="collapse"
+             id="edit-config-table-admin-{{ config.name }}">
+            {% if config.custom_editable_fields %}
+            <h5>Custom</h5>
+            <table class="table">
+                {% for field in config.custom_editable_fields_html %}
+                {{ field|safe }}
+                {% endfor %}
+            </table>
+            {% else %}
+            <p><i>
+                You can make more properties configurable
+                by adding them to your session config in
+                settings.py.
+            </i></p>
+            {% endif %}
+
+            {# we only need to clarify that these are built-in if there are also custom ones #}
+            {% if config.custom_editable_fields %}
+            <h5>General</h5>{% endif %}
+            <table class="table">
+                {% for field in config.builtin_editable_fields_html %}
+                {{ field|safe }}
+                {% endfor %}
+            </table>
+        </div>
+    </div>
 
 
+    {% include "otree/includes/SessionInfo.html" with config=config config_display="none" %}
 
+    {% endfor %}
+</form>
+
+
+{% endcomment %}
 <script>
 
     function showSessionConfigInfo(sessionconfigname) {

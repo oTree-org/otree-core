@@ -3,7 +3,6 @@
 
 <!-- Game/session view as active or admin with settings/config-->
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
-
 <form id="form">
   {% csrf_token %}
   <h1>Create Session / Opret Spil</h1>
@@ -38,8 +37,6 @@
         <p>Must be a multiple of {{ config.get_lcm }}</p></div>
       {% endfor %}
       <p class="help-block">{{ form.num_participants.help_text }}</p>
-
-
     </div>
   </div>
 
@@ -47,50 +44,14 @@
 
 <!-- Game/session creation without login -->
 {% else %}
-<form id="form">
-  {% csrf_token %}
-  <h1>Opret Spil</h1>
-  <h4>Du har valgt spillet X</h4>
-  <p>Vælg antal spillere, og tryk <b>"Opret nyt spil"</b></p>
 
-  <!-- Default is bad_influence atm. -->
-  <div style="display: none;">{% formfield form.session_config %}</div>
-
-  <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
-    <label class="col-form-label" for="num_participants" >
-      {{ form.num_participants.label }}
-    </label>
-    <div class=" controls field-num_participants">
-      <div style="flex-direction: row" class="row">
-      {{ form.num_participants }}
-
-      <div>
-        <input class="btn btn-primary"
-               value='Opret nyt spil'
-               id="btn-create-session"
-               type="submit">
-      </div>
-      </div>
-<!-- Error handling for the form -->
-      {% if form.num_participants.errors %}
-      {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
-      {% endif %}
-      {% for config in configs %}
-      <div id="lcm-{{ config.name }}" class="lcm"
-           style="display:none">
-        <p>Must be a multiple of {{ config.get_lcm }}</p></div>
-      {% endfor %}
-      <p class="help-block">{{ form.num_participants.help_text }}</p>
-
-
-    </div>
-  </div>
-
-</form>
 
 {% endif %}
 
+{% comment %}
 
+
+{% endcomment %}
 
 <script>
 
