@@ -86,12 +86,12 @@ def url_patterns_from_builtin_module(module_name: str):
         if unrestricted:
             as_view = ViewCls.as_view()
         else:
-            pass
+            as_view = login_required(ViewCls.as_view())
             # i want to use
             # staff_member_required decorator
             # but then .test_auth_level fails on client.get():
             # NoReverseMatch: 'admin' is not a registered namespace
-           # as_view = login_required(ViewCls.as_view())
+           #
 
         url_pattern = ViewCls.url_pattern
         if callable(url_pattern):
@@ -117,8 +117,7 @@ def extensions_export_urlpatterns():
 
     for ViewCls in view_classes:
         if settings.AUTH_LEVEL in {'DEMO', 'STUDY'}:
-            pass
-           # as_view = login_required(ViewCls.as_view())
+            as_view = login_required(ViewCls.as_view())
         else:
             as_view = ViewCls.as_view()
         view_urls.append(urls.url(ViewCls.url_pattern, as_view, name=ViewCls.url_name))
