@@ -91,11 +91,11 @@ class Subsession(BaseSubsession):
     def vars_for_admin_report(self):
         graph_colors = [
             [0.996, 0.875, 0.431, 1],  # Yellow
-            [0.302, 0.82, 0.208, 1],   # Green
+            [0.302, 0.82, 0.208, 1],  # Green
             [0.416, 0.953, 0.984, 1],  # Turkish
             [0.686, 0.686, 0.686, 1],  # Grey
             [0.984, 0.729, 0.816, 1],  # Pink
-            [0.98, 0.251, 0.329, 1],   # Red
+            [0.98, 0.251, 0.329, 1],  # Red
         ]
         plt.rc('axes', prop_cycle=(cycler(color=graph_colors)))
         fig = plt.figure(figsize=(4, 3))
@@ -128,7 +128,7 @@ class Subsession(BaseSubsession):
         choices = [[self.session.vars['{}{}'.format(name, r)][3]
                     for r in range(1, tmp0)] for name in names]
         drawn_faces = [[self.session.vars['{}{}'.format(name, r)][2]
-                    for r in range(1, tmp0)] for name in names]
+                        for r in range(1, tmp0)] for name in names]
         round_list = [r for r in range(1, tmp0 + 1)]
 
         rankings = []
@@ -139,7 +139,8 @@ class Subsession(BaseSubsession):
             for p in self.get_players():
                 rankings.append((p.id_in_group, 0))
 
-        return dict(company=list(zip(names, states, choices, drawn_faces)), round_list=round_list, faces=drawn_faces, rankings=sorted(rankings, key=lambda x: x[1], reverse=True))
+        return dict(company=list(zip(names, states, choices, drawn_faces)), round_list=round_list, faces=drawn_faces,
+                    rankings=sorted(rankings, key=lambda x: x[1], reverse=True))
 
 
 class Group(BaseGroup):
@@ -258,9 +259,9 @@ class Player(BasePlayer):
         for idp, p in enumerate(self.in_all_rounds()):
             if p.choice_of_trade == 1:
                 self.session.vars['profit'].append((self.closing_price(p.company_name)
-                                                        - p.price) * p.choice_of_number_of_shares)
+                                                    - p.price) * p.choice_of_number_of_shares)
             else:
                 self.session.vars['profit'].append(-(self.closing_price(p.company_name)
-                                                         - p.price) * p.choice_of_number_of_shares)
+                                                     - p.price) * p.choice_of_number_of_shares)
         self.tjent_ialt = sum(self.session.vars['profit'])
         return self.session.vars['profit']
