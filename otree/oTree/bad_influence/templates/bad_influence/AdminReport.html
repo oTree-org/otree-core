@@ -1,23 +1,27 @@
-
 {% load otree_internal otree static %}
 
 <style>
 
-body {
-    background-color: #901A1E;
-}
-.form {
-    display: none;
-}
+    body {
+        background-color: #901A1E;
+    }
+
+    .form {
+        display: none;
+    }
+
+    .rapport-header, .question-title {
+        color: #901a1e;
+    }
 </style>
 
 
 <div>
 
-<!-- Rapport header -->
-<div class="rapport-header">
-    <h2>Vælg et spørgsmål for at se hvordan det gik</h2>
-</div>
+    <!-- Rapport header -->
+    <div class="rapport-header">
+        <h2>Vælg et spørgsmål for at se hvordan det gik</h2>
+    </div>
 
 
     <div class="dropdown-questions dropdown">
@@ -25,92 +29,87 @@ body {
             Spørgsmål
         </div>
         <div class="d3-row">
-              <p id="d3historyChoice"></p>
+            <p id="d3historyChoice"></p>
         </div>
 
-<div class="d3-row">
-    <div id="d3container"></div>
-    <div id="d3consensus"></div>
-</div>
-
-<div class="d3-row">
-    <p id="d3playback"></p>
-<button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
-</div>
-
-
-
-
-<div class="alert alert-info">
-    <!-- Explanation for questions -->
-    <div class="d3-row question-title">
-        Spørgsmål kontekst
-    </div>
-    <div class="d3-row">
-         <div id="questionHolder1"></div>
-    </div>
-     <div class="d3-row">
-        <div id="questionHolder2"></div>
-    </div>
-    <br>
-    <!--  Explanation for network -->
-    <div class="d3-row question-title">
-        Venne-netværk forklaring
-    </div>
-    <div class="d3-row">
-            <div id="faceExplanation"></div>
-    </div>
-    <br>
-   <!--  Explanation for network -->
-      <div class="d3-row question-title">
-            Graf forklaring
-        </div>
         <div class="d3-row">
-            <div id="graphExplanation"></div>
+            <div id="d3container"></div>
+            <div id="d3consensus"></div>
         </div>
-</div>
 
-
-
-
-<div>
-<h2 class="rapport-header ">Topscorerliste</h2>
-
-
-
-<table class="table results-table table-responsive">
-        <tr>
-            <th> spiller <br> nr. </th>
-            <th> point <br> ialt </th>
-            <th> fulgt <br> flertallet </th>
-            <th> fulgt sin <br> præference </th>
-            <th> stædighed <br> (sekunder)</th>
-            <th> # venner </th>
-            <th> # skift </th>
-        </tr>
-        {% for ranking in rankings %}
-        <tr>
-            <td><strong> {{ ranking.0 }} </strong></td>
-            <td>{{ ranking.1 }}</td>
-            <td>{{ ranking.2 }}%</td>
-            <td>{{ ranking.3 }}%</td>
-            <td>{{ ranking.4 }}</td>
-            <td>{{ ranking.5 }}</td>
-            <td>{{ ranking.6 }}</td>
-        </tr>
-        {% endfor %}
-</table>
-<div class="explanation">
-    <div class="alert alert-info">
-        <div class="d3-row question-title">
-           Stædighed forklaring
+        <div class="d3-row">
+            <p id="d3playback"></p>
+            <button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
         </div>
- <div class="d3-row">
-         <div id="stubbornness"></div>
+
+
+        <div class="alert alert-info">
+            <!-- Explanation for questions -->
+            <div class="d3-row question-title">
+                Spørgsmål kontekst
+            </div>
+            <div class="d3-row">
+                <div id="questionHolder1"></div>
+            </div>
+            <div class="d3-row">
+                <div id="questionHolder2"></div>
+            </div>
+            <br>
+            <!--  Explanation for network -->
+            <div class="d3-row question-title">
+                Venne-netværk forklaring
+            </div>
+            <div class="d3-row">
+                <div id="faceExplanation"></div>
+            </div>
+            <br>
+            <!--  Explanation for network -->
+            <div class="d3-row question-title">
+                Graf forklaring
+            </div>
+            <div class="d3-row">
+                <div id="graphExplanation"></div>
+            </div>
+        </div>
+
+
+        <div class="report-table-container">
+            <h2 class="rapport-header ">Topscorerliste</h2>
+
+
+            <table class="table-responsive" id="badInfluenceTableReport">
+                <tr class="report-header-row">
+                    <th class="bad_influence-table-header border-corner-left"> spiller <br> nr.</th>
+                    <th class="bad_influence-table-header"> point <br> ialt</th>
+                    <th class="bad_influence-table-header"> fulgt <br> flertallet</th>
+                    <th class="bad_influence-table-header"> fulgt sin <br> præference</th>
+                    <th class="bad_influence-table-header"> stædighed <br> (sekunder)</th>
+                    <th class="bad_influence-table-header"> # venner</th>
+                    <th class="bad_influence-table-header border-corner-right"> # skift</th>
+                </tr>
+                {% for ranking in rankings %}
+                    <tr class="bad_influence-table-row">
+                        <td class="bad_influence-table-data"><strong> {{ ranking.0 }} </strong></td>
+                        <td class="bad_influence-table-data">{{ ranking.1 }}</td>
+                        <td class="bad_influence-table-data">{{ ranking.2 }}%</td>
+                        <td class="bad_influence-table-data">{{ ranking.3 }}%</td>
+                        <td class="bad_influence-table-data">{{ ranking.4 }}</td>
+                        <td class="bad_influence-table-data">{{ ranking.5 }}</td>
+                        <td class="bad_influence-table-data">{{ ranking.6 }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <div class="explanation">
+                <div class="alert alert-info">
+                    <div class="d3-row question-title">
+                        Stædighed forklaring
+                    </div>
+                    <div class="d3-row">
+                        <div id="stubbornness"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    </div>
-</div>
-    </div>
-{% include 'bad_influence/d3/d3_graph_results.html' %}
+    {% include 'bad_influence/d3/d3_graph_results.html' %}
 </div>
