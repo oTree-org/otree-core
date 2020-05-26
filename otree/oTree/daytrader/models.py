@@ -131,7 +131,15 @@ class Subsession(BaseSubsession):
                     for r in range(1, tmp0)] for name in names]
         round_list = [r for r in range(1, tmp0 + 1)]
 
-        return dict(company=list(zip(names, states, choices, drawn_faces)), round_list=round_list, faces=drawn_faces)
+        rankings = []
+        if 'profit' in self.session.vars:
+            for p in self.get_players():
+                rankings.append((p.id_in_group, p.tjent_ialt))
+        else:
+            for p in self.get_players():
+                rankings.append((p.id_in_group, 0))
+
+        return dict(company=list(zip(names, states, choices, drawn_faces)), round_list=round_list, faces=drawn_faces, rankings=sorted(rankings, key=lambda x: x[1], reverse=True))
 
 
 class Group(BaseGroup):
