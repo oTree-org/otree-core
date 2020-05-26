@@ -31,8 +31,8 @@ its state with a fixed probability, a mix of strategies need to be employed.
 class Constants(BaseConstants):
     name_in_url = 'daytrader'
     players_per_group = None
-    num_rounds = 5
-    timeouts = 60
+    num_rounds = 10
+    timeouts = 90
 
     # share attributes
     num_shares = 100000
