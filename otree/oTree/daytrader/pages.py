@@ -136,7 +136,7 @@ class Results(Page):
             'handler': handler,
             'price': price,
             'closing': closing,
-            'tjent': tjent
+            'tjent': tjent,
         }
 
 
