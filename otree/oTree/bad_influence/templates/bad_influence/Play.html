@@ -95,7 +95,8 @@
     <script>
         // Defines the scheme of the WebSocket to be either wss if the protocol is https
         // else it should be ws
-        let ws_scheme = window.location.protocol === "https" ? "wss" : "ws";
+        let isHTTPS = window.location.protocol.includes('https')
+        let ws_scheme = isHTTPS ? "wss" : "ws";
 
         // Defines the WebSocket route to listen to
         let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ group.pk }}";
