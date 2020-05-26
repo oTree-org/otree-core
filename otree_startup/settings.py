@@ -119,6 +119,7 @@ def get_default_settings(user_settings: dict):
         DEBUG=os.environ.get('OTREE_PRODUCTION') in [None, '', '0'],
         AWS_ACCESS_KEY_ID=os.environ.get('AWS_ACCESS_KEY_ID'),
         AWS_SECRET_ACCESS_KEY=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        AUTH_LEVEL=os.environ.get('OTREE_AUTH_LEVEL'),
         DATABASES={'default': dj_database_url.config(default='sqlite:///db.sqlite3')},
         HUEY={
             'name': 'otree-huey',
