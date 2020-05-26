@@ -14,7 +14,7 @@
 {% endblock %}
 
 <!-- Game/session view as active or admin with settings/config-->
-{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+{% if user.is_authenticated and user.is_superuser %}
 <form id="form-admin">
     {% csrf_token %}
     {% formfield form.session_config %}
@@ -50,8 +50,8 @@
 
     <br>
 
-    <progress id="create-session-wait-admin" style="display:none"></progress>
-    <div id="create-session-error-admin" class="alert alert-danger" style="display:none"></div>
+ <!--   <progress id="create-session-wait-admin" style="display:none"></progress>
+    <div id="create-session-error-admin" class="alert alert-danger" style="display:none"></div> -->
     <br>
     {% for config in configs %}
 

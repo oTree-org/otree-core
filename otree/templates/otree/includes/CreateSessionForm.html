@@ -2,7 +2,7 @@
 {% load i18n %}
 
 <!-- Game/session view as active or admin with settings/config-->
-{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+{% if user.is_authenticated and user.is_superuser %}
 
 <form id="form">
   {% csrf_token %}

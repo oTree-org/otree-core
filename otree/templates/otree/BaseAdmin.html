@@ -53,7 +53,7 @@ $(function () {
 
 {% endblock %}
 {% block body_main %}
-    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+    {% if user.is_authenticated and user.is_superuser %}
     <!-- Navbar when logged in as SUPERUSER or STAFF -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="top_menu1">
         <a class="navbar-brand" href="{% url 'games' %}">Multiplayer Dude</a>
@@ -81,25 +81,6 @@ $(function () {
         </div>
     </nav>
 
-{% elif user.is_authenticated and user.is_active %}
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top position-absolute" id="top_menu1">
-            <a class="navbar-brand" href="{% url 'home' %}">Multiplayer Dude</a>
-
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div class="navbar-collapse collapse" >
-                <ul class="navbar-nav">
-                    {% if request.user.is_authenticated|default:False %}
-                    <li><a class="nav-link" href="{% url 'logout' %}">{% trans 'Log out' %}</a></li>
-                    {% else %}
-
-                    <li><a class="nav-link" href="{% url 'login' %}">{% trans 'Log in' %}</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </nav>
 {% else %}
 
   <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
@@ -132,7 +113,26 @@ $(function () {
 
 
     {% comment %}
+<!--
+{% elif user.is_authenticated and user.is_active %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top position-absolute" id="top_menu1">
+            <a class="navbar-brand" href="{% url 'home' %}">Multiplayer Dude</a>
 
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar-collapse collapse" >
+                <ul class="navbar-nav">
+                    {% if request.user.is_authenticated|default:False %}
+                    <li><a class="nav-link" href="{% url 'logout' %}">{% trans 'Log out' %}</a></li>
+                    {% else %}
+
+                    <li><a class="nav-link" href="{% url 'login' %}">{% trans 'Log in' %}</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav> -->
      <div class="page-header" >
         <h2>{% block title %}{% endblock %}</h2>
     </div>

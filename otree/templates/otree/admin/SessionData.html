@@ -35,7 +35,7 @@ function ajax_json_results() {
 {% block content %}
 
 
-{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+{% if user.is_authenticated and user.is_superuser %}
      <div class="game-admin">
 
 {% include "otree/admin/Session.html" %}
