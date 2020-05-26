@@ -249,7 +249,23 @@ class Launcher:
 
         # if AUTH_LEVEL is set on remote server, then this will redirect
         # to a login page
-       
+        login_url = self.login_url
+        if login_url in resp.url:
+            # login
+            resp = self.post(
+                login_url,
+                data={
+                    'username': settings.ADMIN_USERNAME,
+                    'password': settings.ADMIN_PASSWORD,
+                },
+            )
+
+            if login_url in resp.url:
+                raise Exception(AUTH_FAILURE_MESSAGE)
+
+            # get it again, we are logged in now
+            resp = self.client.get(self.create_session_url)
+        assert resp.ok
 
     def ping_server(self):
 
