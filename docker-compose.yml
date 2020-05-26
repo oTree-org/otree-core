@@ -20,7 +20,7 @@ services:
     environment:
       DATABASE_URL: postgres://otree_user:my_postgres_password@database/db
       OTREE_ADMIN_PASSWORD: ${OTREE_ADMIN_PASSWORD}
-      OTREE_AUTH_LEVEL: "unset"
+      OTREE_AUTH_LEVEL: EXPERIMENT
       OTREE_PRODUCTION: "1"
       REDIS_URL: redis://redis:6379
     labels:
