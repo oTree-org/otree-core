@@ -1,18 +1,2257 @@
-/* Error: expected selector.
- *    ,
- * 35 | <<<<<<< HEAD
- *    | ^
- *    '
- *   media-queries\_xs_mobile.scss 35:1  @import
- *   styles.scss 4:9                     root stylesheet */
+@media (min-width: 0px) {
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
+  .otree-timer {
+    display: none;
+  }
 
-body::before {
-  font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
-      "Droid Sans Mono", monospace, monospace;
-  white-space: pre;
-  display: block;
-  padding: 1em;
-  margin-bottom: 1em;
-  border-bottom: 2px solid black;
-  content: "Error: expected selector.\a    \2577 \a 35 \2502  <<<<<<< HEAD\d\a    \2502  ^\a    \2575 \a   media-queries\\_xs_mobile.scss 35:1  @import\a   styles.scss 4:9                     root stylesheet";
+  .otree-title {
+    display: none;
+  }
+
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
+  .daytrader-game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    background-color: white;
+    width: 98%;
+    padding: 10px 10px 30px 10px;
+    /*******************
+    *   intro1.html    *
+    ********************/
+    /*******************
+    *   intro2.html    *
+    ********************/
+    /*******************
+    *   intro3.html    *
+    ********************/
+    /*******************
+    *   intro4.html    *
+    ********************/
+    /****************************
+      *  All day trader pages   *
+    *****************************/
+  }
+  .daytrader-game-container .content-container {
+    width: 96%;
+  }
+  .daytrader-game-container .future-modal, .daytrader-game-container .short-modal, .daytrader-game-container .long-modal, .daytrader-game-container .info-cascade-modal, .daytrader-game-container .lemming-modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: black;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  .daytrader-game-container .future-modal .future-modal-content, .daytrader-game-container .future-modal .short-modal-content, .daytrader-game-container .future-modal .long-modal-content, .daytrader-game-container .future-modal .info-cascade-modal-content, .daytrader-game-container .future-modal .lemminge-modal-content, .daytrader-game-container .short-modal .future-modal-content, .daytrader-game-container .short-modal .short-modal-content, .daytrader-game-container .short-modal .long-modal-content, .daytrader-game-container .short-modal .info-cascade-modal-content, .daytrader-game-container .short-modal .lemminge-modal-content, .daytrader-game-container .long-modal .future-modal-content, .daytrader-game-container .long-modal .short-modal-content, .daytrader-game-container .long-modal .long-modal-content, .daytrader-game-container .long-modal .info-cascade-modal-content, .daytrader-game-container .long-modal .lemminge-modal-content, .daytrader-game-container .info-cascade-modal .future-modal-content, .daytrader-game-container .info-cascade-modal .short-modal-content, .daytrader-game-container .info-cascade-modal .long-modal-content, .daytrader-game-container .info-cascade-modal .info-cascade-modal-content, .daytrader-game-container .info-cascade-modal .lemminge-modal-content, .daytrader-game-container .lemming-modal .future-modal-content, .daytrader-game-container .lemming-modal .short-modal-content, .daytrader-game-container .lemming-modal .long-modal-content, .daytrader-game-container .lemming-modal .info-cascade-modal-content, .daytrader-game-container .lemming-modal .lemminge-modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-future, .daytrader-game-container .short-modal-link, .daytrader-game-container .long-modal-link, .daytrader-game-container .info-cascade-link, .daytrader-game-container .info-lemminge-link {
+    color: #41739D;
+    text-decoration: underline;
+  }
+  .daytrader-game-container .daytrader-future:hover, .daytrader-game-container .short-modal-link:hover, .daytrader-game-container .long-modal-link:hover, .daytrader-game-container .info-cascade-link:hover, .daytrader-game-container .info-lemminge-link:hover {
+    cursor: pointer;
+  }
+  .daytrader-game-container .daytrader-intro-info-container {
+    margin: 10px 0;
+  }
+  .daytrader-game-container #continue {
+    display: none;
+  }
+  .daytrader-game-container .daytrader-sack-button-container {
+    width: 100%;
+    height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+    margin: 0 0 15px 0;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons {
+    margin: 65px 0 0 0;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons:hover {
+    cursor: pointer;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .company-face {
+    height: 20px;
+    width: 20px;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack {
+    width: 40px;
+    height: 40px;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack:hover {
+    cursor: pointer;
+  }
+  .daytrader-game-container .sack-btn {
+    margin: 0;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+  }
+  .daytrader-game-container .sack-btn:hover {
+    cursor: pointer;
+    filter: contrast(1.75);
+  }
+  .daytrader-game-container .daytrader-intro-title {
+    color: #41739D;
+    text-transform: uppercase;
+    font-family: "Noticia Text", serif;
+    font-weight: bold;
+    letter-spacing: 4px;
+    font-size: 40px;
+    padding: 20px 0 0 0;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img {
+    background: url("/static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
+    background-size: cover;
+    width: 300px;
+    height: 370px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+    font-family: "Patrick Hand", sans-serif;
+    background: #41739D;
+    font-size: 38px;
+    color: white;
+    margin: 180px 0 0 0;
+    align-items: center;
+    border-radius: 10px;
+    border: 2px solid #41739D;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn:hover {
+    cursor: pointer;
+    background: #5f861e;
+    border-color: transparent;
+  }
+  .daytrader-game-container .daytrader-sack {
+    height: 175px;
+    margin: 0 0 20px 0;
+  }
+  .daytrader-game-container .daytrader-intro-container-first {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+    width: 77%;
+  }
+  .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
+    align-self: center;
+  }
+  .daytrader-game-container .daytrader-intro-container-second {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
+    width: 100%;
+  }
+  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  .daytrader-game-container .daytrader-future {
+    color: #41739D;
+    text-decoration: underline;
+  }
+  .daytrader-game-container .daytrader-future:hover {
+    cursor: pointer;
+  }
+  .daytrader-game-container .go-long-content {
+    margin: 25px 0;
+    width: 100%;
+    display: none;
+  }
+  .daytrader-game-container .daytrader-round-title {
+    font-family: "Noticia Text", serif;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-size: 25px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    text-transform: uppercase;
+    color: #41739D;
+    width: 100%;
+    padding: 20px 0 20px 0;
+  }
+  .daytrader-game-container .daytrader-round-info {
+    font-size: 18px;
+    font-family: "Patrick Hand", sans-serif;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-round-info h3 {
+    font-weight: bold;
+  }
+  .daytrader-game-container .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+  }
+  .daytrader-game-container .daytrader-next-btn-container {
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
+    font-size: 18px;
+    background: #41739D;
+    font-family: "Patrick Hand", sans-serif;
+    width: 166px;
+    height: 40px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    border: 2px solid #41739D;
+  }
+  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn:hover {
+    cursor: pointer;
+    background-color: #5f861e;
+    border-color: transparent;
+  }
+  .daytrader-game-container .company-face {
+    width: 28px;
+    height: 28px;
+  }
+  .daytrader-game-container .daytrader-table {
+    margin: 10px 0;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+  }
+  .daytrader-game-container .daytrader-table td {
+    vertical-align: middle;
+  }
+  .daytrader-game-container .daytrader-table .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .daytrader-game-container .daytrader-table .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 13px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-data {
+    font-size: 13px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  .daytrader-game-container .daytrader-form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-form-container .daytrader-form-info {
+    font-size: 18px;
+    font-family: "Patrick Hand", sans-serif;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-submit-value {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-submit-value .form-group {
+    justify-content: center;
+    display: flex;
+  }
+  .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
+    max-width: 166px;
+    height: 40px;
+    left: 550px;
+    top: 1637px;
+    font-size: 20px;
+    color: black;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .field-choice_of_number_of_shares {
+    display: flex;
+    justify-content: center;
+    width: 50%;
+    text-align: center;
+  }
+  .daytrader-game-container .reveal-face {
+    width: 20px;
+    height: 20px;
+  }
+  .daytrader-game-container .field-choice_of_trade {
+    margin: 10px 0 0 0;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check {
+    display: flex;
+    flex-direction: row;
+    padding: 20px 0 20px 60px;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check .form-check-label {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 17px;
+    text-transform: capitalize;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #41739D;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 20% auto;
+    border-radius: 50%;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
+    background: #41739D;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
+    border-color: #41739D;
+  }
+  .daytrader-game-container .daytrader-info-choice {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container #tableResults {
+    margin: 10px 0;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    width: 90%;
+  }
+  .daytrader-game-container #tableResults td {
+    vertical-align: middle;
+    color: black;
+  }
+  .daytrader-game-container #tableResults .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .daytrader-game-container #tableResults .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .daytrader-game-container #tableResults .daytrader-table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 13px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  .daytrader-game-container #tableResults .daytrader-table-data {
+    font-size: 13px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  .daytrader-game-container #tableResults .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 300px;
+    width: 100%;
+  }
+  .answer-container svg {
+    width: 100%;
+  }
+
+  #timer-text {
+    top: 0;
+    left: 8px;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    padding-top: 2%;
+    font-family: "Patrick Hand", cursive;
+  }
+  #timer-text #timer {
+    padding-left: 5px;
+  }
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 2%;
+  }
+
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 90%;
+    align-self: center;
+    margin-bottom: 5%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+  }
+
+  @keyframes flash {
+    from {
+      color: red;
+    }
+    to {
+      color: black;
+    }
+  }
+  /***********************************
+  *   Play.html chat+svg container  *
+  ***********************************/
+  .surround {
+    width: 100%;
+  }
+
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
+    height: 250px;
+    scroll-behavior: smooth;
+    background: #ebeded;
+    border-radius: 5px;
+    padding: 15px;
+    overflow: auto;
+  }
+
+  #chat::-webkit-scrollbar {
+    width: 1em;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+    border-radius: 10px;
+  }
+
+  .chat-message {
+    display: flex;
+  }
+
+  .chat-message b {
+    padding: 0 10px 0 0;
+  }
+
+  #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 5%;
+  }
+
+  .chat-title {
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+    width: 100%;
+  }
+
+  .chat, .message {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+  }
+  .chat #chat, .message #chat {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin-bottom: 2%;
+    width: 70%;
+  }
+  .chat #message, .message #message {
+    font-size: 20px;
+    max-width: 70%;
+  }
+
+  .send {
+    width: 100%;
+    font-size: 20px;
+    border: none;
+    justify-content: center;
+    display: flex;
+  }
+  .send #send {
+    width: 70%;
+    height: 50px;
+    background-color: #901A1E;
+    font-size: 20px;
+    border-color: transparent;
+  }
+  .send #send:hover {
+    background-color: #5f861e;
+  }
+
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .mobile-column {
+    display: initial;
+    justify-content: center;
+    flex-direction: row;
+  }
+
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+    width: 100%;
+  }
+
+  .choice-button {
+    width: 235px;
+    height: 70px;
+    font-size: 18px;
+    border-radius: 50px;
+    color: black;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    background-color: transparent;
+    border: 2px solid #901A1E;
+    margin: 5px 5px 10% 5px;
+  }
+  .choice-button:hover {
+    background-color: #5f861e;
+    color: white;
+    border-color: transparent;
+  }
+  .choice-button:active {
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button:focus {
+    border-color: #5f861e;
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button img {
+    width: 50px;
+    height: 50px;
+    align-self: center;
+  }
+
+  .report-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .report-info .report-description {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 16px;
+    color: black;
+    margin: 10px 0;
+    text-align: center;
+  }
+  .report-info .company-face {
+    width: 35px;
+    height: 35px;
+  }
+  .report-info .admin-sack-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .report-info .admin-sack-button-container .daytrader-sack-buttons {
+    margin: 65px 0 0 0;
+  }
+  .report-info .admin-sack-button-container .daytrader-sack-buttons:hover {
+    cursor: pointer;
+  }
+  .report-info .graph-image {
+    width: 95%;
+    margin-top: 15%;
+  }
+  .report-info #tableReport {
+    margin: 10px 0;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    width: 90%;
+  }
+  .report-info #tableReport td {
+    vertical-align: middle;
+    color: black;
+  }
+  .report-info #tableReport .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .report-info #tableReport .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .report-info #tableReport .daytrader-table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 13px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  .report-info #tableReport .daytrader-table-data {
+    font-size: 13px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  .report-info #tableReport .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+
+  /* Admin Navbar */
+  #admin-panel {
+    margin-top: 15%;
+  }
+  #admin-panel .btn-circle {
+    width: 72.5px;
+    height: 72.5px;
+    font-size: 18px;
+    padding: 0;
+    text-align: center;
+  }
+
+  .admin-table-data {
+    display: flex;
+    justify-content: center;
+  }
+  .admin-table-data .admin-sack-button-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .admin-table-data .admin-sack-button-container .daytrader-sack-buttons {
+    margin: 100px 0 0 4px;
+  }
+  .admin-table-data .admin-sack-button-container .company-face {
+    width: 35px;
+    height: 35px;
+  }
+  .admin-table-data .sack-btn {
+    margin: 0;
+    padding: 0;
+    width: 60px;
+    height: 60px;
+  }
 }
+@media (min-width: 375px) {
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
+  .otree-timer {
+    display: none;
+  }
+
+  .otree-title {
+    display: none;
+  }
+
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
+  .daytrader-game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    background-color: white;
+    width: 95%;
+    padding: 10px 20px 30px 20px;
+    /*******************
+    *   intro1.html    *
+    ********************/
+    /*******************
+    *   intro2.html    *
+    ********************/
+    /*******************
+    *   intro3.html    *
+    ********************/
+    /****************************
+      *  All day trader pages   *
+    *****************************/
+  }
+  .daytrader-game-container .content-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .daytrader-game-container .daytrader-round-info {
+    font-size: 19px;
+    font-family: "Patrick Hand", sans-serif;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-round-info h3 {
+    font-weight: bold;
+  }
+  .daytrader-game-container .daytrader-intro-title {
+    font-size: 45px;
+    padding: 20px 0 0 0;
+    letter-spacing: 6px;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img {
+    width: 320px;
+    height: 400px;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+    font-size: 38px;
+    margin: 180px 0 0 0;
+    width: 200px;
+  }
+  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
+    width: 100%;
+  }
+  .daytrader-game-container .daytrader-round-title {
+    font-size: 30px;
+  }
+  .daytrader-game-container .company-face {
+    width: 30px;
+    height: 30px;
+  }
+  .daytrader-game-container .daytrader-table {
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+  }
+  .daytrader-game-container .daytrader-table td {
+    padding: 15px 6px 15px 0;
+    vertical-align: middle;
+  }
+  .daytrader-game-container .daytrader-table .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .daytrader-game-container .daytrader-table .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 15px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-data {
+    font-size: 16px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  .daytrader-game-container .daytrader-form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-form-container .daytrader-form-info {
+    font-size: 20px;
+    font-family: "Patrick Hand", sans-serif;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-submit-value {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
+    max-width: 244px;
+    height: 40px;
+    left: 550px;
+    top: 1637px;
+    font-size: 18px;
+    color: black;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+  }
+  .daytrader-game-container .field-choice_of_number_of_shares {
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-next-btn-container {
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
+    font-size: 22px;
+    background: #41739D;
+    font-family: "Patrick Hand", sans-serif;
+    width: 244px;
+    height: 40px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .daytrader-game-container .reveal-face {
+    width: 30px;
+    height: 30px;
+  }
+  .daytrader-game-container .field-choice_of_trade {
+    margin: 10px 0 0 0;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check {
+    padding: 20px 0 20px 60px;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check .form-check-label {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 20px;
+    text-transform: capitalize;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #41739D;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 20% auto;
+    border-radius: 50%;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
+    background: #41739D;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
+    border-color: #41739D;
+  }
+  .daytrader-game-container .daytrader-info-choice {
+    width: 100%;
+  }
+
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 300px;
+    width: 100%;
+  }
+  .answer-container svg {
+    width: 100%;
+  }
+
+  #timer-text {
+    top: 0;
+    left: 8px;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    padding-top: 2%;
+    font-family: "Patrick Hand", cursive;
+  }
+  #timer-text #timer {
+    padding-left: 5px;
+  }
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 2%;
+  }
+
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 90%;
+    align-self: center;
+    margin-bottom: 5%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+  }
+
+  @keyframes flash {
+    from {
+      color: red;
+    }
+    to {
+      color: black;
+    }
+  }
+  /***********************************
+  *   Play.html chat+svg container  *
+  ***********************************/
+  .surround {
+    width: 100%;
+  }
+
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
+    height: 250px;
+    scroll-behavior: smooth;
+    background: #ebeded;
+    border-radius: 5px;
+    padding: 15px;
+    overflow: auto;
+  }
+
+  #chat::-webkit-scrollbar {
+    width: 1em;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+    border-radius: 10px;
+  }
+
+  .chat-message {
+    display: flex;
+  }
+
+  .chat-message b {
+    padding: 0 10px 0 0;
+  }
+
+  #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 5%;
+  }
+
+  .chat-title {
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+    width: 100%;
+  }
+
+  .chat, .message {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+  }
+  .chat #chat, .message #chat {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin-bottom: 2%;
+    width: 70%;
+  }
+  .chat #message, .message #message {
+    font-size: 20px;
+    max-width: 70%;
+  }
+
+  .send {
+    width: 100%;
+    font-size: 20px;
+    border: none;
+    justify-content: center;
+    display: flex;
+  }
+  .send #send {
+    width: 70%;
+    height: 50px;
+    background-color: #901A1E;
+    font-size: 20px;
+    border-color: transparent;
+  }
+  .send #send:hover {
+    background-color: #5f861e;
+  }
+
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .mobile-column {
+    display: initial;
+    justify-content: center;
+    flex-direction: row;
+  }
+
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+    width: 100%;
+  }
+
+  .choice-button {
+    width: 235px;
+    height: 70px;
+    font-size: 18px;
+    border-radius: 50px;
+    color: black;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    background-color: transparent;
+    border: 2px solid #901A1E;
+    margin: 5px 5px 10% 5px;
+  }
+  .choice-button:hover {
+    background-color: #5f861e;
+    color: white;
+    border-color: transparent;
+  }
+  .choice-button:active {
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button:focus {
+    border-color: #5f861e;
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button img {
+    width: 50px;
+    height: 50px;
+    align-self: center;
+  }
+}
+@media (min-width: 768px) {
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
+  .otree-timer {
+    display: none;
+  }
+
+  .otree-title {
+    display: none;
+  }
+
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
+  .daytrader-game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    background-color: white;
+    width: 90%;
+    padding: 20px;
+    /*******************
+    *   intro1.html    *
+    ********************/
+    /*******************
+    *   intro2.html    *
+    ********************/
+    /****************************
+      *  All day trader pages   *
+    *****************************/
+  }
+  .daytrader-game-container .content-container {
+    width: 80%;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img {
+    width: 490px;
+    height: 630px;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+    font-size: 50px;
+    margin: 250px 0 0 20px;
+    width: 307px;
+  }
+  .daytrader-game-container .daytrader-intro-container-first {
+    flex-direction: row;
+    margin: 5px 0 0 0;
+    width: 100%;
+  }
+  .daytrader-game-container .daytrader-intro-container-second {
+    flex-direction: row;
+  }
+  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
+    width: 75%;
+  }
+  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
+    width: 25%;
+    margin: 0 0 0 10px;
+  }
+  .daytrader-game-container .daytrader-sack {
+    margin: 0 20px;
+  }
+  .daytrader-game-container .daytrader-intro-title {
+    font-size: 80px;
+    padding: 20px 0 0 0;
+    letter-spacing: 8px;
+  }
+  .daytrader-game-container .daytrader-sack {
+    height: 230px;
+    padding-bottom: 20px;
+  }
+  .daytrader-game-container .daytrader-intro-container-first {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+  }
+  .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
+    align-self: center;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-round-title {
+    font-size: 40px;
+    padding: 10px 0 10px 0;
+  }
+  .daytrader-game-container .daytrader-round-info {
+    font-size: 20px;
+    font-family: "Patrick Hand", sans-serif;
+  }
+  .daytrader-game-container .daytrader-round-info h3 {
+    font-weight: bold;
+  }
+  .daytrader-game-container .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+  }
+  .daytrader-game-container .company-face {
+    width: 50px;
+    height: 50px;
+  }
+  .daytrader-game-container .daytrader-table {
+    margin: 10px 0;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+  }
+  .daytrader-game-container .daytrader-table .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .daytrader-game-container .daytrader-table .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 30px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-data {
+    font-size: 26px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  .daytrader-game-container .daytrader-form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-form-container .daytrader-form-info {
+    font-size: 22px;
+    font-family: "Patrick Hand", sans-serif;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-submit-value {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
+    max-width: 344px !important;
+    height: 50px;
+    left: 550px;
+    top: 1637px;
+    font-size: 20px;
+    color: black;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+  }
+  .daytrader-game-container .field-choice_of_number_of_shares {
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-next-btn-container {
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
+    font-size: 25px;
+    width: 334px;
+    height: 45px;
+  }
+  .daytrader-game-container .reveal-face {
+    width: 40px;
+    height: 40px;
+  }
+  .daytrader-game-container .field-choice_of_trade {
+    margin: 50px 0 0 0;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check {
+    display: flex;
+    margin-right: 0;
+    padding-right: 25px;
+    flex-direction: column;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check .form-check-label {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 22px;
+    text-transform: capitalize;
+    text-align: center;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #41739D;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 20% auto;
+    border-radius: 50%;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
+    background: #41739D;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
+    border-color: #41739D;
+  }
+  .daytrader-game-container .daytrader-info-choice {
+    width: 100%;
+  }
+  .daytrader-game-container #tableResults {
+    display: inline-table;
+    width: 100%;
+  }
+  .daytrader-game-container #tableResults .daytrader-table-header {
+    font-size: 20px;
+  }
+  .daytrader-game-container #tableResults .daytrader-table-data {
+    font-size: 18px;
+  }
+  .daytrader-game-container .results-desc {
+    padding: 0 30px;
+  }
+
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 300px;
+    width: 100%;
+  }
+  .answer-container svg {
+    width: 100%;
+  }
+
+  #timer-text {
+    top: 0;
+    left: 8px;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    padding-top: 2%;
+    font-family: "Patrick Hand", cursive;
+  }
+  #timer-text #timer {
+    padding-left: 5px;
+  }
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    margin-top: 2%;
+  }
+
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 90%;
+    align-self: center;
+    margin-bottom: 5%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+  }
+
+  @keyframes flash {
+    from {
+      color: red;
+    }
+    to {
+      color: black;
+    }
+  }
+  /***********************************
+  *   Play.html chat+svg container  *
+  ***********************************/
+  .surround {
+    width: 100%;
+  }
+
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
+    height: 250px;
+    scroll-behavior: smooth;
+    background: #ebeded;
+    border-radius: 5px;
+    padding: 15px;
+    overflow: auto;
+  }
+
+  #chat::-webkit-scrollbar {
+    width: 1em;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+    border-radius: 10px;
+  }
+
+  .chat-message {
+    display: flex;
+  }
+
+  .chat-message b {
+    padding: 0 10px 0 0;
+  }
+
+  #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 5%;
+  }
+
+  .chat-title {
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+    width: 100%;
+  }
+
+  .chat, .message {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+  }
+  .chat #chat, .message #chat {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin-bottom: 2%;
+    width: 70%;
+  }
+  .chat #message, .message #message {
+    font-size: 20px;
+    max-width: 70%;
+  }
+
+  .send {
+    width: 100%;
+    font-size: 20px;
+    border: none;
+    justify-content: center;
+    display: flex;
+  }
+  .send #send {
+    width: 70%;
+    height: 50px;
+    background-color: #901A1E;
+    font-size: 20px;
+    border-color: transparent;
+  }
+  .send #send:hover {
+    background-color: #5f861e;
+  }
+
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .mobile-column {
+    display: initial;
+    justify-content: center;
+    flex-direction: row;
+  }
+
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+    width: 100%;
+  }
+
+  .choice-button {
+    width: 235px;
+    height: 70px;
+    font-size: 18px;
+    border-radius: 50px;
+    color: black;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    background-color: transparent;
+    border: 2px solid #901A1E;
+    margin: 5px 5px 10% 5px;
+  }
+  .choice-button:hover {
+    background-color: #5f861e;
+    color: white;
+    border-color: transparent;
+  }
+  .choice-button:active {
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button:focus {
+    border-color: #5f861e;
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button img {
+    width: 50px;
+    height: 50px;
+    align-self: center;
+  }
+
+  .report-info #tableReport {
+    display: inline-table;
+  }
+  .report-info #tableReport .daytrader-table-header {
+    font-size: 20px;
+  }
+  .report-info #tableReport .daytrader-table-data {
+    font-size: 18px;
+  }
+  .report-info .report-description {
+    font-size: 20px;
+  }
+  .report-info .graph-image {
+    margin-top: 5%;
+  }
+
+  /* Admin Navbar */
+  #admin-panel {
+    margin-top: 7.5%;
+  }
+  #admin-panel .btn-circle {
+    width: 150px;
+    height: 150px;
+    font-size: 24px;
+    padding: 0;
+    text-align: center;
+  }
+}
+@media (min-width: 1024px) {
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
+  .otree-timer {
+    display: none;
+  }
+
+  .otree-title {
+    display: none;
+  }
+
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
+  .daytrader-game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    width: 90%;
+    background-color: white;
+    padding: 40px 7.5%;
+    /**********************
+    *    intro1.html      *
+    ***********************/
+    /*******************
+    *   intro2.html    *
+    ********************/
+    /*******************
+    *   intro3.html    *
+    ********************/
+    /*******************
+    *   intro4.html    *
+    ********************/
+    /****************************
+      *  All day trader pages   *
+    *****************************/
+  }
+  .daytrader-game-container .daytrader-sack-button-container {
+    margin: 0 10px;
+    height: 290px;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons {
+    margin: 100px 0 0 4px;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack {
+    width: 60px;
+    height: 60px;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack:hover {
+    cursor: pointer;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .company-face {
+    width: 35px;
+    height: 35px;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .result-table-face-1 {
+    margin: 77px 0 0 14px;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .result-table-face-2 {
+    margin: 3px 0 0 0;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .result-table-face-3 {
+    margin: 77px 14px 0 0;
+  }
+  .daytrader-game-container .sack-btn {
+    margin: 0;
+    padding: 0;
+    width: 60px;
+    height: 60px;
+  }
+  .daytrader-game-container .content-container {
+    width: 70%;
+  }
+  .daytrader-game-container .future-modal-content, .daytrader-game-container .short-modal-content, .daytrader-game-container .long-modal-content, .daytrader-game-container .info-cascade-modal-content, .daytrader-game-container lemming-modal {
+    width: 50%;
+  }
+  .daytrader-game-container .daytrader-intro-info-container {
+    margin: 10px 0;
+  }
+  .daytrader-game-container .daytrader-intro-title {
+    font-size: 120px;
+    margin: 0;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img {
+    width: 450px;
+    height: 550px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+    font-size: 55px;
+    margin: 250px 0 0 11px;
+    width: 280px;
+  }
+  .daytrader-game-container .daytrader-sack {
+    height: 300px;
+    padding-bottom: 20px;
+  }
+  .daytrader-game-container .daytrader-intro-container-first {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+  }
+  .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
+    align-self: center;
+    width: 40%;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-intro-container-second {
+    display: flex;
+    margin: 0;
+    flex-direction: row;
+    align-items: center;
+  }
+  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
+    flex-grow: 2;
+  }
+  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
+    flex-grow: 1;
+    margin: 0 0 0 100px;
+  }
+  .daytrader-game-container .go-long-content {
+    margin: 50px 0;
+    width: 100%;
+    display: none;
+  }
+  .daytrader-game-container #continue {
+    display: none;
+  }
+  .daytrader-game-container .daytrader-round-title {
+    font-size: 50px;
+    width: 100%;
+  }
+  .daytrader-game-container .daytrader-round-info {
+    font-size: 25px;
+    width: 100%;
+    padding-top: 10px;
+  }
+  .daytrader-game-container .daytrader-next-btn-container {
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .company-face {
+    width: 50px;
+    height: 50px;
+  }
+  .daytrader-game-container .daytrader-table {
+    margin: 10px 0;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    width: 100%;
+    display: inline-table;
+  }
+  .daytrader-game-container .daytrader-table .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .daytrader-game-container .daytrader-table .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-data {
+    font-size: 26px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  .daytrader-game-container .daytrader-form-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-form-container .daytrader-form-info {
+    font-size: 25px;
+    font-family: "Patrick Hand", sans-serif;
+  }
+  .daytrader-game-container .daytrader-submit-value {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
+    max-width: 344px !important;
+    height: 50px;
+    left: 550px;
+    top: 1637px;
+    font-size: 23px;
+    color: black;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+  }
+  .daytrader-game-container .daytrader-submit-value .otree-btn-next {
+    font-size: 30px;
+    background: #41739D;
+    font-family: "Patrick Hand", sans-serif;
+    width: 344px;
+    height: 55px;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .daytrader-game-container .field-choice_of_number_of_shares {
+    width: 40%;
+  }
+  .daytrader-game-container .reveal-face {
+    width: 40px;
+    height: 40px;
+  }
+  .daytrader-game-container .field-choice_of_trade {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check {
+    display: flex;
+    flex-direction: row;
+    margin-right: 0;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check .form-check-label {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 24px;
+    text-transform: capitalize;
+    margin-left: 50px;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #41739D;
+    position: absolute;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
+    background: #41739D;
+  }
+  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
+    border-color: #41739D;
+  }
+  .daytrader-game-container .daytrader-admin-company-list {
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+  }
+  .daytrader-game-container #tableResults .daytrader-table-header {
+    font-size: 22px;
+  }
+  .daytrader-game-container #tableResults .daytrader-table-data {
+    font-size: 20px;
+  }
+  .daytrader-game-container #tableResults .results-sack-button-container {
+    margin: 0 10px;
+    width: 119px;
+    height: 154px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+  }
+  .daytrader-game-container #tableResults .results-sack-button-container .company-face {
+    width: 35px;
+    height: 35px;
+  }
+  .daytrader-game-container #tableResults .results-sack-button-container .result-table-face-1 {
+    margin: 77px 0 0 14px;
+  }
+  .daytrader-game-container #tableResults .results-sack-button-container .result-table-face-2 {
+    margin: 3px 0 0 0;
+  }
+  .daytrader-game-container #tableResults .results-sack-button-container .result-table-face-3 {
+    margin: 77px 14px 0 0;
+  }
+
+  .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+  }
+  .round-introduction .daytrader-round-info-container {
+    display: flex;
+  }
+
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    min-height: 300px;
+    width: 100%;
+  }
+
+  #timer-text {
+    top: 0;
+    left: 8px;
+    font-size: 22px;
+    padding-top: 2%;
+    font-family: "Patrick Hand", cursive;
+  }
+  #timer-text #timer {
+    padding-left: 5px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 2%;
+  }
+
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 50%;
+    margin-left: 5%;
+    padding-right: 20px;
+    margin-bottom: 5%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
+    animation-name: flash;
+    animation-duration: 0.2s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-play-state: running;
+  }
+
+  @keyframes flash {
+    from {
+      color: red;
+    }
+    to {
+      color: black;
+    }
+  }
+  /***********************************
+  *   Play.html chat+svg container  *
+  ***********************************/
+  .surround {
+    width: 100%;
+  }
+
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
+    height: 250px;
+    scroll-behavior: smooth;
+    background: #ebeded;
+    border-radius: 5px;
+    padding: 15px;
+    overflow: auto;
+  }
+
+  #chat::-webkit-scrollbar {
+    width: 1em;
+  }
+
+  #chat::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  #chat::-webkit-scrollbar-thumb {
+    background-color: darkgrey;
+    outline: 1px solid slategrey;
+    border-radius: 10px;
+  }
+
+  .chat-message {
+    display: flex;
+  }
+
+  .chat-message b {
+    padding: 0 10px 0 0;
+  }
+
+  #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 50%;
+    align-items: center;
+    margin-bottom: 5%;
+  }
+
+  .chat-title {
+    justify-content: center;
+    display: flex;
+    font-size: 50px;
+    width: 100%;
+  }
+
+  .chat, .message {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+  }
+  .chat #chat, .message #chat {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    margin-bottom: 2%;
+    width: 80%;
+  }
+  .chat #message, .message #message {
+    font-size: 20px;
+    max-width: 50%;
+  }
+
+  .send {
+    width: 100%;
+    font-size: 20px;
+    border: none;
+    justify-content: center;
+    display: flex;
+  }
+  .send #send {
+    width: 50%;
+    height: 50px;
+    background-color: #901A1E;
+    font-size: 20px;
+    border-color: transparent;
+  }
+  .send #send:hover {
+    background-color: #5f861e;
+  }
+
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+  }
+
+  .choice-button {
+    width: 235px;
+    height: 70px;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 50px;
+    color: black;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+    background-color: transparent;
+    border: 2px solid #901A1E;
+    margin-bottom: 10%;
+    margin-left: 5%;
+  }
+  .choice-button:hover {
+    background-color: #5f861e;
+    color: white;
+    border-color: transparent;
+  }
+  .choice-button:active {
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button:focus {
+    border-color: #5f861e;
+    background-color: #5f861e;
+    color: white;
+  }
+  .choice-button img {
+    width: 55px;
+    height: 55px;
+  }
+
+  /*********************************
+  *   Results.html table styling   *
+  *********************************/
+  .results-title {
+    font-size: 35px;
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+    font-weight: bold;
+  }
+
+  .results-container {
+    margin-top: 4%;
+  }
+  .results-container .report-info {
+    padding-bottom: 30px;
+  }
+
+  .game-results-table {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border-radius: 10px;
+    background-color: white;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    font-size: 20px;
+  }
+
+  .d3-results-row {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-evenly;
+    font-size: 14px;
+    font-family: "Roboto Slab", serif;
+  }
+  .d3-results-row #d3consensus {
+    display: flex;
+    justify-content: center;
+  }
+  .d3-results-row #d3playback {
+    display: none;
+  }
+
+  .game-results {
+    margin-top: 2%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+    border-radius: 10px;
+  }
+
+  .report-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #41739D;
+    padding: 5% 0;
+  }
+  .report-info .report-description {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 26px;
+    color: black;
+    margin: 15px 0;
+  }
+  .report-info .daytrader-admin-company-list {
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+  }
+  .report-info .company-face {
+    width: 50px;
+    height: 50px;
+  }
+  .report-info .graph-image {
+    width: 700px;
+    height: 400px;
+  }
+  .report-info .daytrader-table {
+    margin: 10px 0;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    width: 80%;
+  }
+  .report-info .daytrader-table .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .report-info .daytrader-table .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .report-info .daytrader-table .daytrader-table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  .report-info .daytrader-table .daytrader-table-data {
+    font-size: 26px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-info .daytrader-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+
+  .admin-table-data {
+    display: flex;
+    justify-content: center;
+  }
+  .admin-table-data .admin-sack-button-container {
+    margin: 0 10px;
+    width: 119px;
+    height: 154px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+  }
+  .admin-table-data .admin-sack-button-container .daytrader-sack-buttons {
+    margin: 100px 0 0 4px;
+  }
+  .admin-table-data .admin-sack-button-container .company-face {
+    width: 35px;
+    height: 35px;
+  }
+  .admin-table-data .admin-sack-button-container .admin-table-face-1 {
+    margin: 77px 0 0 14px;
+  }
+  .admin-table-data .admin-sack-button-container .admin-table-face-2 {
+    margin: 3px 0 0 0;
+  }
+  .admin-table-data .admin-sack-button-container .admin-table-face-3 {
+    margin: 77px 14px 0 0;
+  }
+  .admin-table-data .sack-btn {
+    margin: 0;
+    padding: 0;
+    width: 60px;
+    height: 60px;
+  }
+
+  /* Admin Navbar */
+  #admin-panel {
+    margin-top: 1%;
+  }
+  #admin-panel .btn-circle {
+    width: 175px;
+    height: 175px;
+    font-size: 26px;
+    padding: 0;
+    text-align: center;
+  }
+}
+
+/*# sourceMappingURL=styles.css.map */
