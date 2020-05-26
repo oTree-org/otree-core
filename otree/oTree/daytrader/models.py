@@ -38,7 +38,7 @@ class Constants(BaseConstants):
     num_shares = 100000
     start_price = 50.0
     start_wallet = 10000
-    price_change_per_share = 0.001
+    price_change_per_share = 0.0005
     kurtage = 0.01
 
     # firm attributes
@@ -109,6 +109,9 @@ class Subsession(BaseSubsession):
                         for r in range(1, Constants.num_rounds + 2)])
             prices = [self.session.vars['{}{}'.format(company_name, r)][0]
                       for r in range(1, tmp0)]
+            # add the closing price
+            if '{}{}'.format(company_name, 11) in self.session.vars:
+                prices.append(self.session.vars['{}{}'.format(company_name, 11)])
             x = np.linspace(1, len(prices), len(prices))
             ax.plot(x, prices, marker='o', label=company_name)
         ax.legend(loc='upper left', bbox_to_anchor=(1.04, 1))
@@ -126,7 +129,18 @@ class Subsession(BaseSubsession):
                     for r in range(1, tmp0)] for name in names]
         round_list = [r for r in range(1, tmp0 + 1)]
 
-        return dict(company=list(zip(names, states, choices)), round_list=round_list, tilstand=states)
+        rankings = []
+        if 'profit' in self.session.vars:
+            for p in self.get_players():
+                rankings.append((p.id_in_group, p.tjent_ialt))
+        else:
+            for p in self.get_players():
+                rankings.append((p.id_in_group, 0))
+
+        return dict(company=list(zip(names, states, choices)),
+                    round_list=round_list,
+                    tilstand=states,
+                    rankings=sorted(rankings, key=lambda x: x[1], reverse=True))
 
 
 class Group(BaseGroup):
@@ -150,6 +164,7 @@ class Player(BasePlayer):
     price_change = models.CurrencyField()
     choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000)
     can_buy = models.PositiveIntegerField()
+    tjent_ialt = models.CurrencyField()
 
     def choice_of_number_of_shares_max(self):
         if self.wallet <= 0.0:
@@ -239,14 +254,14 @@ class Player(BasePlayer):
 
     def payoff(self):
         # the earnings are calculated after last round and stored in
-        # in participant.vars and summed in self.payoff
-        self.participant.vars['profit'] = []
+        # in session.vars and summed in self.payoff
+        self.session.vars['profit'] = []
         for idp, p in enumerate(self.in_all_rounds()):
             if p.choice_of_trade == 1:
-                self.participant.vars['profit'].append((self.closing_price(p.company_name)
+                self.session.vars['profit'].append((self.closing_price(p.company_name)
                                                         - p.price) * p.choice_of_number_of_shares)
             else:
-                self.participant.vars['profit'].append(-(self.closing_price(p.company_name)
+                self.session.vars['profit'].append(-(self.closing_price(p.company_name)
                                                          - p.price) * p.choice_of_number_of_shares)
-        self.payoff = sum(self.participant.vars['profit'])
-        return self.participant.vars['profit']
+        self.tjent_ialt = sum(self.session.vars['profit'])
+        return self.session.vars['profit']

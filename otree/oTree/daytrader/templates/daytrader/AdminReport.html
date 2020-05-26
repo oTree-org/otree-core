@@ -76,6 +76,28 @@
         {% endfor %}
     </table>
 
+    <div>
+    <h2 class="rapport-header ">Topscorerliste</h2>
+
+
+
+    <table class="table results-table table-responsive">
+            <tr>
+                <th> </th>
+                <th> spiller <br> nr. </th>
+                <th> tjent <br> ialt </th>
+            </tr>
+            {% for ranking in rankings %}
+            <tr>
+                <td> <strong>{{ forloop.counter }}</strong> </td>
+                <td> {{ ranking.0 }} </td>
+                <td> {{ ranking.1 }} </td>
+            </tr>
+            {% endfor %}
+    </table>
+
+
+
 {% endblock %}
 
 <script>
