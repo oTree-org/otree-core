@@ -42,7 +42,7 @@
         &:hover {
           cursor: pointer;
         }
-        }
+      }
 
       .company-face {
         width: 35px;
@@ -364,19 +364,18 @@
         }
 
         .result-table-face-1 {
-        margin: 77px 0 0 14px;
-      }
+          margin: 77px 0 0 14px;
+        }
 
-      .result-table-face-2 {
-        margin: 3px 0 0 0;
-      }
+        .result-table-face-2 {
+          margin: 3px 0 0 0;
+        }
 
-      .result-table-face-3 {
-        margin: 77px 14px 0 0;
-      }
+        .result-table-face-3 {
+          margin: 77px 14px 0 0;
+        }
 
       }
-
 
 
     }
@@ -748,6 +747,46 @@
         border-radius: 10px;
       }
     }
+
+    #tableReport {
+      display: inline-table;
+    }
+
+    .ranking-container {
+      width: 50%;
+      #rankingTable {
+        border-collapse: separate;
+        border-spacing: 0 0.5rem;
+        display: inline-table;
+
+        .border-corner-left {
+          border-radius: 10px 0 0 10px;
+        }
+
+        .border-corner-right {
+          border-radius: 0 10px 10px 0;
+        }
+
+        .table-ranking-header {
+          background: $ku-dark-blue;
+          color: white;
+          box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+          font-size: 26px;
+          text-align: center;
+          vertical-align: middle;
+        }
+
+        .table-ranking-row {
+          box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+          border-radius: 10px;
+        }
+
+        .table-ranking-data {
+          text-align: center;
+          font-size: 20px;
+        }
+      }
+    }
   }
 
   .admin-table-data {
@@ -771,7 +810,6 @@
         width: 35px;
         height: 35px;
       }
-
 
 
       .admin-table-face-1 {

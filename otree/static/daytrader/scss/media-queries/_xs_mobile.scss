@@ -83,38 +83,38 @@
       background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
       margin: 0 0 15px 0;
 
-      
-    
-      .daytrader-sack-buttons {  
-      margin: 65px 0 0 0;
 
-         &:hover {
-        cursor: pointer;
+      .daytrader-sack-buttons {
+        margin: 65px 0 0 0;
+
+        &:hover {
+          cursor: pointer;
+        }
       }
-    }
 
       .company-face {
         height: 20px;
         width: 20px;
       }
 
-    .company-face-in-sack {
-      width: 40px;
-      height: 40px;
+      .company-face-in-sack {
+        width: 40px;
+        height: 40px;
 
-      &:hover {
-        cursor: pointer;
+        &:hover {
+          cursor: pointer;
+        }
       }
     }
-  }
+
     .sack-btn {
       margin: 0;
       padding: 0;
       width: 40px;
       height: 40px;
-        
-        
-        &:hover {
+
+
+      &:hover {
         cursor: pointer;
         filter: contrast(1.75);
 
@@ -134,8 +134,6 @@
       font-size: 40px;
       padding: 20px 0 0 0;
     }
-
-
 
 
     .daytrader-intro-frontpage-img {
@@ -165,7 +163,6 @@
         }
       }
     }
-
 
 
     /*******************
@@ -361,10 +358,11 @@
       flex-direction: column;
       justify-content: center;
 
-        .form-group {
-          justify-content: center;
-          display: flex;
-        }
+      .form-group {
+        justify-content: center;
+        display: flex;
+      }
+
       .controls {
 
       }
@@ -384,7 +382,6 @@
         justify-content: center;
       }
     }
-
 
 
     .field-choice_of_number_of_shares {
@@ -798,6 +795,43 @@
       .daytrader-table-row {
         box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
         border-radius: 10px;
+      }
+    }
+
+    .ranking-container {
+      width: 80%;
+
+      #rankingTable {
+        border-collapse: separate;
+        border-spacing: 0 0.5rem;
+        display: inline-table;
+
+        .border-corner-left {
+          border-radius: 10px 0 0 10px;
+        }
+
+        .border-corner-right {
+          border-radius: 0 10px 10px 0;
+        }
+
+        .table-ranking-header {
+          background: $ku-dark-blue;
+          color: white;
+          box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+          font-size: 14px;
+          text-align: center;
+          vertical-align: middle;
+        }
+
+        .table-ranking-row {
+          box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+          border-radius: 10px;
+        }
+
+        .table-ranking-data {
+          text-align: center;
+          font-size: 13px;
+        }
       }
     }
   }
