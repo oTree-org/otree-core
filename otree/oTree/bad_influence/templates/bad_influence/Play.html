@@ -172,9 +172,9 @@
         document.querySelector("#message").onkeydown = function (e) {
             // Prevents an event to be fired as it normally would, it prevents the page from refreshing/reloading when
             // submitting the form
-            e.preventDefault();
             // if the event's keycode is equal to 13 (Enter) click the send button
             if (e.keyCode === 13) {
+                e.preventDefault();
                 document.querySelector("#send").click();
             }
         };
