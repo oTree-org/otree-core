@@ -62,7 +62,8 @@ class Subsession(BaseSubsession):
         if self.round_number == 1:
             number_of_players = self.session.num_participants
             # number_of_players = self.session.config['num_demo_participants']
-            company_names = random.sample(names["Name"].tolist(), number_of_players)
+            company_names = random.sample(
+                names["Name"].tolist(), number_of_players)
             company_states = [[bool(random.getrandbits(1))
                                for _ in range(Constants.num_faces)]
                               for _ in range(number_of_players)]
@@ -82,38 +83,50 @@ class Subsession(BaseSubsession):
             if self.round_number == 1:
                 player.wallet = Constants.start_wallet
                 player.price = Constants.start_price
-            player.company_name = company_names[(idp + self.round_number - 1) % number_of_players]
+            player.company_name = company_names[(
+                idp + self.round_number - 1) % number_of_players]
             player.company_state = Json_action.to_string(
                 company_states[(idp + self.round_number - 1) % number_of_players])
-            player.drawn_face = random.choice(Json_action.from_string(player.company_state))
+            player.drawn_face = random.choice(
+                Json_action.from_string(player.company_state))
             # player.number_of_glad_faces = sum(Json_action.from_string(player.company_state))
 
     def vars_for_admin_report(self):
-        number_of_rounds = sum([1 if '{}{}'.format(self.session.vars['company_names'][0], r) in self.session.vars else 0 for r in range(1, Constants.num_rounds + 2)])
-        number_of_companies = len(self.session.vars['company_names'])
+        number_of_rounds = sum([1 if '{}{}'.format(self.session.vars['company_names'][0], r)
+                                in self.session.vars else 0 for r in range(1, Constants.num_rounds + 2)])
 
         company_data = {}
         price_table = []
 
         for idx, name in enumerate(self.session.vars['company_names']):
             company_data[name] = {}
-            
+
             prices = [self.session.vars['{}{}'.format(name, r)][0]
                       for r in range(1, number_of_rounds)]
 
-            prices += [self.session.vars['{}{}'.format(name, number_of_rounds)]]
-            
+            # Ugly hack because the shape of session.vars changes throughout the game
+            # The whole session.vars object needs to be rewritten from scratch
+            # And should probably be stored on models instead of session vars
+            try:
+                prices += [self.session.vars['{}{}'.format(
+                    name, number_of_rounds)][0]]
+            except:
+                prices += [self.session.vars['{}{}'.format(
+                    name, number_of_rounds)]]
+
             company_data[name]['stock_price'] = prices
             company_data[name]['state'] = self.session.vars['company_states'][idx]
 
-            price_table += [{'name': name, 'values': [float(p) for i, p in enumerate(prices)]}]
+            # Hack to remove ' or the template will escape early in JSON.parse('{{ graph_data | safe }}'
+            price_table += [{'name': name.replace("'", ""),
+                             'values': [float(p) for i, p in enumerate(prices)]}]
 
         names = self.session.vars['company_names']
         states = self.session.vars['company_states']
         choices = [[self.session.vars['{}{}'.format(name, r)][3]
                     for r in range(1, number_of_rounds)] for name in names]
         drawn_faces = [[self.session.vars['{}{}'.format(name, r)][2]
-                    for r in range(1, number_of_rounds)] for name in names]
+                        for r in range(1, number_of_rounds)] for name in names]
         round_list = [r for r in range(1, number_of_rounds + 1)]
 
         rankings = []
@@ -128,24 +141,17 @@ class Subsession(BaseSubsession):
             'company': list(zip(names, states, choices, drawn_faces)),
             'round_list': round_list,
             'faces': drawn_faces,
-            'rankins': sorted(rankings, key=lambda x: x[1], reverse=True),
+            'rankings': sorted(rankings, key=lambda x: x[1], reverse=True),
             'tilstand': states,
             'graph_data': json.dumps({
                 'y': 'Priser',
                 'series': price_table,
                 'rounds': round_list
-                })
-            }
+            })
+        }
 
 
-class Group(BaseGroup):
-    pass
-
-
-class Player(BasePlayer):
-    wallet = models.CurrencyField()
     company_name = models.StringField()
-    company_state = models.StringField()
     # number_of_glad_faces = models.PositiveIntegerField()
     drawn_face = models.BooleanField()
     choice_of_trade = models.IntegerField(
@@ -157,7 +163,8 @@ class Player(BasePlayer):
     )
     price = models.CurrencyField()
     price_change = models.CurrencyField()
-    choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000)
+    choice_of_number_of_shares = models.PositiveIntegerField(
+        default=0, max=1000)
     can_buy = models.PositiveIntegerField()
     tjent_ialt = models.CurrencyField()
 
@@ -202,9 +209,11 @@ class Player(BasePlayer):
 
             # calculate price change and add up
             if previous_choice_of_trade == 1:
-                price_change += Constants.price_change_per_share * previous_choice_of_number_of_shares
+                price_change += Constants.price_change_per_share * \
+                    previous_choice_of_number_of_shares
             else:
-                price_change -= Constants.price_change_per_share * previous_choice_of_number_of_shares
+                price_change -= Constants.price_change_per_share * \
+                    previous_choice_of_number_of_shares
             self.price = self.old_share_price() + price_change * self.old_share_price()
         return self.price
 
@@ -214,7 +223,8 @@ class Player(BasePlayer):
         else:
             # retrieve actions from previous round:
             previous_price = self.in_round(self.round_number - 1).price
-            previous_choice_of_number_of_shares = self.in_round(self.round_number - 1).choice_of_number_of_shares
+            previous_choice_of_number_of_shares = self.in_round(
+                self.round_number - 1).choice_of_number_of_shares
             self.wallet = self.in_round(
                 self.round_number - 1).wallet - previous_price * previous_choice_of_number_of_shares
         return self.wallet

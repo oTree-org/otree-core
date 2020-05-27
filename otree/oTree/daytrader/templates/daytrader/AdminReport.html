@@ -40,64 +40,6 @@
                 <th class="daytrader-table-header right text-center" id="round_{{ r }}"> {{ r }} </th>
             {% endfor %}
         </tr>
-        {#                {% for navn, tilstand, valg, drawn_faces in company %}#}
-        {#                    <tr class="daytrader-table-row">#}
-        {#                        <td class="daytrader-table-data"> {{ navn }} </td>#}
-        {#                        <td class="daytrader-table-data admin-table-data">#}
-        {#                            <div class="admin-sack-button-container">#}
-        {#                                {% for state in tilstand %}#}
-        {#                                    {% if state == 1 %}#}
-        {#                                        <embed src="{% static 'daytrader/media/happy_face_daytrader.png' %}"#}
-        {#                                               class="company-face admin-table-face-{{ forloop.counter }}"/>#}
-        {#                                    {% else %}#}
-        {#                                        <embed src="{% static 'daytrader/media/sad_face_daytrader.png' %}"#}
-        {#                                               class="company-face admin-table-face-{{ forloop.counter }}"/>#}
-        {#                                    {% endif %}#}
-        {#                                {% endfor %}#}
-        {#                            </div>#}
-        {##}
-        {#                        </td>#}
-        {##}
-        {#                        <td class="daytrader-table-data">#}
-        {#                            {% for choice in valg %}#}
-        {#                                {% if choice is 1 %}#}
-        {#                                    <img src="{% static 'daytrader/media/green-plus.svg' %}" alt="green plus"#}
-        {#                                         class="company-face">#}
-        {#                                {% endif %}#}
-        {#                            {% endfor %}#}
-        {##}
-        {#                            {% for state in drawn_faces %}#}
-        {#                                {% if state is True %}#}
-        {#                                    <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"#}
-        {#                                         class="company-face">#}
-        {#                                {% else %}#}
-        {#                                    <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"#}
-        {#                                         class="company-face">#}
-        {#                                {% endif %}#}
-        {#                            {% endfor %}#}
-        {##}
-        {#                            {% for choice in valg %}#}
-        {#                                {% if choice is 0 %}#}
-        {#                                    <img src="{% static 'daytrader/media/yellow-minus.svg' %}" alt="yellow minus"#}
-        {#                                         class="company-face">#}
-        {#                                {% endif %}#}
-        {#                            {% endfor %}#}
-        {##}
-        {#                            {% for state in drawn_faces %}#}
-        {#                                {% if state is False %}#}
-        {#                                    <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"#}
-        {#                                         class="company-face">#}
-        {#                                {% else %}#}
-        {#                                    <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"#}
-        {#                                         class="company-face">#}
-        {#                                {% endif %}#}
-        {#                            {% endfor %}#}
-        {#                        </td>#}
-        {##}
-        {#                    </tr>#}
-        {##}
-        {##}
-        {#                {% endfor %}#}
 
         {% for navn, tilstand, valg, ansigter in company %}
             <tr class="daytrader-table-row">
