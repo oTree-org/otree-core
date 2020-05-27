@@ -58,7 +58,9 @@
                  <div class="daytrader-round-info">
                  <small>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</small>
                 <p>
-                    Du er den første trader, og du skal nu handle aktier i firmaet
+                    Du skal handle aktier i 10 runde i 10 forskellige firmaer.
+                    Det er første runde, og du er den første trader i dag.
+                    Du skal handle aktier i firmaet
                     <b>'{{ player.company_name }}'.</b> </p>
                   <div>
             {% endif %}
@@ -94,6 +96,8 @@
                     <br>
                     <br>
                     <b><u>Hvad vil du gøre?</u></b>
+                    <br>
+                    <b>Der er {{ runder }} runder, husk at vær sparsom med dine penge og handl fornuftigt</b>
                 </div>
             </div>
             <div id="timer-text" class="container justify-content-md-center">
@@ -107,8 +111,13 @@
                 <div class="daytrader-submit-value">
                     <p class="daytrader-form-info"> Hvor mange aktier?
                         <br>
-                        <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
-                            aktier)</b></small></p>
+                        {% if subsession.round_number == 1 %}
+                          <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
+                          aktier, og husk at gemme nogle penge til de næste runder)</b></small></p>
+                        {% else %}
+                          <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
+                          aktier)</b></small></p>
+                        {% endif %}
                     <div class="daytrader-formfield">
                         {% formfield player.choice_of_number_of_shares label=None %}
                     </div>

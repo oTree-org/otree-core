@@ -84,10 +84,12 @@ class Choose(Page):
             states.append(player.drawn_face)
 
         data = zip(rounds, prices, choices, deals, states)
+        game_rounds = Constants.num_rounds
 
         return {
             'data': data,
-            'rounds': rounds
+            'rounds': rounds,
+            'runder': game_rounds
         }
 
 
@@ -119,7 +121,7 @@ class Results(Page):
         handler = [p.choice_of_number_of_shares for p in self.player.in_all_rounds()]
         price = [c(p.price) for p in self.player.in_all_rounds()]
         closing = [c(p.closing_price(p.company_name)) for p in self.player.in_all_rounds()]
-
+        print(handler)
         data = zip(firma, tilstand, choices, handler, price, closing, tjent)
         handelsvaerdi = c(sum([p.price * p.choice_of_number_of_shares
                                for p in self.player.in_all_rounds()]))
@@ -128,7 +130,7 @@ class Results(Page):
             'handlet': handelsvaerdi,
             'kurtage_pct': int(Constants.kurtage * 100),
             'kurtage': c(Constants.kurtage * handelsvaerdi),
-            'ialt': self.player.payoff - (Constants.kurtage * handelsvaerdi),
+            'ialt': self.player.tjent_ialt - (Constants.kurtage * handelsvaerdi),
             'data': data,
             'firma': firma,
             'tilstand': tilstand,
@@ -136,7 +138,7 @@ class Results(Page):
             'handler': handler,
             'price': price,
             'closing': closing,
-            'tjent': tjent
+            'tjent': tjent,
         }
 
 

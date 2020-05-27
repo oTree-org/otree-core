@@ -62,9 +62,13 @@
                 let company = {{ firma|safe }};
                 let state = {{ tilstand|safe }};
                 let choices = {{ choices|safe }};
+                let deals = {{ handler|safe }};
                 let price = {{ price }};
                 let closePrice = {{ closing }};
                 let earned = {{ tjent }};
+
+                console.log(deals);
+
 
                 for (let i = 0; i < company.length; i++) {
                     let resultTableRow = document.createElement("tr");
@@ -105,12 +109,12 @@
 
                     let tableDataChoice = document.createElement("td");
                     tableDataChoice.className = "daytrader-table-data";
-                    if (choices[i] === true) {
-                        tableDataChoice.textContent = "+" + choices[i];
-                    } else if (choices[i] === false) {
-                        tableDataChoice.textContent = "-" + choices[i];
+                    if (choices[i] === 1) {
+                        tableDataChoice.textContent = `+${deals[i]}`;
+                    } else if (choices[i] === 0) {
+                        tableDataChoice.textContent = `-${deals[i]}`;
                     } else {
-                        tableDataChoice.textContent = choices[i];
+                        tableDataChoice.textContent = deals[i];
                     }
                     resultTableRow.appendChild(tableDataChoice);
                     table.appendChild(resultTableRow);
@@ -168,11 +172,14 @@
         </table>
 
         <p class="daytrader-round-info results-desc">
-            Du har tjent i alt {{ player.payoff }}.
-            Gebyrer og kurtage ({{ kurtage_pct }}% af handelsværdi) beløber sig til {{ kurtage }}.
+            Du er spiller nummer {{ player.id_in_group }} og
+            du har tjent i alt {{ player.tjent_ialt }}.
+
         </p>
         <p class="daytrader-round-info">
-            Din samlede fortjeneste er {{ ialt }}.
+            Gebyrer og kurtage ({{ kurtage_pct }}% af handelsværdi)
+            beløber sig til {{ kurtage }}.
+            Din samlede udbetaling er {{ ialt }}.
         </p>
         <p class="daytrader-round-info">
            Tak for at De handlede med os

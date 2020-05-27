@@ -1,83 +1,82 @@
 @media (min-width: 0px) {
 
-/*************************
-*       Base.html        *
-*************************/
-.top-left-fixed-alert {
-  visbility: hidden;
-}
-
-/**************************************
-*  Main container  - BaseAdmin.html  *
-*********************************/
-.container {
-   max-width: 100%;
-
-  .page-header {
-      padding-top: 40px;
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
   }
-}
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  *********************************/
+  .container {
+    max-width: 100%;
+
+    .page-header {
+      padding-top: 40px;
+    }
+  }
 
 
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .title-container {
+    margin-bottom: 5%;
+  }
 
-/******************************
-*  Front Page  - games.html  *
-******************************/
-.title-container {
-  margin-bottom: 5%;
-}
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: 'Catamaran', sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px;
+    margin-top: 6%;
+    margin-bottom: 0;
+  }
 
-.games-title {
-  color: white;
-  font-weight: bold;
-  font-family: 'Catamaran', sans-serif;
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  font-size: 18px;
-  margin-top: 6%;
-  margin-bottom: 0;
-}
-
-.sub-games-title {
-  color: white;
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  font-size: 12px;
-  font-family: 'Roboto Slab', serif;
-}
-
-.align-games {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-
-  .card {
-    margin-bottom: 30px;
-    width: 90%;
-    border-color: $ku-red;
-    border-style: solid;
-    border-width: 3px;
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
     font-family: 'Roboto Slab', serif;
   }
 
-  .card-header {
-    padding-bottom:0;
-  }
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
 
-  .card-header,
-  .card-footer {
-    color: $ku-red;
-    border: none;
-    background-color: white;
-    font-size: 18px;
-    font-weight: bolder;
-  }
+    .card {
+      margin-bottom: 30px;
+      width: 90%;
+      border-color: $ku-red;
+      border-style: solid;
+      border-width: 3px;
+      font-family: 'Roboto Slab', serif;
+    }
 
-  .card-body {
-    color: $ku-red;
+    .card-header {
+      padding-bottom: 0;
+    }
+
+    .card-header,
+    .card-footer {
+      color: $ku-red;
+      border: none;
+      background-color: white;
+      font-size: 18px;
+      font-weight: bolder;
+    }
+
+    .card-body {
+      color: $ku-red;
 
       .body-row {
         flex-direction: row;
@@ -87,169 +86,172 @@
           font-size: 12px;
         }
       }
-  }
+    }
 
-  .sack-img {
-    display: none;
-  }
+    .sack-img {
+      display: none;
+    }
 
-  .network-img {
-    display: none;
-  }
-   .card-footer {
+    .network-img {
+      display: none;
+    }
+
+    .card-footer {
       padding-top: 0;
-     .footer-row {
-       display: flex;
-       justify-content: center;
-       flex-direction: column;
+
+      .footer-row {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
 
 
-     }
-
-    .btn-primary {
-      background-color: $ku-red;
-      border-color: $ku-red;
-      width: 100%;
-
-      &:hover {
-        background-color: #7C992B;
-        border-color: transparent;
       }
-    }
-    .game-info {
-      padding-bottom: 20px;
-      font-size: 11px;
 
-      p {
-        margin-bottom: 0;
+      .btn-primary {
+        background-color: $ku-red;
+        border-color: $ku-red;
+        width: 100%;
+
+        &:hover {
+          background-color: #7C992B;
+          border-color: transparent;
+        }
+      }
+
+      .game-info {
+        padding-bottom: 20px;
+        font-size: 11px;
+
+        p {
+          margin-bottom: 0;
+        }
       }
     }
   }
- }
 
-/******************************
-*        Navbar Styling       *
-******************************/
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
 
-.login-button {
-  color: white;
-  text-decoration: none;
-  font-size: 12px;
-  font-family: 'Roboto Slab', serif;
-
-  &:hover {
+  .login-button {
+    color: white;
     text-decoration: none;
-    color: #A7C5E9;
+    font-size: 12px;
+    font-family: 'Roboto Slab', serif;
+
+    &:hover {
+      text-decoration: none;
+      color: #A7C5E9;
+    }
   }
-}
 
-.tilbage-button {
-  justify-content: left;
-  display: flex;
-  font-family: "Roboto Slab", serif;
-  font-weight: bold;
-  color: white;
-  font-size: 12px;
+  .tilbage-button {
+    justify-content: left;
+    display: flex;
+    font-family: "Roboto Slab", serif;
+    font-weight: bold;
+    color: white;
+    font-size: 12px;
 
 
-  &:hover {
+    &:hover {
       text-decoration: none;
       color: $ku-dark-green;
+    }
+
+    img {
+      color: white;
+    }
   }
 
-  img {
-    color: white;
+  .home-button {
+    .fa-home {
+      padding-right: 8px;
+      padding-top: 8px;
+      font-size: 20px;
+    }
+
+    span {
+      display: none;
+    }
   }
-}
-
-.home-button {
-  .fa-home {
-  padding-right: 8px;
-  padding-top: 8px;
-  font-size: 20px;
-}
- span {
-   display: none;
- }
-}
 
 
-/**********************************************************
-*  Create Game - e.g. CreateSessionFormBadInfluence.html  *
-***********************************************************/
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+  ***********************************************************/
 
-.back-button {
-  color: $ku-red;
-  padding-left: 20px;
-  padding-top: 10px;
-  font-family: 'Roboto Slab', serif;
-
-  &:hover {
-    color: #41739D;
-  }
-}
-
-.create-game {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  overflow: auto;
-
-
-
-  .card {
-    margin-bottom: 30px;
-    width: 90%;
-    border-color: $ku-red;
-    border-style: solid;
-    border-width: 3px;
+  .back-button {
+    color: $ku-red;
+    padding-left: 20px;
+    padding-top: 10px;
     font-family: 'Roboto Slab', serif;
+
+    &:hover {
+      color: #41739D;
+    }
   }
 
-  .card-header {
-    padding-bottom:0;
+  .create-game {
     display: flex;
-   justify-content: center;
-    padding-top: 0;
-
-  }
-
-  .card-header,
-  .card-footer {
-    color: $ku-red;
-    border: none;
-    background-color: white;
-    font-size: 18px;
-    font-weight: bolder;
-  }
-
-  .card-body {
-    color: $ku-red;
-    display: flex;
+    align-items: center;
     justify-content: center;
-    text-align: center;
-    font-size: 14px;
-    padding-bottom: 0;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
 
-  }
 
-   .sack-img {
-    width: 80px;
-    height: 80px;
-    display: none;
-  }
+    .card {
+      margin-bottom: 30px;
+      width: 90%;
+      border-color: $ku-red;
+      border-style: solid;
+      border-width: 3px;
+      font-family: 'Roboto Slab', serif;
+    }
 
-  .network-img {
-    width: 80px;
-    height: 80px;
-    display: none;
-  }
+    .card-header {
+      padding-bottom: 0;
+      display: flex;
+      justify-content: center;
+      padding-top: 0;
+
+    }
+
+    .card-header,
+    .card-footer {
+      color: $ku-red;
+      border: none;
+      background-color: white;
+      font-size: 18px;
+      font-weight: bolder;
+    }
+
+    .card-body {
+      color: $ku-red;
+      display: flex;
+      justify-content: center;
+      text-align: center;
+      font-size: 14px;
+      padding-bottom: 0;
+
+    }
+
+    .sack-img {
+      width: 80px;
+      height: 80px;
+      display: none;
+    }
+
+    .network-img {
+      width: 80px;
+      height: 80px;
+      display: none;
+    }
 
     .card-footer {
       padding-top: 0;
@@ -262,32 +264,33 @@
         justify-content: center;
         flex-direction: column;
       }
+
       .footer-row {
         display: flex;
         justify-content: center;
         flex-direction: column;
         align-items: center;
-     }
+      }
 
-    .btn-primary {
-      background-color: $ku-red;
-      border-color: $ku-red;
-      width: 100%;
+      .btn-primary {
+        background-color: $ku-red;
+        border-color: $ku-red;
+        width: 100%;
 
-      &:hover {
-        background-color: #7C992B;
-        border-color: transparent;
+        &:hover {
+          background-color: #7C992B;
+          border-color: transparent;
+        }
       }
     }
   }
-}
 
 
-/********************************************************
-*  Admin/Teacher panel navigation - CustomSession.html  *
-*********************************************************/
+  /********************************************************
+  *  Admin/Teacher panel navigation - CustomSession.html  *
+  *********************************************************/
 
-#admin-panel {
+  #admin-panel {
     margin-top: 3%;
 
     .nav-tabs {
@@ -303,7 +306,7 @@
       border-radius: 150px;
       background-color: white;
       color: $ku-red;
-      box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
       font-family: "Annie Use Your Telescope", serif;
 
       &:hover {
@@ -311,82 +314,82 @@
         background-color: #5f861e;
       }
     }
-}
+  }
 
   #admin-panel .nav li > a {
-	text-transform: capitalize;
-	color:  $ku-red;
-	transition: background-color .2s, color .2s;
+    text-transform: capitalize;
+    color: $ku-red;
+    transition: background-color .2s, color .2s;
 
-}
+  }
 
-#admin-panel .nav li.active > a {
-	background-color: transparent;
-	color: green;
+  #admin-panel .nav li.active > a {
+    background-color: transparent;
+    color: green;
 
     .btn-circle {
       background-color: #5f861e;
       color: white;
     }
-}
+  }
 
 
-/*********************************************
-*  Start link / intro - SessionStartLinks.html  *
-**********************************************/
+  /*********************************************
+  *  Start link / intro - SessionStartLinks.html  *
+  **********************************************/
 
-.gamelink-content {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  font-family: 'Roboto Slab', serif;
-  padding-top: 3%;
-  padding-bottom: 4%;
-  position: relative;
-  margin-top: 10px;
-  color: white;
-  text-align: center;
-
-  .game-link-info {
-    font-size: 18px;
+  .gamelink-content {
+    width: 100%;
     display: flex;
     justify-content: center;
     flex-direction: column;
-    width: 90%;
-    align-self: center;
-  }
+    font-family: 'Roboto Slab', serif;
+    padding-top: 3%;
+    padding-bottom: 4%;
+    position: relative;
+    margin-top: 10px;
+    color: white;
+    text-align: center;
+
+    .game-link-info {
+      font-size: 18px;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      width: 90%;
+      align-self: center;
+    }
 
 
-  .start-link {
-    margin-top: 20px;
+    .start-link {
+      margin-top: 20px;
 
-    background-color: white;
-    border-radius: 40px;
-    padding: 20px 0 20px 0;
-    width: 95%;
-    display: flex;
-    justify-content: center;
-    align-self: center;
+      background-color: white;
+      border-radius: 40px;
+      padding: 20px 0 20px 0;
+      width: 95%;
+      display: flex;
+      justify-content: center;
+      align-self: center;
 
 
-    a {
-      text-decoration: none;
-      color: $ku-red;
-       font-size: 16px;
+      a {
+        text-decoration: none;
+        color: $ku-red;
+        font-size: 16px;
 
-      &:hover {
-        color: $ku-dark-green;
+        &:hover {
+          color: $ku-dark-green;
+        }
       }
     }
+
   }
 
-}
-
-/*********************************************
-*  Monitor game progress - SessionMonitor.html  *
-**********************************************/
-.info {
+  /*********************************************
+  *  Monitor game progress - SessionMonitor.html  *
+  **********************************************/
+  .info {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -394,54 +397,55 @@
     flex-direction: column;
     font-family: 'Roboto Slab', serif;
 
-  .info-content {
-    display: flex;
-    justify-content: center;
-    width: 90%;
-    flex-direction: column;
-    text-align: center;
-    color: white;
-    align-items: center;
-
-    h1 {
-      font-size: 18px;
-    }
-
-    p {
-     font-size: 16px;
-
-    }
-    .fremryk-spiller {
+    .info-content {
       display: flex;
       justify-content: center;
+      width: 90%;
       flex-direction: column;
+      text-align: center;
+      color: white;
+      align-items: center;
 
-      .fremryk-spiller-knap {
-        background-color: white;
-        color: $ku-red;
-        margin: 0 0 10px 0;
-
-         &:hover {
-         color: white;
-         background-color: $ku-dark-green;
+      h1 {
+        font-size: 18px;
       }
 
+      p {
+        font-size: 16px;
+
       }
+
+      .fremryk-spiller {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+
+        .fremryk-spiller-knap {
+          background-color: white;
+          color: $ku-red;
+          margin: 0 0 10px 0;
+
+          &:hover {
+            color: white;
+            background-color: $ku-dark-green;
+          }
+
+        }
+      }
+    }
+
+    .player-table {
+      background-color: white;
+      border-collapse: collapse;
+      overflow: scroll;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      color: $ku-red;
+      font-size: 10px;
+      border-radius: 8px;
     }
   }
 
-  .player-table {
-    background-color: white;
-	border-collapse: collapse;
-	overflow: scroll;
-	box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    color: $ku-red;
-    font-size: 10px;
-    border-radius: 8px;
-  }
-}
-
-    .results-table {
+  .results-table {
     width: 100%;
     background-color: white;
     border-collapse: collapse;
@@ -455,57 +459,66 @@
   }
 
 
-
-/*****************************************************
-*  Game report page - BadInfluence/AdminReport.html  *
-******************************************************/
-.report-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  font-family: "Roboto Slab", serif;
-
-   .report-info {
-    width: 90%;
-    border-collapse: collapse;
-    overflow: hidden;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    background-color: white;
-    border-radius: 10px;
-  }
-
-  .rapport-header {
-  padding-top: 20px;
-  justify-content: center;
-  display: flex;
-  padding-bottom: 20px;
-  flex-direction: column;
-  align-items: center;
- text-align: center;
-
-    h2 {
-      font-size: 16px;
-        width: 90%;
-    }
-    p {
-     font-size: 16px;
-
-    }
-  }
-
-  .dropdown-questions {
+  /*****************************************************
+  *  Game report page - BadInfluence/AdminReport.html  *
+  ******************************************************/
+  .report-container {
+    width: 100%;
     display: flex;
     justify-content: center;
-    font-size: 16px;
-    flex-direction: column;
+    font-family: "Roboto Slab", serif;
 
-    .question-title {
-      font-size: 16px;
-      font-weight: bold;
-      padding-bottom: 10px;
-      padding-top: 20px;
+    .report-info {
+      width: 90%;
+      border-collapse: collapse;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      background-color: white;
+      border-radius: 10px;
     }
-  }
+
+    .rapport-header {
+      padding-top: 20px;
+      justify-content: center;
+      display: flex;
+      padding-bottom: 20px;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+
+      h2 {
+        font-size: 16px;
+        width: 90%;
+      }
+
+      p {
+        font-size: 16px;
+
+      }
+
+
+      #badInfluenceTableReport {
+        width: 80%;
+
+        .bad_influence-table-header {
+          font-size: 12px;
+        }
+      }
+    }
+
+    .dropdown-questions {
+      display: flex;
+      justify-content: center;
+      font-size: 16px;
+      flex-direction: column;
+
+      .question-title {
+        font-size: 16px;
+        font-weight: bold;
+        padding-bottom: 10px;
+        padding-top: 20px;
+      }
+    }
 
     .resultater {
       display: flex;
@@ -520,100 +533,100 @@
       font-size: 14px;
       font-family: "Roboto Slab", serif;
 
-        #d3consensus {
-          display: flex;
-          justify-content: center;
-          width: 95%;
-        }
+      #d3consensus {
+        display: flex;
+        justify-content: center;
+        width: 95%;
+      }
 
-        #d3playback {
-          display: none;
-        }
+      #d3playback {
+        display: none;
+      }
     }
 
-  .alert-info {
-    color: $ku-red;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-    align-self: center;
-    text-align: center;
-    padding-top: 0;
-    padding-bottom: 20px;
-  }
+    .alert-info {
+      color: $ku-red;
+      justify-content: center;
+      display: flex;
+      flex-direction: column;
+      align-self: center;
+      text-align: center;
+      padding-top: 0;
+      padding-bottom: 20px;
+    }
 
-  .alert {
-    width: 100%;
-  }
+    .alert {
+      width: 100%;
+    }
 
-  .graf {
+    .graf {
 
-    height: 130px;
-  }
+      height: 130px;
+    }
 
-  .explanation {
-    display: flex;
-    justify-content: space-evenly;
-    flex-direction: column;
-  }
+    .explanation {
+      display: flex;
+      justify-content: space-evenly;
+      flex-direction: column;
+    }
 
-  .dropdown-toggle {
+    .dropdown-toggle {
       background-color: $ku-red;
       color: white;
       font-size: 14px;
       width: auto !important;
 
       &:hover {
-       background-color: $ku-dark-green;
+        background-color: $ku-dark-green;
       }
-  }
+    }
 
-  .play-button {
-    background-color: $ku-red;
-    color: white;
-    width: 100px;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 30px;
+    .play-button {
+      background-color: $ku-red;
+      color: white;
+      width: 100px;
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
 
-    &:hover {
-      background-color: $ku-dark-green;
+      &:hover {
+        background-color: $ku-dark-green;
+      }
     }
   }
-}
   .d3-container {
     background-color: orange;
     width: 20%;
   }
 
 
-/*****************************************************
-*  Authenticated demo page - DemoIndex.html  *
-******************************************************/
-.demo-container {
-  margin-top: 10%;
-  padding: 10px 50px 10px 50px;
-}
-
-
-/*****************************************************
-*  Authenticated create session - Sessions.html  *
-******************************************************/
-  .create-session-container {
-     margin-top: 10%;
-     padding: 10px 50px 10px 50px;
+  /*****************************************************
+  *  Authenticated demo page - DemoIndex.html  *
+  ******************************************************/
+  .demo-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
   }
 
-.game-admin {
-  margin-top: 5%;
-  padding: 10px 50px 10px 50px;
-  background-color: white !important;
 
-}
+  /*****************************************************
+  *  Authenticated create session - Sessions.html  *
+  ******************************************************/
+  .create-session-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
 
-/****************************
-*  Login view - login.html  *
-****************************/
+  .game-admin {
+    margin-top: 5%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+
+  }
+
+  /****************************
+  *  Login view - login.html  *
+  ****************************/
   .game-login {
     display: flex;
     justify-content: center;
