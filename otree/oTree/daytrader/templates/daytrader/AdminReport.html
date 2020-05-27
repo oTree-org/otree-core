@@ -23,11 +23,9 @@
         #form {
             display: none;
         }
-
     </style>
 
-
-    <embed src="{% static 'daytrader/test.png' %}" class="graph-image"/>
+    <div id="d3Container"></div>
 
     <p class="report-description">Nedenunder kan du se en tabel der viser firmaernes tilstande og spillets forløb</p>
 
@@ -42,64 +40,6 @@
                 <th class="daytrader-table-header right text-center" id="round_{{ r }}"> {{ r }} </th>
             {% endfor %}
         </tr>
-        {#                {% for navn, tilstand, valg, drawn_faces in company %}#}
-        {#                    <tr class="daytrader-table-row">#}
-        {#                        <td class="daytrader-table-data"> {{ navn }} </td>#}
-        {#                        <td class="daytrader-table-data admin-table-data">#}
-        {#                            <div class="admin-sack-button-container">#}
-        {#                                {% for state in tilstand %}#}
-        {#                                    {% if state == 1 %}#}
-        {#                                        <embed src="{% static 'daytrader/media/happy_face_daytrader.png' %}"#}
-        {#                                               class="company-face admin-table-face-{{ forloop.counter }}"/>#}
-        {#                                    {% else %}#}
-        {#                                        <embed src="{% static 'daytrader/media/sad_face_daytrader.png' %}"#}
-        {#                                               class="company-face admin-table-face-{{ forloop.counter }}"/>#}
-        {#                                    {% endif %}#}
-        {#                                {% endfor %}#}
-        {#                            </div>#}
-        {##}
-        {#                        </td>#}
-        {##}
-        {#                        <td class="daytrader-table-data">#}
-        {#                            {% for choice in valg %}#}
-        {#                                {% if choice is 1 %}#}
-        {#                                    <img src="{% static 'daytrader/media/green-plus.svg' %}" alt="green plus"#}
-        {#                                         class="company-face">#}
-        {#                                {% endif %}#}
-        {#                            {% endfor %}#}
-        {##}
-        {#                            {% for state in drawn_faces %}#}
-        {#                                {% if state is True %}#}
-        {#                                    <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"#}
-        {#                                         class="company-face">#}
-        {#                                {% else %}#}
-        {#                                    <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"#}
-        {#                                         class="company-face">#}
-        {#                                {% endif %}#}
-        {#                            {% endfor %}#}
-        {##}
-        {#                            {% for choice in valg %}#}
-        {#                                {% if choice is 0 %}#}
-        {#                                    <img src="{% static 'daytrader/media/yellow-minus.svg' %}" alt="yellow minus"#}
-        {#                                         class="company-face">#}
-        {#                                {% endif %}#}
-        {#                            {% endfor %}#}
-        {##}
-        {#                            {% for state in drawn_faces %}#}
-        {#                                {% if state is False %}#}
-        {#                                    <img src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"#}
-        {#                                         class="company-face">#}
-        {#                                {% else %}#}
-        {#                                    <img src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"#}
-        {#                                         class="company-face">#}
-        {#                                {% endif %}#}
-        {#                            {% endfor %}#}
-        {#                        </td>#}
-        {##}
-        {#                    </tr>#}
-        {##}
-        {##}
-        {#                {% endfor %}#}
 
         {% for navn, tilstand, valg, ansigter in company %}
             <tr class="daytrader-table-row">
@@ -208,4 +148,157 @@
             tableHeaders[tableHeaders.length - 1].style.borderRadius = "0 10px 10px 0";
         }
     }
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.16.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-array/1.2.2/d3-array.min.js"></script>
+<script>
+    $(document).ready(function () {
+    const data = JSON.parse('{{ graph_data | safe }}')
+
+    const ascending = function(a, b) {
+        return a < b ? -1 : a > b ? 1 : a >= b ? 0 : NaN;
+    }
+
+    const least = (values, compare = ascending) => {
+        let min;
+        let defined = false;
+        if (compare.length === 1) {
+            let minValue;
+            for (const element of values) {
+            const value = compare(element);
+            if (defined
+                ? ascending(value, minValue) < 0
+                : ascending(value, value) === 0) {
+                    min = element;
+                    minValue = value;
+                    defined = true;
+                }
+            }
+        } else {
+            for (const value of values) {
+            if (defined
+                ? compare(value, min) < 0
+                : compare(value, value) === 0) {
+                    min = value;
+                    defined = true;
+                }
+            }
+        }
+        return min;
+    }
+
+    const margin = {top: 100, right: 100, bottom: 20, left: 100};
+    const width = 1000;
+    const height = 400;
+
+    const minPrice = d3.min(data.series, function (company) { return d3.min(company.values) })
+    const maxPrice = d3.max(data.series, function (company) { return d3.max(company.values) })
+
+    const x = d3.scaleLinear().domain(d3.extent(data.rounds)).range([margin.left, width - margin.right]);
+    const y = d3.scaleLinear().domain([minPrice*0.90, maxPrice*1.05]).range([height, 0]);
+
+    const xAxis = function (g) { 
+        g
+        .attr("transform", `translate(0,${height - margin.bottom})`)
+        .call(d3.axisBottom(x).ticks(data.rounds.length).tickSizeOuter(0))
+    }
+
+    const yAxis = function (g) {
+        g
+        .attr("transform", `translate(${margin.left},0)`)
+        .call(d3.axisLeft(y))
+        .call(g => g.select(".domain").remove())
+        .call(g => g.select(".tick:last-of-type text").clone()
+        .attr("x", 3)
+        .attr("text-anchor", "start")
+        .attr("font-weight", "bold")
+        // .text(data.y)
+        )
+    }
+
+    const line = d3.line()
+        .defined(d => !isNaN(d))
+        .x((d, i) => x(i + 1))
+        .y((d, i) => y(d))
+
+    const hover = (svg, path) => {
+      if ("ontouchstart" in document)
+        svg
+          .style("-webkit-tap-highlight-color", "transparent")
+          .on("touchmove", moved)
+          .on("touchstart", entered)
+          .on("touchend", left);
+      else
+        svg
+          .on("mousemove", moved)
+          .on("mouseenter", entered)
+          .on("mouseleave", left);
+
+      const dot = svg.append("g").attr("display", "none");
+
+      dot.append("circle").attr("r", 2.5);
+
+      dot
+        .append("text")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 10)
+        .attr("text-anchor", "middle")
+        .attr("y", -8);
+
+      function moved() {
+        d3.event.preventDefault();
+        const mouse = d3.mouse(this);
+        const xm = x.invert(mouse[0]);
+        const ym = y.invert(mouse[1]);
+        const i1 = d3.bisectLeft(data.rounds, xm, 1);
+        const i0 = i1 - 1;
+        const i = xm - data.rounds[i0] > data.rounds[i1] - xm ? i1 : i0;
+        const s = least(data.series, (d) => Math.abs(d.values[i] - ym));
+        path
+          .attr("stroke", (d) => (d === s ? null : "#ddd"))
+          .filter((d) => d === s)
+          .raise();
+        dot.attr(
+          "transform",
+          `translate(${x(data.rounds[i])},${y(s.values[i])})`
+        );
+        dot.select("text").text(`(${s.name}, ${s.values[i]})`);
+      }
+
+      function entered() {
+        path.style("mix-blend-mode", null).attr("stroke", "#ddd");
+        dot.attr("display", null);
+      }
+
+      function left() {
+        path.style("mix-blend-mode", "multiply").attr("stroke", null);
+        dot.attr("display", "none");
+      }
+    }
+
+    const svg = d3.select('#d3Container').append("svg")
+        .attr("width", width)
+        .attr("height", height);
+
+    svg.append("g")
+        .call(xAxis);
+
+    svg.append("g")
+        .call(yAxis);
+
+    const path = svg.append("g")
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1.5)
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .selectAll("path")
+        .data(data.series)
+        .join("path")
+        .style("mix-blend-mode", "multiply")
+        .attr("d", d => line(d.values));
+        
+        svg.call(hover, path)
+    })
 </script>

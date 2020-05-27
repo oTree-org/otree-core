@@ -62,7 +62,8 @@ class Subsession(BaseSubsession):
         if self.round_number == 1:
             number_of_players = self.session.num_participants
             # number_of_players = self.session.config['num_demo_participants']
-            company_names = random.sample(names["Name"].tolist(), number_of_players)
+            company_names = random.sample(
+                names["Name"].tolist(), number_of_players)
             company_states = [[bool(random.getrandbits(1))
                                for _ in range(Constants.num_faces)]
                               for _ in range(number_of_players)]
@@ -82,54 +83,51 @@ class Subsession(BaseSubsession):
             if self.round_number == 1:
                 player.wallet = Constants.start_wallet
                 player.price = Constants.start_price
-            player.company_name = company_names[(idp + self.round_number - 1) % number_of_players]
+            player.company_name = company_names[(
+                idp + self.round_number - 1) % number_of_players]
             player.company_state = Json_action.to_string(
                 company_states[(idp + self.round_number - 1) % number_of_players])
-            player.drawn_face = random.choice(Json_action.from_string(player.company_state))
+            player.drawn_face = random.choice(
+                Json_action.from_string(player.company_state))
             # player.number_of_glad_faces = sum(Json_action.from_string(player.company_state))
 
     def vars_for_admin_report(self):
-        graph_colors = [
-            [0.996, 0.875, 0.431, 1],  # Yellow
-            [0.302, 0.82, 0.208, 1],   # Green
-            [0.416, 0.953, 0.984, 1],  # Turkish
-            [0.686, 0.686, 0.686, 1],  # Grey
-            [0.984, 0.729, 0.816, 1],  # Pink
-            [0.98, 0.251, 0.329, 1],   # Red
-        ]
-        plt.rc('axes', prop_cycle=(cycler(color=graph_colors)))
-        fig = plt.figure(figsize=(4, 3))
-        ax = plt.axes()
-        for company_name in self.session.vars['company_names']:
-            # find the number of rounds played by looking in the dict and store
-            # in tmp0:
-            tmp0 = sum([1
-                        if '{}{}'.format(company_name, r) in self.session.vars
-                        else 0
-                        for r in range(1, Constants.num_rounds + 2)])
-            prices = [self.session.vars['{}{}'.format(company_name, r)][0]
-                      for r in range(1, tmp0)]
-            # add the closing price
-            if '{}{}'.format(company_name, 11) in self.session.vars:
-                prices.append(self.session.vars['{}{}'.format(company_name, 11)])
-            x = np.linspace(1, len(prices), len(prices))
-            ax.plot(x, prices, marker='o', label=company_name)
-        ax.legend(loc='upper left', bbox_to_anchor=(1.04, 1))
-        ax.set_xlabel('runde', fontdict={'fontsize': 12})
-        ax.set_ylabel('pris', fontdict={'fontsize': 12})
-        ax.set_title('Aktieprisudvikling', fontsize='x-large')
-        fig.savefig('_static/daytrader/test.pdf', transparent=True,
-                    bbox_inches='tight', dpi=300)
-        fig.savefig('_static/daytrader/test.png', transparent=True,
-                    bbox_inches='tight', dpi=300)
+        number_of_rounds = sum([1 if '{}{}'.format(self.session.vars['company_names'][0], r)
+                                in self.session.vars else 0 for r in range(1, Constants.num_rounds + 2)])
+
+        company_data = {}
+        price_table = []
+
+        for idx, name in enumerate(self.session.vars['company_names']):
+            company_data[name] = {}
+
+            prices = [self.session.vars['{}{}'.format(name, r)][0]
+                      for r in range(1, number_of_rounds)]
+
+            # Ugly hack because the shape of session.vars changes throughout the game
+            # The whole session.vars object needs to be rewritten from scratch
+            # And should probably be stored on models instead of session vars
+            try:
+                prices += [self.session.vars['{}{}'.format(
+                    name, number_of_rounds)][0]]
+            except:
+                prices += [self.session.vars['{}{}'.format(
+                    name, number_of_rounds)]]
+
+            company_data[name]['stock_price'] = prices
+            company_data[name]['state'] = self.session.vars['company_states'][idx]
+
+            # Hack to remove ' or the template will escape early in JSON.parse('{{ graph_data | safe }}'
+            price_table += [{'name': name.replace("'", ""),
+                             'values': [float(p) for i, p in enumerate(prices)]}]
 
         names = self.session.vars['company_names']
         states = self.session.vars['company_states']
         choices = [[self.session.vars['{}{}'.format(name, r)][3]
-                    for r in range(1, tmp0)] for name in names]
+                    for r in range(1, number_of_rounds)] for name in names]
         drawn_faces = [[self.session.vars['{}{}'.format(name, r)][2]
-                    for r in range(1, tmp0)] for name in names]
-        round_list = [r for r in range(1, tmp0 + 1)]
+                        for r in range(1, number_of_rounds)] for name in names]
+        round_list = [r for r in range(1, number_of_rounds + 1)]
 
         rankings = []
         if 'profit' in self.session.vars:
@@ -139,7 +137,18 @@ class Subsession(BaseSubsession):
             for p in self.get_players():
                 rankings.append((p.id_in_group, 0))
 
-        return dict(company=list(zip(names, states, choices, drawn_faces)), round_list=round_list, faces=drawn_faces, rankings=sorted(rankings, key=lambda x: x[1], reverse=True))
+        return {
+            'company': list(zip(names, states, choices, drawn_faces)),
+            'round_list': round_list,
+            'faces': drawn_faces,
+            'rankings': sorted(rankings, key=lambda x: x[1], reverse=True),
+            'tilstand': states,
+            'graph_data': json.dumps({
+                'y': 'Priser',
+                'series': price_table,
+                'rounds': round_list
+            })
+        }
 
 
 class Group(BaseGroup):
