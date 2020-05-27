@@ -151,7 +151,14 @@ class Subsession(BaseSubsession):
         }
 
 
+class Group(BaseGroup):
+    pass
+
+
+class Player(BasePlayer):
+    wallet = models.CurrencyField()
     company_name = models.StringField()
+    company_state = models.StringField()
     # number_of_glad_faces = models.PositiveIntegerField()
     drawn_face = models.BooleanField()
     choice_of_trade = models.IntegerField(
@@ -163,8 +170,7 @@ class Subsession(BaseSubsession):
     )
     price = models.CurrencyField()
     price_change = models.CurrencyField()
-    choice_of_number_of_shares = models.PositiveIntegerField(
-        default=0, max=1000)
+    choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000)
     can_buy = models.PositiveIntegerField()
     tjent_ialt = models.CurrencyField()
 
@@ -209,11 +215,9 @@ class Subsession(BaseSubsession):
 
             # calculate price change and add up
             if previous_choice_of_trade == 1:
-                price_change += Constants.price_change_per_share * \
-                    previous_choice_of_number_of_shares
+                price_change += Constants.price_change_per_share * previous_choice_of_number_of_shares
             else:
-                price_change -= Constants.price_change_per_share * \
-                    previous_choice_of_number_of_shares
+                price_change -= Constants.price_change_per_share * previous_choice_of_number_of_shares
             self.price = self.old_share_price() + price_change * self.old_share_price()
         return self.price
 
@@ -223,8 +227,7 @@ class Subsession(BaseSubsession):
         else:
             # retrieve actions from previous round:
             previous_price = self.in_round(self.round_number - 1).price
-            previous_choice_of_number_of_shares = self.in_round(
-                self.round_number - 1).choice_of_number_of_shares
+            previous_choice_of_number_of_shares = self.in_round(self.round_number - 1).choice_of_number_of_shares
             self.wallet = self.in_round(
                 self.round_number - 1).wallet - previous_price * previous_choice_of_number_of_shares
         return self.wallet
@@ -264,9 +267,9 @@ class Subsession(BaseSubsession):
         for idp, p in enumerate(self.in_all_rounds()):
             if p.choice_of_trade == 1:
                 self.session.vars['profit'].append((self.closing_price(p.company_name)
-                                                    - p.price) * p.choice_of_number_of_shares)
+                                                        - p.price) * p.choice_of_number_of_shares)
             else:
                 self.session.vars['profit'].append(-(self.closing_price(p.company_name)
-                                                     - p.price) * p.choice_of_number_of_shares)
+                                                         - p.price) * p.choice_of_number_of_shares)
         self.tjent_ialt = sum(self.session.vars['profit'])
         return self.session.vars['profit']
