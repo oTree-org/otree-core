@@ -529,8 +529,7 @@
 
   .report-info {
     #tableReport {
-      display: inline-table;
-
+    display: block;
       .daytrader-table-header {
         font-size: 20px;
       }
@@ -546,6 +545,17 @@
 
     .graph-image {
       margin-top: 5%;
+    }
+
+    .ranking-container {
+      #rankingTable {
+        .table-ranking-header {
+          font-size: 18px;
+        }
+        .table-ranking-data {
+          font-size: 17px;
+        }
+      }
     }
   }
 

@@ -60,7 +60,6 @@
                 {% for state in valg %}
                     <td class="daytrader-table-data get-col">
                         <div class="face-container">
-
                             {% if state == 1 %}
                                 <img src="{% static 'daytrader/media/green-plus.svg' %}" alt="green plus"
                                      class="company-face">
@@ -77,24 +76,24 @@
 
     </table>
 
-    <div>
+    <div class="ranking-container">
     <h2 class="rapport-header ">Topscorerliste</h2>
 
 
 
-    <table class="table results-table table-responsive">
-            <tr>
-                <th> </th>
-                <th> spiller <br> nr. </th>
-                <th> tjent <br> ialt </th>
+    <table class="table table-responsive" id="rankingTable">
+        <tr class="table-corners">
+            <th class="table-ranking-header border-corner-left"></th>
+            <th class="table-ranking-header"> spiller nr.</th>
+            <th class="table-ranking-header border-corner-right"> tjent i alt</th>
+        </tr>
+        {% for ranking in rankings %}
+            <tr class="table-ranking-row">
+                <td class="table-ranking-data"><strong>{{ forloop.counter }}</strong></td>
+                <td class="table-ranking-data"> {{ ranking.0 }} </td>
+                <td class="table-ranking-data"> {{ ranking.1 }} </td>
             </tr>
-            {% for ranking in rankings %}
-            <tr>
-                <td> <strong>{{ forloop.counter }}</strong> </td>
-                <td> {{ ranking.0 }} </td>
-                <td> {{ ranking.1 }} </td>
-            </tr>
-            {% endfor %}
+        {% endfor %}
     </table>
 
 
@@ -110,6 +109,7 @@
     let drawn_faces = {{ faces|json }};
     let faces = []
     let faceContainer = document.getElementsByClassName("face-container");
+    let tableData = document.getElementsByClassName("daytrader-table-data");
 
     drawn_faces.map(item => {
         item.map(element => {
@@ -139,12 +139,14 @@
         }
     }
 
-    if (rowCount > 3) {
-        rowLength.deleteCell(-1);
-    }
-
     for (let item = 0; item < tableHeaders.length; item++) {
-        tableHeaders[tableHeaders.length - 1].style.borderRadius = "0 10px 10px 0";
+
+        if (item > 2) {
+            tableHeaders[tableHeaders.length - 1].style.display = "none";
+            tableHeaders[tableHeaders.length - 2].style.borderRadius = "0 10px 10px 0";
+        } else {
+            tableHeaders[tableHeaders.length - 1].style.borderRadius = "0 10px 10px 0";
+        }
     }
 </script>
 

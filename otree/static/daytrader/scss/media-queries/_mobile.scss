@@ -99,10 +99,11 @@
     .daytrader-table {
       border-collapse: separate;
       border-spacing: 0 0.5em;
-         td {
-          padding: 15px 6px 15px 0;
-          vertical-align: middle;
-        }
+
+      td {
+        padding: 15px 6px 15px 0;
+        vertical-align: middle;
+      }
 
       .border-corner-left {
         border-radius: 10px 0 0 10px;
@@ -476,4 +477,24 @@
     }
   }
 
+  .report-info {
+    .rapport-header {
+      color: black;
+    }
+
+    .ranking-container {
+      #rankingTable {
+        .table-ranking-header {
+          font-size: 15px;
+        }
+
+        .table-ranking-data {
+          color: black;
+          font-size: 14px;
+        }
+
+
+      }
+    }
+  }
 }

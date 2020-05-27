@@ -1292,6 +1292,46 @@
   .intro-2 button.start-game .button-text:hover {
     background-color: #5f861e;
   }
+
+  .report-info .report-table-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #901A1E;
+  }
+  .report-info .report-table-container #badInfluenceTableReport {
+    width: 90%;
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-header {
+    background: #901A1E;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+  }
+  .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-data {
+    font-size: 26px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
 }
 @media (min-width: 1024px) {
   /*******************************
@@ -1703,6 +1743,7 @@
     color: #901A1E;
   }
   .report-table-container #badInfluenceTableReport {
+    width: 80%;
     display: inline-table;
     border-collapse: separate;
     border-spacing: 0 0.5rem;
