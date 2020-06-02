@@ -9,11 +9,9 @@ from string import ascii_lowercase, digits
 from django.contrib.auth.models import User
 
 
-
-
 class Room:
     def __init__(
-        self, name, display_name, use_secure_urls=False, participant_label_file=None
+            self, name, display_name, use_secure_urls=False, participant_label_file=None
     ):
         self.name = validate_alphanumeric(
             name, identifier_description='settings.ROOMS room name'
@@ -35,8 +33,8 @@ class Room:
         try:
             return (
                 RoomToSession.objects.select_related('session')
-                .get(room_name=self.name)
-                .session
+                    .get(room_name=self.name)
+                    .session
             )
         except RoomToSession.DoesNotExist:
             return None
@@ -71,7 +69,6 @@ class Room:
         participant_urls = []
         room_base_url = reverse('AssignVisitorToRoom', args=(self.name,))
         room_base_url = request.build_absolute_uri(room_base_url)
-
 
         if self.has_participant_labels():
 

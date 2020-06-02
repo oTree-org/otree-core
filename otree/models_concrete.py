@@ -4,6 +4,16 @@ from typing import Iterable
 
 from django.db import models
 
+from django.contrib.auth.models import User
+from otree.db import models as otreemodels
+from django.db import models
+
+
+class RoomsTest(models.Model):
+    """Rooms models class for creating rooms"""
+    room_name = otreemodels.StringField(max_length=100)
+    teacher = models.ForeignKey(User, db_column="user", on_delete=models.CASCADE)
+
 
 class PageCompletion(models.Model):
     class Meta:
@@ -180,3 +190,4 @@ def _add_time_spent_waiting_inner(
             total += time.time() - enter_time
         participant._is_frozen = False
         participant.waiting_seconds = int(total)
+
