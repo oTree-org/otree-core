@@ -6,6 +6,7 @@ import json
 from bad_influence.models import Player, Group, Constants, Message, Subsession
 import datetime
 from asgiref.sync import async_to_sync
+from django.shortcuts import get_object_or_404
 
 
 class NetworkVoting(AsyncJsonWebsocketConsumer):
@@ -133,10 +134,11 @@ class ChatConsumer(WebsocketConsumer):
                 # if each message in the database's group id is not equal to the data's group id delete the messages
                 # which group id is not equal to the data's group id
                 if message.group_id != data['group_id']:
-                    Message.objects.get(pk=message.id).delete()
+                    # Message.objects.get(pk=message.id).delete()
+                    get_object_or_404(Message, pk=message.id).delete()
 
         # Get the last 15 messages from the database
-        messages = Message.last_15_messages()
+        messages = Message.last_30_messages()
         # Issues the command 'messages' for fetching the last 15 messages and turns them into JSON
         content = {
             'command': 'messages',
@@ -207,6 +209,7 @@ class ChatConsumer(WebsocketConsumer):
 
         # Accepts an incoming socket
         self.accept()
+        print("Connected to socket")
 
     # Function called when the Socket disconnects / the socket's connection is closed.
     def disconnect(self, close_code):
@@ -215,6 +218,8 @@ class ChatConsumer(WebsocketConsumer):
             self.room_name,
             self.channel_name
         )
+
+        print("Disconnected from socket.")
 
     # Call the websocket_receive function which is called when a WebSocket frame is received,
     # decodes it and calls receive()
@@ -234,6 +239,8 @@ class ChatConsumer(WebsocketConsumer):
                 'message': message
             }
         )
+
+        print("Chat message sent from socket to each network.")
 
     # Converts the message into JSON and sends it
     def send_message(self, message):

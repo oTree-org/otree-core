@@ -11,70 +11,71 @@
 {% endblock %}
 
 {% block content %}
-<div class="game-container container">
-    <div class="round-introduction">
-        <h2 class="round-title">{{ question.title }}</h2>
-        <div class="round-info">
-            <!-- Sådan spiller du -->
-            <p>{{ question.text }}</p>
-            <p>{{ question.challenge }}</p>
-            <p>{{ question.preference }}</p>
+    <div class="game-container container">
+        <div class="round-introduction">
+            <h2 class="round-title">{{ question.title }}</h2>
+            <div class="round-info">
+                <!-- Sådan spiller du -->
+                <p>{{ question.text }}</p>
+                <p>{{ question.challenge }}</p>
+                <p>{{ question.preference }}</p>
+
+            </div>
+        </div>
+        <div class="surround">
+            <div class="game-row">
+                <!-- Left hand side-->
+                <div class="svg-column">
+                    <div class="answer-container" id="d3container">
+                        <div id="timer-text">
+                            Tid tilbage:
+                            <strong><span id="timer" class="otree-timer__time-left"></span></strong>
+                        </div>
+                    </div>
+
+                    <div id="ButtonsHolder" class="choice-button-holder">
+                        <button id="GuessFalseButton" type="button" name="choice" value="False"
+                                class="btn choice-button">
+                            <div class="mobile-column tablet-row">
+                                <img src="{{ question.majority_color_img }}"><b> {{ question.majority_choice }}</b>
+                            </div>
+                        </button>
+
+                        <button id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
+                            <div class="mobile-column tablet-row">
+                                <img src="{{ question.minority_color_img }}"> <b>{{ question.minority_choice }}</b>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+
+                <!-- Right hand side -->
+                <div id="chat-container">
+                    <div class="chat-title">
+                        <h2>Chat med dine venner</h2>
+                    </div>
+
+                    <div class="form-group chat">
+                        <div id="chat" type="text-area"></div>
+                    </div>
+                    <div class="form-group message">
+                        <input type="text" id="message" placeholder="Send besked..." class="form-control">
+                    </div>
+                    <div class="form-group send">
+                        <button type="button" id="send" class="btn btn-success">Send</button>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
-<div class="surround">
-<div class="game-row">
-        <!-- Left hand side-->
-    <div class="svg-column">
-      <div class="answer-container" id="d3container">
-        <div id="timer-text">
-            Tid tilbage:
-            <strong><span id="timer" class="otree-timer__time-left"></span></strong>
-        </div>
-        </div>
-
-      <div id="ButtonsHolder" class="choice-button-holder">
-        <button id="GuessFalseButton" type="button" name="choice" value="False" class="btn choice-button">
-             <div class="mobile-column tablet-row">
-                  <img src="{{ question.majority_color_img }}"><b> {{ question.majority_choice }}</b>
-             </div>
-        </button>
-
-        <button id="GuessTrueButton" type="button" name="choice" value="True" class="btn choice-button">
-             <div class="mobile-column tablet-row">
-           <img src="{{ question.minority_color_img }}">  <b>{{ question.minority_choice }}</b>
-                 </div>
-        </button>
-        </div>
-    </div>
-
-
-      <!-- Right hand side -->
-    <div id="chat-container">
-        <div class="chat-title">
-            <h2>Chat med dine venner</h2>
-        </div>
-
-        <div class="form-group chat">
-            <div id="chat" type="text-area"></div>
-        </div>
-        <div class="form-group message">
-            <input type="text" id="message" placeholder="Send besked..." class="form-control">
-        </div>
-        <div class="form-group send">
-            <button type="button" id="send" class="btn btn-success">Send</button>
-        </div>
-    </div>
-</div>
-
-</div>
-</div>
 
 
     <script>
-    // We want to randomise whether the button for the majority choice is on the left or the right
-    // so that players can't catch on an tell which is the majority for the button position
-    $('#ButtonsHolder').css('flex-direction', Math.random() > 0.5 ? 'row' : 'row-reverse');
+        // We want to randomise whether the button for the majority choice is on the left or the right
+        // so that players can't catch on an tell which is the majority for the button position
+        $('#ButtonsHolder').css('flex-direction', Math.random() > 0.5 ? 'row' : 'row-reverse');
 
         $('#timer').on('DOMSubtreeModified', function () {
             let element = $('#timer');
@@ -104,6 +105,8 @@
         // Instantiates the WebSocket with the WebSocket route and scheme as argument
         let socket = new WebSocket(ws_path);
 
+        let chat = document.querySelector("#chat");
+
         // Function that adds the player id to each message
         const mapFriends = () => {
             let friends = {{ player.get_friends }};
@@ -129,8 +132,6 @@
             console.log('WebSocket opened');
             // Sends a message to the socket to fetch all messages from the database
             fetchMessages();
-            // Displays the correct messages based on the player's network
-            displayFriends();
         };
 
         // Closes the WebSocket connection and logs a message in the console when it closes
@@ -147,25 +148,29 @@
         socket.onmessage = event => {
             // Parses the JSON data into JavaScript
             let data = JSON.parse(event.data);
-
+            console.log(data);
             // If the received data's command is 'messages' loop through the data, use the createMessage command to
             // create the messages in the chat log
             if (data['command'] === 'messages') {
                 for (let i = 0; i < data['messages'].length; i++) {
                     let data_player = "player_" + data['messages'][i]['chat_id'];
+                    console.log(data_player);
                     if (players.includes(data_player)) {
                         createMessage(data['messages'][i]);
+                        chat.scrollTop = chat.scrollHeight;
                     }
                 }
                 // If the data's command is 'new_message' use the createMessage function to create a new chat message and
                 // add it to the chat log
             } else if (data['command'] === 'new_message') {
-                createMessage(data['message']);
+                let data_player = "player_" + data['message']['chat_id'];
+                if (players.includes(data_player)) {
+                    createMessage(data['message']);
+                    chat.scrollTop = chat.scrollHeight;
+                }
             }
 
-            // Displays the correct messages based on the player's network
             displayFriends();
-
         };
 
         // Adds an event listener on the chat's input field
@@ -210,17 +215,19 @@
 
             // Loops through all the chat message, gets their id and appends it to the network array
             for (let i = 0; i < chat_class.length; i++) {
-                network.push(chat_class[i].getAttribute('id'));
+                if (!network.includes(chat_class[i].getAttribute('id'))) {
+                    network.push(chat_class[i].getAttribute('id'))
+                }
             }
 
             // Loops through all players in the network
             for (let player in network) {
                 // If the players in the network are included in the players array display the friends who are in that
                 // array. If not don't display them.
-                if (players.includes(network[player])) {
-                    document.getElementById(network[player]).style.display = 'flex';
-                } else {
+                if (!players.includes(network[player])) {
                     document.getElementById(network[player]).style.display = 'none';
+                } else {
+                    document.getElementById(network[player]).style.display = 'flex';
                 }
             }
         };
@@ -253,6 +260,7 @@
             divElement.setAttribute('id', `player_${data.chat_id}`)
             // Appends each chat message to the chat log
             document.querySelector("#chat").appendChild(divElement);
+
         }
 
         // Sends a message to the WebSocket to fetch the last 15 messages from the Database

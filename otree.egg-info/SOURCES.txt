@@ -161,6 +161,7 @@ otree/oTree/venv/Lib/site-packages/attr/converters.pyi
 otree/oTree/venv/Lib/site-packages/attr/exceptions.pyi
 otree/oTree/venv/Lib/site-packages/attr/filters.pyi
 otree/oTree/venv/Lib/site-packages/attr/validators.pyi
+otree/oTree/venv/Lib/site-packages/~tree/api.pyi
 otree/project_template/.gitignore
 otree/project_template/Procfile
 otree/project_template/manage.py
@@ -180,9 +181,9 @@ otree/static/bad_influence/scss/media-queries/_xs_mobile.scss
 otree/static/daytrader/AnnieUseYourTelescope-Regular.ttf
 otree/static/daytrader/css/styles.css
 otree/static/daytrader/css/styles.css.map
-otree/static/daytrader/media/Tegnebræt 6kupng.png
 otree/static/daytrader/media/blue_peep.png
 otree/static/daytrader/media/closed_eyes.png
+otree/static/daytrader/media/green-plus.svg
 otree/static/daytrader/media/green_peep.png
 otree/static/daytrader/media/grey_peep.png
 otree/static/daytrader/media/happy_eyes.png
@@ -193,12 +194,13 @@ otree/static/daytrader/media/open_eyes.png
 otree/static/daytrader/media/peeps.png
 otree/static/daytrader/media/pink_peep.png
 otree/static/daytrader/media/red_peep.png
-otree/static/daytrader/media/sack-with-peepsbackground.svg
 otree/static/daytrader/media/sad.png
 otree/static/daytrader/media/sad_face_daytrader.png
-otree/static/daytrader/media/stregmand-pengebackground.svg
-otree/static/daytrader/media/test.svg
+otree/static/daytrader/media/unknown-face-green.png
+otree/static/daytrader/media/unknown-face-green.svg
 otree/static/daytrader/media/unknown_face_daytrader.png
+otree/static/daytrader/media/unknown_face_daytrader.svg
+otree/static/daytrader/media/yellow-minus.svg
 otree/static/daytrader/media/yellow_peep.png
 otree/static/daytrader/scss/styles.scss
 otree/static/daytrader/scss/media-queries/_desktop.scss
@@ -282,6 +284,8 @@ otree/static/main_platform/otree/media/peeps/yellow_peep.png
 otree/static/main_platform/otree/media/sack-images/sack-empty-money.svg
 otree/static/main_platform/otree/media/sack-images/sack-empty.svg
 otree/static/main_platform/otree/media/sack-images/sack-questionmark-moneybackground.svg
+otree/static/main_platform/otree/media/sack-images/sack-questionmark.svg
+otree/static/main_platform/otree/media/sack-images/sack-questionmark_1.svg
 otree/static/main_platform/otree/media/sack-images/sack-questionmarkbackground.svg
 otree/static/main_platform/otree/media/sack-images/sack-with-2-peeps.svg
 otree/static/main_platform/otree/media/sack-images/sack-with-2-peepsbackground.svg
