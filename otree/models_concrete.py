@@ -2,18 +2,22 @@ import time
 from collections import defaultdict
 from typing import Iterable
 
-from django.db import models
-
 from django.contrib.auth.models import User
 from otree.db import models as otreemodels
 from django.db import models
 
-
+"""
 class RoomsTest(models.Model):
-    """Rooms models class for creating rooms"""
-    room_name = otreemodels.StringField(max_length=100)
-    teacher = models.ForeignKey(User, db_column="user", on_delete=models.CASCADE)
+ Rooms models class for creating rooms
+    room_name = otreemodels.StringField(max_length=100, null=False)
+    teacher = models.ForeignKey(User, db_column="user", on_delete=models.CASCADE, null=False)
 
+    class Meta:
+        verbose_name_plural = "Klasserum"
+
+    def __str__(self):
+        return f'{self.room_name}'
+"""
 
 class PageCompletion(models.Model):
     class Meta:

@@ -13,7 +13,6 @@ from otree.session import SESSION_CONFIGS_DICT
 
 class Rooms(vanilla.TemplateView):
     template_name = 'otree/admin/Rooms.html'
-
     url_pattern = r"^rooms/$"
 
     def get_context_data(self, **kwargs):

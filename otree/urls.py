@@ -1,6 +1,7 @@
 from django.conf.urls.static import static
 from django.http import HttpResponseRedirect
 # from django.http.response import HttpResponseRedirect
+from django.views.generic.edit import FormMixin
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 from otree import common
 
@@ -15,6 +16,7 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib import admin
 from django.conf.urls.static import static
+
 
 ALWAYS_UNRESTRICTED = {
     'AssignVisitorToRoom',
@@ -142,6 +144,7 @@ class HomeView(vanilla.TemplateView):
 
 class GamesView(vanilla.TemplateView):
     template_name = 'otree/games.html'
+
 
 
 def get_urlpatterns():

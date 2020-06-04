@@ -36,7 +36,23 @@ from otree.views.abstract import AdminSessionPageMixin
 from django.db.models import Case, Value, When
 from django.contrib.auth.models import User
 from django.http import HttpResponse
-from xhtml2pdf import pisa
+
+"""
+class CreateRoomForm(forms.ModelForm):
+    room_name = forms.CharField(required=True, widget=forms.TextInput(attrs={
+        'spellcheck': "false",
+        "class": "room_name_input",
+        'placeholder': "Navngiv dit klasserum"}),
+    )
+
+    class Meta:
+        model = RoomsTest
+        fields = ["room_name"]
+
+    def __str__(self):
+        return self.room_name
+
+"""
 
 
 def pretty_name(name):
@@ -313,7 +329,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 num_participants=len(session_start_urls),
                 splitscreen_mode_on=len(session_start_urls) <= 3,
                 users=users,
-
 
             )
 
