@@ -31,7 +31,6 @@
 
         socket.onmessage = event => {
             let date = new Date();
-            console.log(event, date.getTime());
             let obj = JSON.parse(event.data).message;
             let new_consensus = (obj.consensus * 100).toFixed(0) + "%";
             $consensus_bar.html(new_consensus);

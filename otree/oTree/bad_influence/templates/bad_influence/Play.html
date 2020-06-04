@@ -129,32 +129,24 @@
 
         // Opens the WebSocket connection and logs a message in the console when it opens
         socket.onopen = event => {
-            console.log('WebSocket opened');
             // Sends a message to the socket to fetch all messages from the database
             fetchMessages();
         };
 
-        // Closes the WebSocket connection and logs a message in the console when it closes
-        socket.onclose = event => {
-            console.log("WebSocket closed");
-        }
-
         // Logs a error if the WebSocket gets a connection error in the console
         socket.onerror = event => {
-            console.error("WebSocket error observed:", event);
+            console.error("Error observed:", event);
         };
 
         // When the socket receives a message
         socket.onmessage = event => {
             // Parses the JSON data into JavaScript
             let data = JSON.parse(event.data);
-            console.log(data);
             // If the received data's command is 'messages' loop through the data, use the createMessage command to
             // create the messages in the chat log
             if (data['command'] === 'messages') {
                 for (let i = 0; i < data['messages'].length; i++) {
                     let data_player = "player_" + data['messages'][i]['chat_id'];
-                    console.log(data_player);
                     if (players.includes(data_player)) {
                         createMessage(data['messages'][i]);
                         chat.scrollTop = chat.scrollHeight;
@@ -244,7 +236,7 @@
             // if the data's chat_id is equal to the player's id in the group, display (Dig) after the Player's name in
             // the frontend. If not just display the Player's name
             if (data.chat_id === {{ player.id_in_group }}) {
-                bElement.textContent = "Spiller " + data.chat_id + "(Dig):";
+                bElement.textContent = "Spiller " + data.chat_id + " (Dig):";
             } else {
                 bElement.textContent = "Spiller " + data.chat_id + ":";
             }
