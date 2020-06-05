@@ -1,0 +1,32 @@
+{% load otree static %}
+{% load i18n %}
+{% block styles %}
+    <style>
+        body {
+            background-color: deeppink;
+            background-repeat: no-repeat;
+              background-size: 100%, 100%;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+        }
+    </style>
+{% endblock %}
+
+<!-- Game/session view as active or admin with settings/config-->
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+<div>
+<p>MIT rum - admin</p>
+</div>
+
+<!-- Game/session creation without login -->
+{% else %}
+
+<div>
+<p>MIT rum - no authentication</p>
+
+</div>
+
+{% endif %}
+
+

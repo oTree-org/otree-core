@@ -1,16 +1,50 @@
 import time
 
 import vanilla
-from django.urls import reverse
+from django.contrib.auth.models import User
+from django.urls import reverse, reverse_lazy, path
 from django.http import HttpResponseRedirect, JsonResponse
+from django.views.generic.edit import FormMixin, ModelFormMixin
+
+from otree import views
 from otree.channels import utils as channel_utils
-from otree.models_concrete import ParticipantRoomVisit
+from otree.models_concrete import ParticipantRoomVisit, RoomsTest
 from otree.room import ROOM_DICT
-from otree.views.admin import CreateSessionForm
-from django.shortcuts import redirect
+from otree.views.admin import CreateSessionForm, CreateRoomForm
+from django.shortcuts import redirect, render, get_object_or_404
 from otree.session import SESSION_CONFIGS_DICT
 
+## TODO - CREATE LISTVIEW FOR "MINE RUM"
 
+
+class CreateRoom(vanilla.CreateView):
+    template_name = 'otree/admin/CreateRoom.html'
+    model = RoomsTest
+    form_class = CreateRoomForm
+    queryset = RoomsTest.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super(CreateRoom, self).get_context_data(**kwargs)
+        context["teacher"] = User.objects.get(username=self.request.user)
+        return context
+
+    def form_valid(self, form):
+        form.instance.teacher = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("view_room_with_pk", kwargs={'id': self.object.id})
+
+
+class RoomDetailView(vanilla.DetailView):
+    template_name = "otree/admin/RoomDetail.html"
+
+    def get_object(self):
+        id_ = self.kwargs.get("id")
+        return get_object_or_404(RoomsTest, id=id_)
+
+
+# This class Rooms, doesthe same as making a listView of all the rooms but not per teacher as this is defined in settings.py
 class Rooms(vanilla.TemplateView):
     template_name = 'otree/admin/Rooms.html'
     url_pattern = r"^rooms/$"
@@ -85,7 +119,6 @@ class CloseRoom(vanilla.View):
 
 
 class StaleRoomVisits(vanilla.View):
-
     url_pattern = r'^StaleRoomVisits/(?P<room>\w+)/$'
 
     def get(self, request, room):
@@ -101,7 +134,6 @@ class StaleRoomVisits(vanilla.View):
 
 
 class ActiveRoomParticipantsCount(vanilla.View):
-
     url_pattern = r'^ActiveRoomParticipantsCount/(?P<room>\w+)/$'
 
     def get(self, request, room):

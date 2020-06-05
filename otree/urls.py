@@ -1,9 +1,10 @@
 from django.conf.urls.static import static
 from django.http import HttpResponseRedirect
 # from django.http.response import HttpResponseRedirect
+from django.urls import path
 from django.views.generic.edit import FormMixin
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
-from otree import common
+from otree import common, views
 
 import inspect
 import vanilla
@@ -17,6 +18,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import admin
 from django.conf.urls.static import static
 
+from otree.views.room import CreateRoom, RoomDetailView
 
 ALWAYS_UNRESTRICTED = {
     'AssignVisitorToRoom',
@@ -153,6 +155,9 @@ def get_urlpatterns():
                       urls.url(r'^spil/', GamesView.as_view(), name='games'),
                       urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
                       urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
+                      #urls.url(r'^create_room/$', CreateRoom.as_view(), name='create_room'),
+                      path('create_room/', CreateRoom.as_view(), name='create_room'),
+                      path('mit_klasserum/<int:id>/', RoomDetailView.as_view(), name='view_room_with_pk'),
                       urls.url(r'^home/$', HomeView.as_view(), name='home'),
                       urls.url(r'^admin/', admin.site.urls),
                   ]
