@@ -3,20 +3,29 @@ from collections import defaultdict
 from typing import Iterable
 
 from django.contrib.auth.models import User
+from django.template.defaultfilters import slugify
+
 from otree.db import models as otreemodels
 from django.db import models
+from unidecode import unidecode
 
 
 class RoomsTest(models.Model):
     """Rooms models class for creating rooms"""
     room_name = otreemodels.StringField(max_length=100, null=False)
+    slug = models.SlugField(max_length=100)
     teacher = models.ForeignKey(User, db_column="username", on_delete=models.CASCADE, null=False)
 
     class Meta:
         verbose_name_plural = "Klasserum"
+        index_together = ('room_name', 'slug')
 
     def __str__(self):
         return f'{self.room_name}'
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify(unidecode(self.room_name))
+        super(RoomsTest, self).save(*args, **kwargs)
 
 
 class PageCompletion(models.Model):

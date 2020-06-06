@@ -157,7 +157,7 @@ def get_urlpatterns():
                       urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
                       #urls.url(r'^create_room/$', CreateRoom.as_view(), name='create_room'),
                       path('create_room/', CreateRoom.as_view(), name='create_room'),
-                      path('mit_klasserum/<int:id>/', RoomDetailView.as_view(), name='view_room_with_pk'),
+                      path('mit_klasserum/<slug:slug>/', RoomDetailView.as_view(), name='view_room_with_pk'),
                       urls.url(r'^home/$', HomeView.as_view(), name='home'),
                       urls.url(r'^admin/', admin.site.urls),
                   ]

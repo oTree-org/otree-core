@@ -33,15 +33,15 @@ class CreateRoom(vanilla.CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy("view_room_with_pk", kwargs={'id': self.object.id})
+        return reverse_lazy("view_room_with_pk", kwargs={'slug': self.object.slug})
 
 
 class RoomDetailView(vanilla.DetailView):
     template_name = "otree/admin/RoomDetail.html"
 
     def get_object(self):
-        id_ = self.kwargs.get("id")
-        return get_object_or_404(RoomsTest, id=id_)
+        slug_ = self.kwargs.get("slug")
+        return get_object_or_404(RoomsTest, slug=slug_)
 
 
 # This class Rooms, doesthe same as making a listView of all the rooms but not per teacher as this is defined in settings.py
@@ -50,7 +50,13 @@ class Rooms(vanilla.TemplateView):
     url_pattern = r"^rooms/$"
 
     def get_context_data(self, **kwargs):
-        return {'rooms': ROOM_DICT.values()}
+        context = super(Rooms, self).get_context_data(**kwargs)
+        context["show_rooms"] = RoomsTest.objects.all()
+        return context
+
+
+    """def get_context_data(self, **kwargs):
+        return {'rooms': ROOM_DICT.values()}"""
 
 
 class RoomWithoutSession(vanilla.TemplateView):
@@ -58,7 +64,6 @@ class RoomWithoutSession(vanilla.TemplateView):
 
     template_name = 'otree/admin/RoomWithoutSession.html'
     room = None
-
     url_pattern = r"^room_without_session/(?P<room_name>.+)/$"
 
     def dispatch(self, request, room_name):
@@ -82,29 +87,6 @@ class RoomWithoutSession(vanilla.TemplateView):
     def socket_url(self):
         return channel_utils.room_admin_path(self.room.name)
 
-
-class RoomWithSession(vanilla.TemplateView):
-    template_name = 'otree/admin/RoomWithSession.html'
-    room = None
-
-    url_pattern = r"^room_with_session/(?P<room_name>.+)/$"
-
-    def dispatch(self, request, room_name):
-        self.room = ROOM_DICT[room_name]
-        if not self.room.has_session():
-            return redirect('RoomWithoutSession', room_name)
-        return super().dispatch(request)
-
-    def get_context_data(self, **kwargs):
-        session_code = self.room.get_session().code
-        return super().get_context_data(
-            participant_urls=self.room.get_participant_urls(self.request),
-            room_wide_url=self.room.get_room_wide_url(self.request),
-            session_url=reverse('SessionMonitor', args=[session_code]),
-            room=self.room,
-            collapse_links=True,
-            **kwargs
-        )
 
 
 class CloseRoom(vanilla.View):
@@ -142,3 +124,28 @@ class ActiveRoomParticipantsCount(vanilla.View):
         ).count()
 
         return JsonResponse({'count': count})
+
+
+# Not using this!
+class RoomWithSession(vanilla.TemplateView):
+    template_name = 'otree/admin/RoomWithSession.html'
+    room = None
+
+    url_pattern = r"^room_with_session/(?P<room_name>.+)/$"
+
+    def dispatch(self, request, room_name):
+        self.room = ROOM_DICT[room_name]
+        if not self.room.has_session():
+            return redirect('RoomWithoutSession', room_name)
+        return super().dispatch(request)
+
+    def get_context_data(self, **kwargs):
+        session_code = self.room.get_session().code
+        return super().get_context_data(
+            participant_urls=self.room.get_participant_urls(self.request),
+            room_wide_url=self.room.get_room_wide_url(self.request),
+            session_url=reverse('SessionMonitor', args=[session_code]),
+            room=self.room,
+            collapse_links=True,
+            **kwargs
+        )

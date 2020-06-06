@@ -83,7 +83,7 @@ class Room:
 
 
 def get_room_dict():
-    ROOM_DEFAULTS = getattr(settings, 'ROOM_DEFAULTS', {})
+    ROOM_DEFAULTS = getattr(settings, 'ROOM_DEFAULTS', {}) #what is room defaults?
     ROOMS = getattr(settings, 'ROOMS', [])
     ROOM_DICT = {}
     for room in ROOMS:
