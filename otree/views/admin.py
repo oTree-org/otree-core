@@ -175,9 +175,10 @@ class SessionEditProperties(AdminSessionPageMixin, vanilla.FormView):
         config = session.config
         fields = form.fields
         fields['participation_fee'].initial = config['participation_fee']
-        fields['real_world_currency_per_point'].initial = config[
-            'real_world_currency_per_point'
-        ]
+        if settings.USE_POINTS:
+            fields['real_world_currency_per_point'].initial = config[
+                'real_world_currency_per_point'
+            ]
         fields['label'].initial = session.label
         fields['comment'].initial = session.comment
         if session.mturk_HITId:
