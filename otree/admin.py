@@ -9,7 +9,7 @@ from .models_concrete import User
 
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
-    list_display = ['label']
+    list_display = ['user_id', 'label']
 
 
 @admin.register(User)
