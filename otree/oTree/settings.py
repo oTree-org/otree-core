@@ -71,11 +71,11 @@ LANGUAGE_CODE = 'da'
 TIME_ZONE = 'Europe/Copenhagen'
 USE_TZ = False
 
-ROOMS = [
-    dict(
-        name='live_demo',
-        display_name='Room for live demo (no participant labels)'),
-]
+#ROOMS = [
+ #   dict(
+  #      name='live_demo',
+    #    display_name='Room for live demo (no participant labels)'),
+#]
 
 ADMIN_USERNAME = 'admin'
 # for security, best to set admin password in an environment variable

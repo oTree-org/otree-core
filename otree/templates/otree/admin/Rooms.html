@@ -8,9 +8,9 @@
   <div style="margin: 20% 5% 0 5%;">
 <h4>Current rooms:</h4>
 
-{% for room in show_rooms %}
+{% for room in all_rooms %}
         <h4>
-            <a>{{ room.room_name }}</a>
+            <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>
         </h4>
 {% endfor %}
 

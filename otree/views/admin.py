@@ -30,7 +30,7 @@ from otree.common import (
 )
 from otree.forms import widgets
 from otree.models import Participant, Session
-from otree.models_concrete import BrowserBotsLauncherSessionCode, add_time_spent_waiting, RoomsTest
+from otree.models_concrete import BrowserBotsLauncherSessionCode, add_time_spent_waiting, RoomStorage
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree.views.abstract import AdminSessionPageMixin
 from django.db.models import Case, Value, When
@@ -39,18 +39,18 @@ from django.http import HttpResponse
 
 
 class CreateRoomForm(forms.ModelForm):
-    room_name = forms.CharField(required=True, widget=forms.TextInput(attrs={
+    name = forms.CharField(required=True, widget=forms.TextInput(attrs={
         'spellcheck': "false",
         "class": "room_name_input",
         'placeholder': "Navngiv dit klasserum"}),
     )
 
     class Meta:
-        model = RoomsTest
-        fields = ["room_name"]
+        model = RoomStorage
+        fields = ["name"]
 
     def __str__(self):
-        return self.room_name
+        return self.name
 
 
 def pretty_name(name):

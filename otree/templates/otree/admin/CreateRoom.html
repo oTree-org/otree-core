@@ -28,7 +28,7 @@
 
      <form action="." method="post">
         {% csrf_token %}
-        {{ form.room_name }}
+        {{ form.name }}
         <div>
             <input type="submit" class="btn btn-primary" value="Opret klasserum">
         </div>
@@ -47,7 +47,7 @@
 
     <form action="." method="post">
         {% csrf_token %}
-        {{ form.room_name }}
+        {{ form.name }}
         <div>
             <input type="submit" class="btn btn-primary" value="Opret klasserum">
         </div>

@@ -454,7 +454,7 @@ class RoomAdmin(_OTreeAsyncJsonWebsocketConsumer):
 
     async def post_connect(self, room):
         room_object = ROOM_DICT[room]
-
+        print(room_object)
         now = time.time()
         stale_threshold = now - 15
         present_list = await database_sync_to_async(self.get_list)(

@@ -8,7 +8,7 @@ from django.views.generic.edit import FormMixin, ModelFormMixin
 
 from otree import views
 from otree.channels import utils as channel_utils
-from otree.models_concrete import ParticipantRoomVisit, RoomsTest
+from otree.models_concrete import ParticipantRoomVisit, RoomStorage
 from otree.room import ROOM_DICT
 from otree.views.admin import CreateSessionForm, CreateRoomForm
 from django.shortcuts import redirect, render, get_object_or_404
@@ -19,9 +19,9 @@ from otree.session import SESSION_CONFIGS_DICT
 
 class CreateRoom(vanilla.CreateView):
     template_name = 'otree/admin/CreateRoom.html'
-    model = RoomsTest
+    model = RoomStorage
     form_class = CreateRoomForm
-    queryset = RoomsTest.objects.all()
+    queryset = RoomStorage.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super(CreateRoom, self).get_context_data(**kwargs)
@@ -30,6 +30,7 @@ class CreateRoom(vanilla.CreateView):
 
     def form_valid(self, form):
         form.instance.teacher = self.request.user
+        form.instance.display_name = form.cleaned_data['name']
         return super().form_valid(form)
 
     def get_success_url(self):
@@ -41,7 +42,7 @@ class RoomDetailView(vanilla.DetailView):
 
     def get_object(self):
         slug_ = self.kwargs.get("slug")
-        return get_object_or_404(RoomsTest, slug=slug_)
+        return get_object_or_404(RoomStorage, slug=slug_)
 
 
 # This class Rooms, doesthe same as making a listView of all the rooms but not per teacher as this is defined in settings.py
@@ -51,13 +52,13 @@ class Rooms(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(Rooms, self).get_context_data(**kwargs)
-        context["show_rooms"] = RoomsTest.objects.all()
+        context["all_rooms"] = RoomStorage.objects.all().values()
         return context
 
-
-    """def get_context_data(self, **kwargs):
-        return {'rooms': ROOM_DICT.values()}"""
-
+    """ 
+    def get_context_data(self, **kwargs):
+        return {'all_rooms': ROOM_DICT.values()}
+    """
 
 class RoomWithoutSession(vanilla.TemplateView):
     '''similar to CreateSession view'''
@@ -69,6 +70,7 @@ class RoomWithoutSession(vanilla.TemplateView):
     def dispatch(self, request, room_name):
         self.room_name = room_name
         self.room = ROOM_DICT[room_name]
+
         if self.room.has_session():
             return redirect('RoomWithSession', room_name)
         return super().dispatch(request)
@@ -86,6 +88,38 @@ class RoomWithoutSession(vanilla.TemplateView):
 
     def socket_url(self):
         return channel_utils.room_admin_path(self.room.name)
+
+
+"""class RoomWithoutSession(vanilla.TemplateView):
+    '''similar to CreateSession view'''
+
+    template_name = 'otree/admin/RoomWithoutSession.html'
+    room = None
+
+    url_pattern = r"^room_without_session/(?P<room_name>.+)/$"
+
+    def dispatch(self, request, room_name):
+        self.room_name = room_name
+        self.room = ROOM_DICT[room_name]
+        print(ROOM_DICT)
+        if self.room.has_session():
+            return redirect('RoomWithSession', room_name)
+        return super().dispatch(request)
+
+    def get_context_data(self, **kwargs):
+        return super().get_context_data(
+            configs=SESSION_CONFIGS_DICT.values(),
+            participant_urls=self.room.get_participant_urls(self.request),
+            room_wide_url=self.room.get_room_wide_url(self.request),
+            room=self.room,
+            form=CreateSessionForm(room_name=self.room_name),
+            collapse_links=True,
+            **kwargs
+        )
+
+    def socket_url(self):
+        return channel_utils.room_admin_path(self.room.name)"""
+
 
 
 

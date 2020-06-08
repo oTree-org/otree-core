@@ -10,22 +10,26 @@ from django.db import models
 from unidecode import unidecode
 
 
-class RoomsTest(models.Model):
+class RoomStorage(models.Model):
     """Rooms models class for creating rooms"""
-    room_name = otreemodels.StringField(max_length=100, null=False)
+    name = otreemodels.StringField(max_length=200, null=False)
+    display_name = otreemodels.StringField(max_length=200)
     slug = models.SlugField(max_length=100)
     teacher = models.ForeignKey(User, db_column="username", on_delete=models.CASCADE, null=False)
 
     class Meta:
         verbose_name_plural = "Klasserum"
-        index_together = ('room_name', 'slug')
+        index_together = [
+            ("name", "slug"),
+            ("name", "display_name"),
+        ]
 
     def __str__(self):
-        return f'{self.room_name}'
+        return f'{self.name}'
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(unidecode(self.room_name))
-        super(RoomsTest, self).save(*args, **kwargs)
+        self.slug = slugify(unidecode(self.name))
+        super(RoomStorage, self).save(*args, **kwargs)
 
 
 class PageCompletion(models.Model):

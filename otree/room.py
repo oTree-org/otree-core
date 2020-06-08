@@ -1,5 +1,8 @@
 from pathlib import Path
-from otree.models_concrete import RoomToSession
+
+from django.forms import model_to_dict
+
+from otree.models_concrete import RoomToSession, RoomStorage
 from otree.common import add_params_to_url, make_hash, validate_alphanumeric
 from django.conf import settings
 from django.urls import reverse
@@ -82,16 +85,18 @@ class Room:
         return participant_urls
 
 
+## This new get_ROOM_DICT uses the RoomStorage model where all Rooms are stored according to users
 def get_room_dict():
-    ROOM_DEFAULTS = getattr(settings, 'ROOM_DEFAULTS', {}) #what is room defaults?
-    ROOMS = getattr(settings, 'ROOMS', [])
-    ROOM_DICT = {}
-    for room in ROOMS:
-        # extra layer in case ROOM_DEFAULTS has the same key
-        # as a room
-        room_object = Room(**dict(ROOM_DEFAULTS, **room))
-        ROOM_DICT[room_object.name] = room_object
-    return ROOM_DICT
+        roomModel = list(RoomStorage.objects.values('name', 'display_name'))
+        ROOM_DEFAULTS = getattr(roomModel, 'ROOM_DEFAULTS', {})
+        ROOM_DICT = {}
+
+        for room in roomModel:
+            room_object = Room(**dict(ROOM_DEFAULTS, **room))
+            print(room_object)
+            ROOM_DICT[room_object.name] = room_object
+            print(ROOM_DICT)
+        return ROOM_DICT
 
 
 ROOM_DICT = get_room_dict()
