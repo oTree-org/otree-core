@@ -1,6 +1,6 @@
 import logging
 import time
-from django.contrib.auth.models import User
+from otree.models_concrete import User
 from django.template import TemplateDoesNotExist
 from django.template.loader import select_template
 import otree.common

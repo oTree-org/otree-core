@@ -192,7 +192,7 @@ def ensure_superuser_exists(*args, **kwargs) -> str:
         return EMPTY_ADMIN_USERNAME_MSG
     if not password:
         return EMPTY_ADMIN_PASSWORD_MSG
-    from django.contrib.auth.models import User
+    from otree.models_concrete import User
 
     if User.objects.filter(username=username).exists():
         # msg = 'Default superuser exists.'

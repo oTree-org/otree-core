@@ -22,19 +22,17 @@ TEMPLATES = [
     },
 ]
 
-
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
 sentry_sdk.init(
-            dsn="https://bc756496e8a64eefa6cef54d7899ff0e@o397173.ingest.sentry.io/5251429",
-                integrations=[DjangoIntegration()],
+    dsn="https://bc756496e8a64eefa6cef54d7899ff0e@o397173.ingest.sentry.io/5251429",
+    integrations=[DjangoIntegration()],
 
-                    # If you wish to associate users to errors (assuming you are using
-                        # django.contrib.auth) you may enable sending PII data.
-                            send_default_pii=True
-                            )
-
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)
 
 # if you set a property in SESSION_CONFIG_DEFAULTS, it will be inherited by all configs
 # in SESSION_CONFIGS, except those that explicitly override it.
@@ -100,6 +98,10 @@ INSTALLED_APPS = [
     'daytrader',
 ]
 
+MIDDLEWARE = [
+    'otree.middleware.LoginRequiredMiddleware',
+]
+
 EXTENSION_APPS = [
     'bad_influence',
     'daytrader'
@@ -119,3 +121,34 @@ MEDIA_URL = 'media/'
 
 MEDIA_ROOT = 'bad_influence/static/main_platform'
 DATABASES = {'default': dj_database_url.config(default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'))}
+
+# TODO - Skal ændres til den rigtige mailserver
+EMAIL_HOST = 'send.one.com'
+
+EMAIL_PORT = 587
+
+EMAIL_HOST_USER = 'frederikabruun@pmat.dk'
+
+EMAIL_HOST_PASSWORD = 'Django123456'
+
+EMAIL_USE_TLS = True
+
+DEFAULT_FROM_EMAIL = 'Frederik Bruun <frederikabruun@pmat.dk>'
+
+# Defines the location of the new abstract user class
+AUTH_USER_MODEL = 'otree.User'
+
+LOGIN_EXEMPT_URLS = (
+    r'',
+    r'^spil/$',
+    r'^opret_spil/$',
+    r'^SessionStartLinks/$',
+    r'^password-reset/$',
+    r'^password-reset/done/$',
+    r'^reset-password/([0-9A-Za-z]+)/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
+    r'^reset-password/done/$',
+)
+
+LOGIN_REDIRECT_URL = '/spil/'
+
+LOGIN_URL = '/accounts/login/'

@@ -91,7 +91,7 @@ def url_patterns_from_builtin_module(module_name: str):
             # staff_member_required decorator
             # but then .test_auth_level fails on client.get():
             # NoReverseMatch: 'admin' is not a registered namespace
-           #
+        #
 
         url_pattern = ViewCls.url_pattern
         if callable(url_pattern):
@@ -125,17 +125,6 @@ def extensions_export_urlpatterns():
     return view_urls
 
 
-import django.contrib.auth.views as auth_views
-
-
-class LoginView(auth_views.LoginView):
-    template_name = 'otree/login.html'
-
-
-class LogoutView(auth_views.LogoutView):
-    next_page = 'games'
-
-
 class HomeView(vanilla.TemplateView):
     template_name = 'otree/home.html'
 
@@ -146,13 +135,12 @@ class GamesView(vanilla.TemplateView):
 
 def get_urlpatterns():
     urlpatterns = [
-                      urls.url(r'^$', RedirectView.as_view(url='spil/', permanent=True)),
-                      urls.url(r'^spil/', GamesView.as_view(), name='games'),
-                      urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
-                      urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
-                      urls.url(r'^home/$', HomeView.as_view(), name='home'),
-                      urls.url(r'^admin/', admin.site.urls),
-                  ]
+        urls.url(r'^$', RedirectView.as_view(url='spil/', permanent=True)),
+        urls.url(r'^spil/', GamesView.as_view(), name='games'),
+        urls.url(r'^home/$', HomeView.as_view(), name='home'),
+        urls.url(r'^admin/', admin.site.urls),
+        urls.url(r'^accounts/', urls.include('otree.accounts.urls'))
+    ]
 
     urlpatterns += staticfiles_urlpatterns()
 

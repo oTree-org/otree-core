@@ -1,0 +1,26 @@
+{% extends "otree/BaseAdmin.html" %}
+{% load i18n otree otree_internal %}
+{% block title %}{% trans 'Log in' %}{% endblock %}
+
+{% block content %}
+    <br><br>
+    <div class="container">
+        <h2>Opret Bruger</h2>
+        <form method="post">
+            {% csrf_token %}
+            <p>
+                {{ form.email.label_tag }}
+                {{ form.email }}
+            </p>
+            <p>
+                {{ form.password1.label_tag }}
+                {{ form.password1 }}
+            </p>
+            <p>
+                {{ form.password2.label_tag }}
+                {{ form.password2 }}
+            </p>
+            <button class="btn btn-secondary" type="submit">Opret Bruger</button>
+        </form>
+    </div>
+{% endblock %}
