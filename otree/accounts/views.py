@@ -4,10 +4,11 @@ from django.contrib.auth.views import (
     LoginView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView,
     LogoutView, PasswordChangeView, PasswordChangeForm
 )
-from .forms import RegisterForm
+from .forms import RegisterForm, LoginForm
 from django.shortcuts import HttpResponseRedirect
 from django.contrib.auth import logout
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.hashers import make_password
 
 
 class RegisterView(vanilla.FormView):
@@ -21,7 +22,9 @@ class RegisterView(vanilla.FormView):
 
 
 class Login(LoginView):
+    form_class = LoginForm
     template_name = 'otree/accounts/login.html'
+
 
 def logoutUser(request):
     logout(request)
