@@ -669,6 +669,36 @@
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
+  .report-info .ranking-container {
+    width: 80%;
+  }
+  .report-info .ranking-container #rankingTable {
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    display: inline-table;
+  }
+  .report-info .ranking-container #rankingTable .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .report-info .ranking-container #rankingTable .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-header {
+    background: #41739D;
+    color: white;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+    font-size: 14px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-data {
+    text-align: center;
+    font-size: 13px;
+  }
 
   /* Admin Navbar */
   #admin-panel {
@@ -1107,6 +1137,17 @@
     width: 50px;
     height: 50px;
     align-self: center;
+  }
+
+  .report-info .rapport-header {
+    color: black;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-header {
+    font-size: 15px;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-data {
+    color: black;
+    font-size: 14px;
   }
 }
 @media (min-width: 768px) {
@@ -1554,7 +1595,7 @@
   }
 
   .report-info #tableReport {
-    display: inline-table;
+    display: block;
   }
   .report-info #tableReport .daytrader-table-header {
     font-size: 20px;
@@ -1567,6 +1608,12 @@
   }
   .report-info .graph-image {
     margin-top: 5%;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-header {
+    font-size: 18px;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-data {
+    font-size: 17px;
   }
 
   /* Admin Navbar */
@@ -2203,6 +2250,39 @@
   .report-info .daytrader-table .daytrader-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
+  }
+  .report-info #tableReport {
+    display: inline-table;
+  }
+  .report-info .ranking-container {
+    width: 50%;
+  }
+  .report-info .ranking-container #rankingTable {
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    display: inline-table;
+  }
+  .report-info .ranking-container #rankingTable .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .report-info .ranking-container #rankingTable .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-header {
+    background: #41739D;
+    color: white;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+    font-size: 26px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  .report-info .ranking-container #rankingTable .table-ranking-data {
+    text-align: center;
+    font-size: 20px;
   }
 
   .admin-table-data {

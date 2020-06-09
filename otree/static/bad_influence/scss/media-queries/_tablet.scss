@@ -1,32 +1,32 @@
 @media (min-width: 768px) {
 
 
-/*******************************
-*  Hide otree default message  *
-********************************/
+  /*******************************
+  *  Hide otree default message  *
+  ********************************/
 
-.otree-timer {
-  display: none
-}
+  .otree-timer {
+    display: none
+  }
 
-.otree-title {
-  display: none
-}
+  .otree-title {
+    display: none
+  }
 
-/******************************
-*   Play.html info styling    *
-*******************************/
+  /******************************
+  *   Play.html info styling    *
+  *******************************/
 
-.round-info {
+  .round-info {
     font-size: 20px;
     width: 100%;
     display: flex;
     justify-content: left;
     flex-direction: column;
     text-align: left;
-}
+  }
 
- .round-title {
+  .round-title {
     font-family: "Patrick Hand", cursive;
     font-size: 30px;
     display: flex;
@@ -38,368 +38,371 @@
     color: white;
   }
 
-.game-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 2%;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-  border-radius: 10px;
-  background-color: white;
-  width: 90%;
-}
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    background-color: white;
+    width: 90%;
+  }
 
-.round-introduction {
-  font-family: "Patrick Hand", cursive;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  width: 90%;
-}
+  .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 90%;
+  }
 
 
-/*****************************
-*   Play.html svg styling    *
-*******************************/
-.answer-container {
+  /*****************************
+  *   Play.html svg styling    *
+  *******************************/
+  .answer-container {
     display: flex;
     flex-direction: column;
     position: relative;
     min-height: 300px;
     width: 100%;
 
-  svg {
+    svg {
+      width: 100%;
+    }
+
+  }
+
+  #timer-text {
+    top: 0;
+    left: 8px;
+    font-size: 25px;
+    display: flex;
+    justify-content: center;
+    padding-top: 2%;
+    font-family: "Patrick Hand", cursive;
+
+    #timer {
+      padding-left: 5px;
+    }
+  }
+
+
+  .game-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
     width: 100%;
+    margin-top: 2%;
   }
 
-}
-
-#timer-text {
-  top: 0;
-  left: 8px;
-  font-size: 25px;
-  display: flex;
-  justify-content: center;
-  padding-top: 2%;
-  font-family: "Patrick Hand", cursive;
-
-  #timer {
-    padding-left: 5px;
+  .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 90%;
+    margin-bottom: 5%;
+    border-color: $ku-red;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
   }
-}
 
-
-.game-row {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  width: 100%;
-  margin-top: 2%;
-}
-
-.svg-column {
-  display: flex;
-  justify-content: flex-end;
-  flex-direction: column;
-  width: 90%;
-  margin-bottom: 5%;
-  border-color: $ku-red;
-  border-radius: 2px;
-  border-style: solid solid solid solid;
-}
-
-/*********************************
-*   Play.html timer styling     *
-*********************************/
-.flash {
+  /*********************************
+  *   Play.html timer styling     *
+  *********************************/
+  .flash {
     animation-name: flash;
     animation-duration: 0.2s;
     animation-timing-function: linear;
     animation-iteration-count: infinite;
     animation-direction: alternate;
     animation-play-state: running;
-}
+  }
 
-@keyframes flash {
+  @keyframes flash {
     from {
-        color: red;
+      color: red;
     }
     to {
-        color: black;
+      color: black;
     }
-}
+  }
 
-/***********************************
-*   Play.html chat+svg container  *
-***********************************/
-.surround {
-  width: 100%;
-}
+  /***********************************
+  *   Play.html chat+svg container  *
+  ***********************************/
+  .surround {
+    width: 100%;
+  }
 
-/*********************************
-*   Play.html chat styling      *
-*********************************/
-#chat {
+  /*********************************
+  *   Play.html chat styling      *
+  *********************************/
+  #chat {
     height: 250px;
     scroll-behavior: smooth;
     background: #ebeded;
     border-radius: 5px;
     padding: 15px;
     overflow: auto;
-}
+  }
 
-#chat::-webkit-scrollbar {
+  #chat::-webkit-scrollbar {
     width: 1em;
-}
+  }
 
-#chat::-webkit-scrollbar-track {
+  #chat::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
-}
+  }
 
-#chat::-webkit-scrollbar-thumb {
+  #chat::-webkit-scrollbar-thumb {
     background-color: darkgrey;
     outline: 1px solid slategrey;
     border-radius: 10px;
-}
+  }
 
-.chat-message {
+  .chat-message {
     display: flex;
-}
+  }
 
-.chat-message b {
+  .chat-message b {
     padding: 0 10px 0 0;
-}
+  }
 
-#chat-container {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  font-family: "Patrick Hand", cursive;
-  width: 100%;
-  align-items: center;
-  margin-bottom: 5%;
+  #chat-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Patrick Hand", cursive;
+    width: 100%;
+    align-items: center;
+    margin-bottom: 5%;
 
-}
- .chat-title {
-   justify-content: center;
-  display: flex;
-  font-size: 20px;
-   width: 100%;
-}
+  }
+  .chat-title {
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
+    width: 100%;
+  }
 
-.chat, .message {
-  width: 100%;
-  justify-content: center;
-  display: flex;
-  font-size: 20px;
+  .chat, .message {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    font-size: 20px;
 
-  #chat {
+    #chat {
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+      margin-bottom: 2%;
+      width: 70%;
+    }
+
+    #message {
+      font-size: 20px;
+      max-width: 70%;
+    }
+  }
+
+  .send {
+    width: 100%;
+    font-size: 20px;
+    border: none;
+    justify-content: center;
+    display: flex;
+
+    #send {
+      width: 70%;
+      height: 50px;
+      background-color: $ku-red;
+      font-size: 20px;
+      border-color: transparent;
+
+
+      &:hover {
+        background-color: $ku-dark-green;
+
+      }
+    }
+
+  }
+  /*********************************
+  *   Play.html button styling    *
+  *********************************/
+  .mobile-column {
+    display: initial;
+    justify-content: center;
+    flex-direction: row;
+  }
+
+  .choice-button-holder {
+    justify-content: center;
+    display: flex;
+    width: 100%;
+  }
+
+  .choice-button {
+    width: 235px;
+    height: 70px;
+    font-size: 18px;
+    border-radius: 50px;
+    color: black;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-    margin-bottom: 2%;
-    width: 70%;
-  }
+    font-family: "Annie Use Your Telescope", serif;
+    background-color: transparent;
+    border: 2px solid $ku-red;
+    margin: 5px 5px 10% 5px;
 
-  #message {
-    font-size: 20px;
-    max-width: 70%;
-  }
-}
-
-.send {
-  width: 100%;
-  font-size: 20px;
-  border: none;
-  justify-content: center;
-  display: flex;
-
-  #send {
-    width: 70%;
-    height: 50px;
-    background-color: $ku-red;
-    font-size: 20px;
-    border-color: transparent;
-
-
-  &:hover {
-    background-color: $ku-dark-green;
-
-  }
-}
-
-}
-/*********************************
-*   Play.html button styling    *
-*********************************/
-.mobile-column {
-  display: initial;
-  justify-content: center;
-  flex-direction: row;
-}
-
-.choice-button-holder {
-  justify-content: center;
-  display: flex;
-  width: 100%;
-}
-
-.choice-button {
-  width: 235px;
-  height: 70px;
-  font-size: 18px;
-  border-radius: 50px;
-  color: black;
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-  font-family: "Annie Use Your Telescope", serif;
-  background-color: transparent;
-  border: 2px solid $ku-red;
-  margin: 5px 5px 10% 5px;
-
-   &:hover {
+    &:hover {
       background-color: $ku-dark-green;
       color: white;
       border-color: transparent;
 
-  }
-  &:active {
+    }
+
+    &:active {
       background-color: $ku-dark-green;
       color: white;
 
+    }
+
+    &:focus {
+      border-color: $ku-dark-green;
+      background-color: $ku-dark-green;
+      color: white;
+    }
+
+    img {
+      width: 50px;
+      height: 50px;
+      align-self: center;
+    }
   }
 
-  &:focus {
-    border-color: $ku-dark-green;
-    background-color: $ku-dark-green;
-    color: white;
-  }
+  /*************************************
+  *   Intro1.html.html table styling   *
+  **************************************/
 
-  img {
-    width: 50px;
-    height: 50px;
-    align-self: center;
-  }
-}
-
-/*************************************
-*   Intro1.html.html table styling   *
-**************************************/
-
-.intro-title {
+  .intro-title {
     display: flex;
     justify-content: center;
-    flex-direction:column;
-    align-items:center;
+    flex-direction: column;
+    align-items: center;
     background-color: transparent;
     width: 100%;
     font-family: "Patrick Hand", cursive;
     height: 100vh;
 
 
-      .bad {
-          justify-content: center;
-          font-weight: bold;
-          font-size: 50px;
-          text-align: center;
-          letter-spacing: 20px;
-          color: darkred;
-          text-transform: uppercase;
-          margin: 0;
-          padding:0;
-      }
+    .bad {
+      justify-content: center;
+      font-weight: bold;
+      font-size: 50px;
+      text-align: center;
+      letter-spacing: 20px;
+      color: darkred;
+      text-transform: uppercase;
+      margin: 0;
+      padding: 0;
+    }
 
-      .influence {
-          font-weight: bold;
-          font-size: 50px;
-          text-align: center;
-          color: $ku-red;
-          text-transform: uppercase;
-          margin: -25px;
-          padding:0;
-          letter-spacing: 7px;
-      }
-
+    .influence {
+      font-weight: bold;
+      font-size: 50px;
+      text-align: center;
+      color: $ku-red;
+      text-transform: uppercase;
+      margin: -25px;
+      padding: 0;
+      letter-spacing: 7px;
+    }
 
 
     @mixin transition($property: all, $duration: 0.45s, $ease: cubic-bezier(0.65,0,.076,1)) {
       transition: $property $duration $ease;
     }
 
-  * {
-    box-sizing: border-box;
-    &::before, &::after {
+    * {
       box-sizing: border-box;
+
+      &::before, &::after {
+        box-sizing: border-box;
+      }
     }
-  }
 
-  button {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    outline: none;
-    border: 0;
-    vertical-align: middle;
-    text-decoration: none;
-    background: transparent;
-    padding: 0;
-    font-size: inherit;
-    font-family: inherit;
-    z-index: 2;
+    button {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      outline: none;
+      border: 0;
+      vertical-align: middle;
+      text-decoration: none;
+      background: transparent;
+      padding: 0;
+      font-size: inherit;
+      font-family: inherit;
+      z-index: 2;
 
 
-    &.start-game {
-      height: auto;
-      width: 40%;
-      margin-top: 30px;
-      font-size: 30px;
+      &.start-game {
+        height: auto;
+        width: 40%;
+        margin-top: 30px;
+        font-size: 30px;
 
-      .circle {
-        display: none;
+        .circle {
+          display: none;
 
-    .icon {
-       display: none;
-        &.arrow {
-         display: none;
+          .icon {
+            display: none;
 
+            &.arrow {
+              display: none;
+
+            }
+          }
+        }
+
+        .button-text {
+          @include transition(all, 0.45s, cubic-bezier(0.65, 0, .076, 1));
+          position: absolute;
+          top: -5px;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          font-weight: 700;
+          line-height: 1.6;
+          text-align: center;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          background-color: $ku-red;
+          color: white;
+          border-radius: 20px;
+          height: 50px;
+
+        }
+
+        .button-text {
+          color: $white;
         }
       }
     }
-    .button-text {
-      @include transition(all, 0.45s, cubic-bezier(0.65,0,.076,1));
-      position: absolute;
-      top: -5px;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      font-weight: 700;
-      line-height: 1.6;
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      background-color: $ku-red;
-      color: white;
-      border-radius: 20px;
-      height: 50px;
+
 
   }
+  /*************************************
+  *   Intro2.html table styling   *
+  **************************************/
+  .intro-2 {
 
-    .button-text {
-      color: $white;
-    }
-  }
-}
-
-
-}
-/*************************************
-*   Intro2.html table styling   *
-**************************************/
-.intro-2 {
-
-  .svg-column {
+    .svg-column {
 
       h2 {
         font-size: 30px;
       }
-  }
+    }
 
 
     $bg: #f3f8fa;
@@ -410,71 +413,122 @@
       transition: $property $duration $ease;
     }
 
-   * {
-    box-sizing: border-box;
-    &::before, &::after {
+    * {
       box-sizing: border-box;
+
+      &::before, &::after {
+        box-sizing: border-box;
+      }
     }
+
+    button {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      outline: none;
+      border: 0;
+      vertical-align: middle;
+      text-decoration: none;
+      background: transparent;
+      padding: 0;
+      font-size: inherit;
+      font-family: inherit;
+      z-index: 2;
+
+      &.start-game {
+        height: auto;
+        width: 60%;
+        margin-top: 30px;
+        font-size: 30px;
+        padding: 40px;
+        display: flex;
+        justify-content: center;
+        align-self: center;
+
+        .circle {
+          display: none;
+
+          .icon {
+            display: none;
+
+            &.arrow {
+              display: none;
+
+            }
+          }
+        }
+
+        .button-text {
+          position: absolute;
+          top: -5px;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          font-weight: 700;
+          line-height: 1.6;
+          text-align: center;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          background-color: $ku-red;
+          color: white;
+          border-radius: 20px;
+          height: 50px;
+
+          &:hover {
+            background-color: $ku-dark-green;
+          }
+        }
+
+      }
+    }
+
   }
 
-  button {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    outline: none;
-    border: 0;
-    vertical-align: middle;
-    text-decoration: none;
-    background: transparent;
-    padding: 0;
-    font-size: inherit;
-    font-family: inherit;
-    z-index: 2;
-
-    &.start-game {
-      height: auto;
-      width: 60%;
-      margin-top: 30px;
-      font-size: 30px;
-      padding: 40px;
+  .report-info {
+    .report-table-container {
       display: flex;
-      justify-content: center;
-      align-self: center;
+      flex-direction: column;
+      align-items: center;
+      color: $ku-red;
 
-      .circle {
-        display: none;
+      #badInfluenceTableReport {
+        width: 90%;
+        display: inline-table;
+        border-collapse: separate;
+        border-spacing: 0 0.5rem;
 
-    .icon {
-       display: none;
-        &.arrow {
-         display: none;
+        .border-corner-left {
+          border-radius: 10px 0 0 10px;
+        }
 
+        .border-corner-right {
+          border-radius: 0 10px 10px 0;
+        }
+
+        .bad_influence-table-header {
+          background: $ku-red;
+          color: white;
+          font-weight: bold;
+          font-family: "Patrick Hand", sans-serif;
+          font-size: 20px;
+          border-top: none !important;
+          text-align: center;
+          box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+        }
+
+        .bad_influence-table-data {
+          font-size: 26px;
+          font-family: "Patrick Hand", sans-serif;
+          border-top: none !important;
+          text-align: center;
+          vertical-align: middle;
+        }
+
+        .bad_influence-table-row {
+          box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+          border-radius: 10px;
         }
       }
     }
-    .button-text {
-      position: absolute;
-      top: -5px;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      font-weight: 700;
-      line-height: 1.6;
-      text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      background-color: $ku-red;
-      color: white;
-      border-radius: 20px;
-      height: 50px;
-
-           &:hover {
-        background-color: $ku-dark-green;
-      }
   }
-
-  }
-}
-
-}
 }

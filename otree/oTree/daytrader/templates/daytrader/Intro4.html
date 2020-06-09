@@ -156,9 +156,7 @@
 
         for (let i = 0; i < sackButtons.length; i++) {
             sackButtons.id = "button" + i;
-            console.log(sackButtons[i].parentElement.getAttribute("id"));
             sackButtons[i].onclick = event => {
-                console.log(sackButtons);
                 event.preventDefault();
                 let happyFace = document.createElement("img");
                 happyFace.className = "company-face-in-sack";
