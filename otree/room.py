@@ -1,8 +1,6 @@
 from pathlib import Path
 
-from django.forms import model_to_dict
-
-from otree.models_concrete import RoomToSession, RoomStorage
+from otree.models_concrete import RoomToSession, RoomsTest
 from otree.common import add_params_to_url, make_hash, validate_alphanumeric
 from django.conf import settings
 from django.urls import reverse
@@ -13,9 +11,7 @@ from django.contrib.auth.models import User
 
 
 class Room:
-    def __init__(
-            self, name, display_name, use_secure_urls=False, participant_label_file=None
-    ):
+    def __init__(self, name, display_name, use_secure_urls=False, participant_label_file=None):
         self.name = validate_alphanumeric(
             name, identifier_description='settings.ROOMS room name'
         )
@@ -85,18 +81,14 @@ class Room:
         return participant_urls
 
 
-## This new get_ROOM_DICT uses the RoomStorage model where all Rooms are stored according to users
+## This new get_ROOM_DICT uses the RoomsTest model where all Rooms are stored according to users
 def get_room_dict():
-        roomModel = list(RoomStorage.objects.values('name', 'display_name'))
+        roomModel = list(RoomsTest.objects.values('name', 'display_name'))
         ROOM_DEFAULTS = getattr(roomModel, 'ROOM_DEFAULTS', {})
         ROOM_DICT = {}
 
         for room in roomModel:
             room_object = Room(**dict(ROOM_DEFAULTS, **room))
-            print(room_object)
             ROOM_DICT[room_object.name] = room_object
-            print(ROOM_DICT)
         return ROOM_DICT
 
-
-ROOM_DICT = get_room_dict()

@@ -8,16 +8,15 @@ import otree.models
 import otree.views.admin
 import otree.views.mturk
 import vanilla
-from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render
 from django.template.response import TemplateResponse
 from django.utils.translation import ugettext as _
-from otree.common import make_hash, add_params_to_url, get_redis_conn
+from otree.common import make_hash, get_redis_conn
 import otree.channels.utils as channel_utils
 from otree.models import Participant, Session
 from otree.models_concrete import ParticipantRoomVisit, BrowserBotsLauncherSessionCode
-from otree.room import ROOM_DICT
+from otree.room import get_room_dict
 from otree.views.abstract import (
     GenericWaitPageMixin,
     get_redis_lock,
@@ -182,7 +181,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
     def dispatch(self, request, room):
         self.room_name = room
         try:
-            room = ROOM_DICT[self.room_name]
+            room = get_room_dict()[self.room_name]
         except KeyError:
             return HttpResponseNotFound('Invalid room specified in url')
 

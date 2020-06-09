@@ -2,16 +2,14 @@ import time
 
 import vanilla
 from django.contrib.auth.models import User
-from django.urls import reverse, reverse_lazy, path
-from django.http import HttpResponseRedirect, JsonResponse
-from django.views.generic.edit import FormMixin, ModelFormMixin
+from django.urls import reverse, reverse_lazy
+from django.http import JsonResponse
 
-from otree import views
 from otree.channels import utils as channel_utils
-from otree.models_concrete import ParticipantRoomVisit, RoomStorage
-from otree.room import ROOM_DICT
+from otree.models_concrete import ParticipantRoomVisit, RoomsTest
+from otree.room import get_room_dict
 from otree.views.admin import CreateSessionForm, CreateRoomForm
-from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404
 from otree.session import SESSION_CONFIGS_DICT
 
 ## TODO - CREATE LISTVIEW FOR "MINE RUM"
@@ -19,9 +17,9 @@ from otree.session import SESSION_CONFIGS_DICT
 
 class CreateRoom(vanilla.CreateView):
     template_name = 'otree/admin/CreateRoom.html'
-    model = RoomStorage
+    model = RoomsTest
     form_class = CreateRoomForm
-    queryset = RoomStorage.objects.all()
+    queryset = RoomsTest.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super(CreateRoom, self).get_context_data(**kwargs)
@@ -34,6 +32,9 @@ class CreateRoom(vanilla.CreateView):
         return super().form_valid(form)
 
     def get_success_url(self):
+        return reverse_lazy("Rooms")
+
+    """def get_success_url(self):
         return reverse_lazy("view_room_with_pk", kwargs={'slug': self.object.slug})
 
 
@@ -42,8 +43,9 @@ class RoomDetailView(vanilla.DetailView):
 
     def get_object(self):
         slug_ = self.kwargs.get("slug")
-        return get_object_or_404(RoomStorage, slug=slug_)
+        return get_object_or_404(RoomsTest, slug=slug_)
 
+"""
 
 # This class Rooms, doesthe same as making a listView of all the rooms but not per teacher as this is defined in settings.py
 class Rooms(vanilla.TemplateView):
@@ -52,24 +54,19 @@ class Rooms(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(Rooms, self).get_context_data(**kwargs)
-        context["all_rooms"] = RoomStorage.objects.all().values()
+        context["all_rooms"] = RoomsTest.objects.all().values()
         return context
 
-    """ 
-    def get_context_data(self, **kwargs):
-        return {'all_rooms': ROOM_DICT.values()}
-    """
 
 class RoomWithoutSession(vanilla.TemplateView):
     '''similar to CreateSession view'''
-
     template_name = 'otree/admin/RoomWithoutSession.html'
     room = None
     url_pattern = r"^room_without_session/(?P<room_name>.+)/$"
 
     def dispatch(self, request, room_name):
         self.room_name = room_name
-        self.room = ROOM_DICT[room_name]
+        self.room = get_room_dict()[room_name]
 
         if self.room.has_session():
             return redirect('RoomWithSession', room_name)
@@ -90,44 +87,11 @@ class RoomWithoutSession(vanilla.TemplateView):
         return channel_utils.room_admin_path(self.room.name)
 
 
-"""class RoomWithoutSession(vanilla.TemplateView):
-    '''similar to CreateSession view'''
-
-    template_name = 'otree/admin/RoomWithoutSession.html'
-    room = None
-
-    url_pattern = r"^room_without_session/(?P<room_name>.+)/$"
-
-    def dispatch(self, request, room_name):
-        self.room_name = room_name
-        self.room = ROOM_DICT[room_name]
-        print(ROOM_DICT)
-        if self.room.has_session():
-            return redirect('RoomWithSession', room_name)
-        return super().dispatch(request)
-
-    def get_context_data(self, **kwargs):
-        return super().get_context_data(
-            configs=SESSION_CONFIGS_DICT.values(),
-            participant_urls=self.room.get_participant_urls(self.request),
-            room_wide_url=self.room.get_room_wide_url(self.request),
-            room=self.room,
-            form=CreateSessionForm(room_name=self.room_name),
-            collapse_links=True,
-            **kwargs
-        )
-
-    def socket_url(self):
-        return channel_utils.room_admin_path(self.room.name)"""
-
-
-
-
 class CloseRoom(vanilla.View):
     url_pattern = r"^CloseRoom/(?P<room_name>.+)/$"
 
     def post(self, request, room_name):
-        self.room = ROOM_DICT[room_name]
+        self.room = get_room_dict()[room_name]
         self.room.set_session(None)
         # in case any failed to be cleared through regular ws.disconnect
         ParticipantRoomVisit.objects.filter(room_name=room_name).delete()
@@ -168,7 +132,7 @@ class RoomWithSession(vanilla.TemplateView):
     url_pattern = r"^room_with_session/(?P<room_name>.+)/$"
 
     def dispatch(self, request, room_name):
-        self.room = ROOM_DICT[room_name]
+        self.room = get_room_dict()[room_name]
         if not self.room.has_session():
             return redirect('RoomWithoutSession', room_name)
         return super().dispatch(request)

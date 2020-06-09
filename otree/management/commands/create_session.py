@@ -5,7 +5,7 @@ import logging
 from django.core.management.base import BaseCommand
 
 from otree.session import create_session
-from otree.room import ROOM_DICT
+from otree.room import get_room_dict
 
 
 logger = logging.getLogger('otree')
@@ -39,7 +39,7 @@ class Command(BaseCommand):
         )
 
         if room_name:
-            room = ROOM_DICT[room_name]
+            room = get_room_dict()[room_name]
             room.set_session(session)
             logger.info(
                 "Created session with code {} in room '{}'\n".format(

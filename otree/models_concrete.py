@@ -10,7 +10,7 @@ from django.db import models
 from unidecode import unidecode
 
 
-class RoomStorage(models.Model):
+class RoomsTest(models.Model):
     """Rooms models class for creating rooms"""
     name = otreemodels.StringField(max_length=200, null=False)
     display_name = otreemodels.StringField(max_length=200)
@@ -29,7 +29,7 @@ class RoomStorage(models.Model):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(unidecode(self.name))
-        super(RoomStorage, self).save(*args, **kwargs)
+        super(RoomsTest, self).save(*args, **kwargs)
 
 
 class PageCompletion(models.Model):
