@@ -3,6 +3,8 @@ from collections import defaultdict
 from typing import Iterable
 
 from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.utils.translation import ugettext_lazy as _
 
 
 class PageCompletion(models.Model):
@@ -180,3 +182,49 @@ def _add_time_spent_waiting_inner(
             total += time.time() - enter_time
         participant._is_frozen = False
         participant.waiting_seconds = int(total)
+
+
+class UserManager(BaseUserManager):
+    """Define a model manager for User model with no username field"""
+
+    use_in_migrations = True
+
+    def _create_user(self, email, password, **extra_fields):
+        """Create and save a User with the given email and password"""
+        if not email:
+            raise ValueError('Indtast venligst en email')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_user(self, email, password=None, **extra_fields):
+        """Create and save a regular User with the given email and password"""
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(email, password, **extra_fields)
+
+    def create_superuser(self, email, password, **extra_field):
+        """Create and save a SuperUser with the given email and password"""
+        extra_field.setdefault('is_staff', True)
+        extra_field.setdefault('is_superuser', True)
+
+        if extra_field.get('is_staff') is not True:
+            raise ValueError('SuperUser must have is_staff=True')
+        if extra_field.get('is_superuser') is not True:
+            raise ValueError('SuperUser must have is_superuser=True')
+
+        return self._create_user(email, password, **extra_field)
+
+
+class User(AbstractUser):
+    """User Model"""
+
+    username = None
+    email = models.EmailField(_('email address'), unique=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    objects = UserManager()

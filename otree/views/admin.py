@@ -34,7 +34,7 @@ from otree.models_concrete import BrowserBotsLauncherSessionCode, add_time_spent
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree.views.abstract import AdminSessionPageMixin
 from django.db.models import Case, Value, When
-from django.contrib.auth.models import User
+from otree.models_concrete import User
 from django.http import HttpResponse
 from xhtml2pdf import pisa
 
