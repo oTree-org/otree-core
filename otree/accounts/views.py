@@ -2,10 +2,12 @@ import vanilla
 from django.shortcuts import redirect
 from django.contrib.auth.views import (
     LoginView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView,
-    LogoutView
+    LogoutView, PasswordChangeView, PasswordChangeForm
 )
 from .forms import RegisterForm
-from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.shortcuts import HttpResponseRedirect
+from django.contrib.auth import logout
+from django.contrib.auth import update_session_auth_hash
 
 
 class RegisterView(vanilla.FormView):
@@ -20,6 +22,10 @@ class RegisterView(vanilla.FormView):
 
 class Login(LoginView):
     template_name = 'otree/accounts/login.html'
+
+def logoutUser(request):
+    logout(request)
+    return HttpResponseRedirect('/spil/')
 
 
 class ResetPassword(PasswordResetView):
@@ -39,3 +45,8 @@ class ResetPasswordConfirm(PasswordResetConfirmView):
 
 class ResetPasswordComplete(PasswordResetCompleteView):
     template_name = 'otree/accounts/reset_password_complete.html'
+
+
+class PasswordChange(PasswordChangeView):
+    form_class = PasswordChangeForm
+    template_name = 'otree/accounts/change_password.html'

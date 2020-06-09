@@ -155,13 +155,6 @@ otree/oTree/daytrader/pages.py
 otree/oTree/daytrader/tests.py
 otree/oTree/daytrader/_builtin/__init__.py
 otree/oTree/daytrader/migrations/__init__.py
-otree/oTree/venv/Lib/site-packages/attr/__init__.pyi
-otree/oTree/venv/Lib/site-packages/attr/_version.pyi
-otree/oTree/venv/Lib/site-packages/attr/converters.pyi
-otree/oTree/venv/Lib/site-packages/attr/exceptions.pyi
-otree/oTree/venv/Lib/site-packages/attr/filters.pyi
-otree/oTree/venv/Lib/site-packages/attr/validators.pyi
-otree/oTree/venv/Lib/site-packages/~tree/api.pyi
 otree/project_template/.gitignore
 otree/project_template/Procfile
 otree/project_template/manage.py

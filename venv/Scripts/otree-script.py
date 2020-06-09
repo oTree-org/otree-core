@@ -1,4 +1,4 @@
-#!c:\users\frederik\code\ku\otree-core\venv\scripts\python.exe
+#!c:\users\bruger\code\otree-core\venv\scripts\python.exe
 # EASY-INSTALL-ENTRY-SCRIPT: 'otree','console_scripts','otree'
 __requires__ = 'otree'
 import re

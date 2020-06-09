@@ -102,10 +102,6 @@ INSTALLED_APPS = [
     'daytrader',
 ]
 
-MIDDLEWARE = [
-    'otree.login_middleware.LoginRequiredMiddleware',
-]
-
 EXTENSION_APPS = [
     'bad_influence',
     'daytrader'
@@ -143,24 +139,7 @@ DEFAULT_FROM_EMAIL = 'Frederik Bruun <frederikabruun@pmat.dk>'
 AUTH_USER_MODEL = 'otree.User'
 
 LOGIN_EXEMPT_URLS = (
-    # r'',
-    r'^spil/$',
-    r'^accounts/register/$',
-    r'^accounts/reset-password/$',
-    r'^accounts/reset-password/done/$',
-    r'^accounts/reset-password/([0-9A-Za-z]+)/(?P<uidb64>[0-9A-Za-z]+)-(?P<token>.+)/$',
-    r'^accounts/reset-password/done/$',
-
-    # TODO - Bad Influence
-    r'^p/[0-9a-zA-Z]{8,16}/bad_influence/IntroPage1/$',
-)
-
-ADMIN_EXEMPT_URLS = (
-    r'^opret_spil/bad_influence/$',
-    r'^opret_spil/day_trader/$',
-    r'^SessionStartLinks/[0-9a-z]{8,16}/$',
-    r'^SessionMonitor/[0-9a-z]{8,16}$',
-    r'^AdminReport/[0-9a-z]{8,16}$',
+    r'',
 )
 
 LOGIN_REDIRECT_URL = '/spil/'

@@ -3,8 +3,13 @@
 {% block title %}{% trans 'Log in' %}{% endblock %}
 
 {% block content %}
+    <style>
+        body {
+            background: #901a1e;
+        }
+    </style>
     <div class="game-login">
-        <h1>Log Ind</h1>
+        <h1 class="text-white">Log Ind</h1>
         {% if form.errors and not form.non_field_errors %}
 
             <p class="errornote">
@@ -30,10 +35,10 @@
         <div id="content-main">
             <form action="" method="post"
                   id="login-form">{% csrf_token %}
-                <div class="form-row">
+                <div class="form-row text-white">
                     {% formfield form.username %}
                 </div>
-                <div class="form-row">
+                <div class="form-row text-white">
                     {% formfield form.password %}
                     <input type="hidden" name="next" value="{{ next }}"/>
                 </div>
