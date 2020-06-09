@@ -92,7 +92,7 @@
             }
         })
     </script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/reconnecting-websocket/1.0.0/reconnecting-websocket.min.js"></script>
     <script>
         // Defines the scheme of the WebSocket to be either wss if the protocol is https
         // else it should be ws
@@ -103,7 +103,7 @@
         let ws_path = ws_scheme + '://' + window.location.host + "/ws/chat/{{ group.pk }}";
 
         // Instantiates the WebSocket with the WebSocket route and scheme as argument
-        let socket = new WebSocket(ws_path);
+        let socket = new ReconnectingWebSocket(ws_path);
 
         let chat = document.querySelector("#chat");
 
