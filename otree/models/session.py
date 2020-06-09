@@ -1,6 +1,5 @@
 import logging
 import time
-from otree.models_concrete import User
 from django.template import TemplateDoesNotExist
 from django.template.loader import select_template
 import otree.common
@@ -15,7 +14,7 @@ from otree.common import (
     FieldTrackerWithVarsSupport,
 )
 from otree.db import models
-from otree.models_concrete import RoomToSession
+from otree.models_concrete import RoomToSession, User
 
 
 

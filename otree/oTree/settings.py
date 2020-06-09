@@ -107,6 +107,10 @@ EXTENSION_APPS = [
     'daytrader'
 ]
 
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "../otree/static/main_platform/otree")
 ]
