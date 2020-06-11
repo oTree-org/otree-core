@@ -1,8 +1,11 @@
 from django.conf.urls.static import static
+from django.contrib.auth.views import LogoutView, LoginView
 from django.http import HttpResponseRedirect
 # from django.http.response import HttpResponseRedirect
 from django.urls import path
 from django.views.generic.edit import FormMixin
+
+
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
 from otree import common, views
 
@@ -140,17 +143,18 @@ class GamesView(vanilla.TemplateView):
 
 def get_urlpatterns():
     urlpatterns = [
-                      urls.url(r'^$', RedirectView.as_view(url='spil/', permanent=True)),
-                      urls.url(r'^spil/', GamesView.as_view(), name='games'),
-                      urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
-                      urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
-                      #urls.url(r'^create_room/$', CreateRoom.as_view(), name='create_room'),
-                      path('create_room/', CreateRoom.as_view(), name='create_room'),
-                      #path('mit_klasserum/<slug:slug>/', RoomDetailView.as_view(), name='view_room_with_pk'),
-                      urls.url(r'^home/$', HomeView.as_view(), name='home'),
-                      urls.url(r'^admin/', admin.site.urls),
-                      urls.url(r'^accounts/', urls.include('otree.accounts.urls'))
-                  ]
+            urls.url(r'^admin/', admin.site.urls),
+            urls.url(r'^accounts/', urls.include('otree.accounts.urls')),
+            urls.url(r'^$', RedirectView.as_view(url='spil/', permanent=True)),
+            urls.url(r'^spil/', GamesView.as_view(), name='games'),
+            urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
+            urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
+            #urls.url(r'^create_room/$', CreateRoom.as_view(), name='create_room'),
+            path('create_room/', CreateRoom.as_view(), name='create_room'),
+            #path('mit_klasserum/<slug:slug>/', RoomDetailView.as_view(), name='view_room_with_pk'),
+            urls.url(r'^home/$', HomeView.as_view(), name='home'),
+
+    ]
 
     urlpatterns += staticfiles_urlpatterns()
 
