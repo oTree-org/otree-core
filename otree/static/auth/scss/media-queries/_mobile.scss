@@ -1,0 +1,125 @@
+@media (min-width: 375px) {
+  /***************************
+     LOGIN TEMPLATE
+*****************************/
+
+  div.login-container {
+    .game-login {
+      width: 90%;
+
+      form {
+        .form-row {
+          margin-bottom: 5%;
+        }
+      }
+      .link-container {
+        .link {
+          font-size: 16px;
+        }
+      }
+    }
+  }
+
+  /***************************
+     RESET PASSWORD TEMPLATE
+*****************************/
+
+  div.reset-password-container {
+    .reset-password-form-container {
+      width: 90%;
+
+      div.content-container {
+        width: 275px;
+
+        .reset-password-title {
+          font-size: 22px;
+        }
+
+        .reset-password-desc {
+          font-size: 13px;
+        }
+
+        form {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          width: 275px;
+
+          .form-row {
+            label {
+              padding-left: 5px;
+            }
+
+            input {
+              width: 275px;
+              max-width: 275px;
+            }
+          }
+
+          #btn-password-reset {
+            width: 275px;
+            max-width: 275px;
+          }
+        }
+      }
+    }
+  }
+
+  /***************************
+   RESET PASSWORD DONE TEMPLATE
+*****************************/
+  .reset-password-done-container {
+    .content-container {
+      h4.reset-password-done-title {
+        font-size: 26px;
+      }
+
+      p.reset-password-done-desc {
+        color: $ku-red;
+        font-size: 16px;
+      }
+    }
+  }
+
+  /***************************
+ RESET PASSWORD CONFIRM TEMPLATE
+*****************************/
+  .reset-password-confirm-container {
+    .content-container {
+      width: 90%;
+
+      form {
+        .form-row {
+          .form-input {
+            input {
+              width: 100%;
+              max-width: 100%;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /***************************
+   CHANGE PASSWORD TEMPLATE
+*****************************/
+  .change-password-container {
+    .change-password-form-container {
+      width: 580px;
+
+      .content-container {
+        form {
+          .form-row {
+            .form-input {
+              input {
+                width: 100%;
+                max-width: 100%;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

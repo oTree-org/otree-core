@@ -1,75 +1,75 @@
 @media (min-width: 1025px) {
 
-/*************************
-*       Base.html        *
-*************************/
-.top-left-fixed-alert {
-  visbility: hidden;
-}
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
 
-/**************************************
-*  Main container  - BaseAdmin.html  *
-**************************************/
-.container {
-   max-width: 100%;
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
 
-  .page-header {
+    .page-header {
       padding-top: 40px;
-  }
-}
-
-/******************************
-*  Front Page  - games.html  *
-******************************/
-.title-container {
-  margin-bottom: 5%;
-}
-
-.games-title {
-  color: white;
-  font-weight: bold;
-  font-family: 'Catamaran', sans-serif;
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  font-size: 60px;
-  margin-top: 6%;
-  margin-bottom: 0;
-}
-
-.sub-games-title {
-  color: white;
-  display: flex;
-  justify-content: center;
-  text-align: center;
-  font-size: 30px;
-}
-
-.align-games {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-
-  .card {
-    margin-bottom: 30px;
-    width: 60%;
-    border-color: $ku-red;
-    border-style: solid;
-    border-width: 3px;
+    }
   }
 
-
-  .card-header,
-  .card-footer {
-    color: $ku-red;
-    border: none;
-    background-color: white;
-    font-size: 24px;
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .title-container {
+    margin-bottom: 5%;
   }
 
-  .card-body {
-    color: $ku-red;
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: 'Catamaran', sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 60px;
+    margin-top: 6%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 30px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+
+    .card {
+      margin-bottom: 30px;
+      width: 60%;
+      border-color: $ku-red;
+      border-style: solid;
+      border-width: 3px;
+    }
+
+
+    .card-header,
+    .card-footer {
+      color: $ku-red;
+      border: none;
+      background-color: white;
+      font-size: 24px;
+    }
+
+    .card-body {
+      color: $ku-red;
 
       .body-row {
         flex-direction: row;
@@ -80,57 +80,47 @@
           margin-left: 20px;
         }
       }
-  }
+    }
 
     .sack-img {
       width: 170px;
       height: 170px;
       display: block;
-  }
+    }
 
-  .network-img {
+    .network-img {
       width: 150px;
       height: 150px;
-    display: block;
-  }
-
-   .card-footer {
-
-     .footer-row {
-       display: flex;
-       justify-content: flex-end;
-       align-items: center;
-
-     }
-
-    .btn-primary {
-      background-color: $ku-red;
-      border-color: $ku-red;
-      width: 200px;
-      height: 50px;
-      font-size: 20px;
+      display: block;
     }
-    .game-info {
-      padding-right: 20px;
-      font-size: 14px;
 
-      p {
-        margin-bottom: 0;
+    .card-footer {
+
+      .footer-row {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+
       }
+
+      .btn-primary {
+        background-color: $ku-red;
+        border-color: $ku-red;
+        width: 200px;
+        height: 50px;
+        font-size: 20px;
+      }
+
+      .game-info {
+        padding-right: 20px;
+        font-size: 14px;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
+    }
   }
-}
- }
-
-/******************************
-*        Navbar Styling       *
-******************************/
-
-.login-button {
-  color: white;
-  text-decoration: none;
-  font-size: 20px;
-}
-
 .home-button {
   .fa-chalkboard-teacher {
     font-size: 32px;
@@ -144,69 +134,91 @@
  }
 }
 
-/**********************************************************
-*  Create Game - e.g. CreateSessionFormBadInfluence.html  *
-***********************************************************/
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
 
-.create-game {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  overflow: auto;
-
-
-  .card {
-    margin-bottom: 30px;
-    width: 55%;
-    border-color: $ku-red;
-    border-style: solid;
-    border-width: 3px;
-
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
   }
 
-  .card-header {
-    padding-bottom:0;
+  .home-button {
+    .fa-home {
+      padding-right: 8px;
+      padding-top: 8px;
+      font-size: 32px;
+    }
+
+    span {
+      display: inline;
+    }
+  }
+
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+  ***********************************************************/
+
+  .create-game {
     display: flex;
-   justify-content: center;
-
-  }
-
-  .card-header,
-  .card-footer {
-    color: $ku-red;
-    border: none;
-    background-color: white;
-    font-size: 24px;
-    font-weight: bolder;
-  }
-
-  .card-body {
-    color: $ku-red;
-    display: flex;
+    align-items: center;
     justify-content: center;
-    text-align: center;
-    font-size: 18px;
-    padding-bottom: 0;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
 
-  }
 
-      .sack-img {
+    .card {
+      margin-bottom: 30px;
+      width: 55%;
+      border-color: $ku-red;
+      border-style: solid;
+      border-width: 3px;
+
+    }
+
+    .card-header {
+      padding-bottom: 0;
+      display: flex;
+      justify-content: center;
+
+    }
+
+    .card-header,
+    .card-footer {
+      color: $ku-red;
+      border: none;
+      background-color: white;
+      font-size: 24px;
+      font-weight: bolder;
+    }
+
+    .card-body {
+      color: $ku-red;
+      display: flex;
+      justify-content: center;
+      text-align: center;
+      font-size: 18px;
+      padding-bottom: 0;
+
+    }
+
+    .sack-img {
       width: 190px;
       height: 190px;
-         display: none;
-  }
+      display: none;
+    }
 
-  .network-img {
+    .network-img {
       width: 150px;
       height: 150px;
-     display: none;
-  }
+      display: none;
+    }
 
 
     .card-footer {
@@ -215,37 +227,38 @@
       justify-content: center;
 
       .form-control {
-       max-width: 100%;
-       margin-bottom: 20px;
+        max-width: 100%;
+        margin-bottom: 20px;
         font-size: 18px;
       }
-     .footer-row {
-       display: flex;
-       justify-content: center;
-       flex-direction: row;
-       align-items: center;
 
-     }
+      .footer-row {
+        display: flex;
+        justify-content: center;
+        flex-direction: row;
+        align-items: center;
 
-    .btn-primary {
-      background-color: $ku-red;
-      border-color: $ku-red;
-      width: 100%;
-      font-size: 18px;
+      }
 
-      &:hover {
-        background-color: #7C992B;
-        border-color: transparent;
+      .btn-primary {
+        background-color: $ku-red;
+        border-color: $ku-red;
+        width: 100%;
+        font-size: 18px;
+
+        &:hover {
+          background-color: #7C992B;
+          border-color: transparent;
+        }
       }
     }
   }
-}
 
-/********************************************************
-*  Admin/Teacher panel navigation - CustomSession.html  *
-*********************************************************/
+  /********************************************************
+  *  Admin/Teacher panel navigation - CustomSession.html  *
+  *********************************************************/
 
-#admin-panel {
+  #admin-panel {
     margin-top: 3%;
 
     .nav-tabs {
@@ -261,7 +274,7 @@
       border-radius: 150px;
       background-color: white;
       color: $ku-red;
-      box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
       font-family: "Annie Use Your Telescope", serif;
 
       &:hover {
@@ -269,92 +282,92 @@
         background-color: #5f861e;
       }
     }
-}
+  }
 
   #admin-panel .nav li > a {
-	text-transform: capitalize;
-	color:  $ku-red;
-	transition: background-color .2s, color .2s;
+    text-transform: capitalize;
+    color: $ku-red;
+    transition: background-color .2s, color .2s;
 
-}
+  }
 
-#admin-panel .nav li.active > a {
-	background-color: transparent;
-	color: green;
+  #admin-panel .nav li.active > a {
+    background-color: transparent;
+    color: green;
 
     .btn-circle {
       background-color: #5f861e;
       color: white;
     }
-}
+  }
 
-.tilbage-button {
-  justify-content: center;
-  display: flex;
-  width: 10%;
-  font-family: "Roboto Slab", serif;
-  font-weight: bold;
-  color: white;
-  font-size: 18px;
+  .tilbage-button {
+    justify-content: center;
+    display: flex;
+    width: 10%;
+    font-family: "Roboto Slab", serif;
+    font-weight: bold;
+    color: white;
+    font-size: 18px;
 
-  &:hover {
+    &:hover {
       text-decoration: none;
       color: $ku-dark-green;
-  }
+    }
 
-  img {
-    color: white;
-  }
-}
-
-/*********************************************
-*  Start link / intro - SessionStartLinks.html  *
-**********************************************/
-
-.gamelink-content {
-  width: 100%;
-  position: relative;
-  margin-top: 10px;
-  color: white;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  text-align: center;
-  font-size: 26px;
-  padding-top: 3%;
-  padding-bottom: 4%;
-  font-family: 'Roboto Slab', serif;
-
-
-  .start-link {
-    margin-top: 20px;
-    font-size: 30px;
-    background-color: white;
-    border-radius: 40px;
-    padding: 20px 0 20px 0;
-    width: 40%;
-    display: flex;
-    justify-content: center;
-    align-self: center;
-
-
-    a {
-      text-decoration: none;
-      color: $ku-red;
-
-      &:hover {
-        color: $ku-dark-green;
-      }
+    img {
+      color: white;
     }
   }
 
-}
+  /*********************************************
+  *  Start link / intro - SessionStartLinks.html  *
+  **********************************************/
+
+  .gamelink-content {
+    width: 100%;
+    position: relative;
+    margin-top: 10px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    font-size: 26px;
+    padding-top: 3%;
+    padding-bottom: 4%;
+    font-family: 'Roboto Slab', serif;
 
 
-/*********************************************
-*  Monitor game progress - SessionMonitor.html  *
-**********************************************/
-.info {
+    .start-link {
+      margin-top: 20px;
+      font-size: 30px;
+      background-color: white;
+      border-radius: 40px;
+      padding: 20px 0 20px 0;
+      width: 40%;
+      display: flex;
+      justify-content: center;
+      align-self: center;
+
+
+      a {
+        text-decoration: none;
+        color: $ku-red;
+
+        &:hover {
+          color: $ku-dark-green;
+        }
+      }
+    }
+
+  }
+
+
+  /*********************************************
+  *  Monitor game progress - SessionMonitor.html  *
+  **********************************************/
+  .info {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -363,27 +376,27 @@
     font-family: 'Roboto Slab', serif;
     color: white;
 
-  .info-content {
+    .info-content {
 
-    h1 {
-      font-size: 22px;
+      h1 {
+        font-size: 22px;
+      }
+
+      p {
+        font-size: 18px;
+      }
     }
 
-    p {
+    .player-table {
+      width: auto;
+      background-color: white;
+      border-collapse: collapse;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      color: $ku-red;
       font-size: 18px;
+
     }
-  }
-
-  .player-table {
-    width: auto;
-    background-color: white;
-	border-collapse: collapse;
-	overflow: hidden;
-	box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    color: $ku-red;
-    font-size: 18px;
-
-  }
   }
 
   .results-table {
@@ -398,53 +411,54 @@
     justify-content: center;
   }
 
-/*****************************************************
-*  Game report page - BadInfluence/AdminReport.html  *
-******************************************************/
-.report-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  font-family: "Roboto Slab", serif;
-
-  .report-info {
-    width: 90%;
-    border-collapse: collapse;
-    overflow: hidden;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-    background-color: white;
-    border-radius: 10px;
-  }
-
-  .rapport-header {
-    padding-top: 22px;
-    justify-content: center;
+  /*****************************************************
+  *  Game report page - BadInfluence/AdminReport.html  *
+  ******************************************************/
+  .report-container {
+    width: 100%;
     display: flex;
-    padding-bottom: 20px;
-    flex-direction: column;
-    align-items: center;
+    justify-content: center;
+    font-family: "Roboto Slab", serif;
 
-    h2 {
-      font-size: 20px;
+    .report-info {
+      width: 90%;
+      border-collapse: collapse;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+      background-color: white;
+      border-radius: 10px;
     }
-    p {
+
+    .rapport-header {
+      padding-top: 22px;
+      justify-content: center;
+      display: flex;
+      padding-bottom: 20px;
+      flex-direction: column;
+      align-items: center;
+
+      h2 {
+        font-size: 20px;
+      }
+
+      p {
+        font-size: 16px;
+        text-align: center;
+      }
+    }
+
+    .dropdown-questions {
+      display: flex;
+      justify-content: center;
       font-size: 16px;
-      text-align: center;
-    }
-  }
+      flex-direction: column;
 
-  .dropdown-questions {
-    display: flex;
-    justify-content: center;
-    font-size: 16px;
-    flex-direction: column;
-
-     .question-title {
-      font-size: 20px;
-      font-weight: bold;
-      padding-bottom: 5px;
+      .question-title {
+        font-size: 20px;
+        font-weight: bold;
+        padding-bottom: 5px;
+      }
     }
-  }
 
     .resultater {
       display: flex;
@@ -452,110 +466,102 @@
     }
 
     .d3-row {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    justify-content: center;
-    font-size: 16px;
-    font-family: "Roboto Slab", serif;
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      justify-content: center;
+      font-size: 16px;
+      font-family: "Roboto Slab", serif;
 
-        #d3consensus {
-          width: 50%;
-        }
+      #d3consensus {
+        width: 50%;
+      }
 
-        #d3playback {
-          display: inline;
+      #d3playback {
+        display: inline;
 
-        }
+      }
     }
 
-.alert-info {
-    color: $ku-red;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-    align-self: center;
+    .alert-info {
+      color: $ku-red;
+      justify-content: center;
+      display: flex;
+      flex-direction: column;
+      align-self: center;
 
+    }
+
+    .alert {
+      width: 60%;
+    }
+
+    .graf {
+      width: 40%;
+      height: 140px;
+    }
+
+    .explanation {
+      display: flex;
+      justify-content: space-evenly;
+      flex-direction: row;
+
+
+    }
+
+    .dropdown-toggle {
+      background-color: $ku-red;
+      color: white;
+      font-size: 18px;
+      width: auto !important;
+
+      &:hover {
+        background-color: $ku-dark-green;
+      }
+    }
+
+    .play-button {
+      background-color: $ku-red;
+      color: white;
+      width: 100px;
+      display: flex;
+      justify-content: center;
+
+      &:hover {
+        background-color: $ku-dark-green;
+      }
+    }
   }
 
-.alert {
-  width: 60%;
-}
-.graf {
-  width: 40%;
-  height: 140px;
-}
-.explanation {
-  display: flex;
-  justify-content: space-evenly;
-  flex-direction: row;
-
-
-}
-.dropdown-toggle {
-    background-color: $ku-red;
-    color: white;
-    font-size: 18px;
-    width: auto !important;
-
-    &:hover {
-     background-color: $ku-dark-green;
-    }
-}
-
-  .play-button {
-    background-color: $ku-red;
-    color: white;
-    width: 100px;
-    display: flex;
-    justify-content: center;
-
-    &:hover {
-      background-color: $ku-dark-green;
-    }
+  .d3-container {
+    background-color: orange;
+    width: 20%;
   }
-}
-
-.d3-container {
-  background-color: orange;
-  width: 20%;
-}
 
 
-/*****************************************************
-*  Authenticated demo page - DemoIndex.html  *
-******************************************************/
-.demo-container {
-  margin-top: 10%;
-  padding: 10px 50px 10px 50px;
-}
+  /*****************************************************
+  *  Authenticated demo page - DemoIndex.html  *
+  ******************************************************/
+  .demo-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
 
 
-/*****************************************************
-*  Authenticated create session - Sessions.html  *
-******************************************************/
-.create-session-container {
-   margin-top: 10%;
-   padding: 10px 50px 10px 50px;
-}
+  /*****************************************************
+  *  Authenticated create session - Sessions.html  *
+  ******************************************************/
+  .create-session-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
 
-.game-admin {
-  margin-top: 5%;
-  padding: 10px 50px 10px 50px;
-  background-color: white !important;
-  border-radius: 10px;
-}
-
-/****************************
-*  Login view - login.html  *
-****************************/
-.game-login {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  margin-top: 5%;
-  align-items: center;
-}
+  .game-admin {
+    margin-top: 5%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+    border-radius: 10px;
+  }
 
 /****************************
 *  Rooms view - Rooms.html  *

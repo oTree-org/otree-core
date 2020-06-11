@@ -699,17 +699,6 @@ table.table-debug td.debug-var-value {
   }
 
   /****************************
-  *  Login view - login.html  *
-  ****************************/
-  .game-login {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 5%;
-    align-items: center;
-  }
-
-  /****************************
   *  Rooms view - Rooms.html  *
   ****************************/
   .report-table-container-rooms {
@@ -858,20 +847,47 @@ table.table-debug td.debug-var-value {
     font-size: 16px;
   }
 
-  .home-button .fa-chalkboard-teacher {
-    font-size: 25px;
+  .home-button {
+    /**********************************************************
+    *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+    ***********************************************************/
+    /********************************************************
+    *  Admin/Teacher panel navigation - CustomSession.html  *
+    *********************************************************/
+    /*********************************************
+    *  Start link / intro - SessionStartLinks.html  *
+    **********************************************/
+    /*********************************************
+    *  Monitor game progress - SessionMonitor.html  *
+    **********************************************/
+    /*****************************************************
+    *  Game report page - BadInfluence/AdminReport.html  *
+    ******************************************************/
+    /*****************************************************
+    *  Authenticated demo page - DemoIndex.html  *
+    ******************************************************/
+    /*****************************************************
+    *  Authenticated create session - Sessions.html  *
+    ******************************************************/
+    /****************************
+    *  Rooms view - Rooms.html  *
+    ****************************/
   }
   .home-button .fa-home {
+    padding-right: 8px;
+    padding-top: 8px;
     font-size: 25px;
   }
-  .home-button span {
+  .home-button .home-button .fa-chalkboard-teacher {
+    font-size: 25px;
+  }
+  .home-button .home-button .fa-home {
+    font-size: 25px;
+  }
+  .home-button .home-button span {
     display: none;
   }
-
-  /**********************************************************
-  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
-  ***********************************************************/
-  .create-game {
+  .home-button .create-game {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -883,27 +899,27 @@ table.table-debug td.debug-var-value {
     right: 0;
     overflow: auto;
   }
-  .create-game .card {
+  .home-button .create-game .card {
     margin-bottom: 30px;
     width: 90%;
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
   }
-  .create-game .card-header {
+  .home-button .create-game .card-header {
     padding-bottom: 0;
     display: flex;
     justify-content: center;
   }
-  .create-game .card-header,
-.create-game .card-footer {
+  .home-button .create-game .card-header,
+.home-button .create-game .card-footer {
     color: #901A1E;
     border: none;
     background-color: white;
     font-size: 18px;
     font-weight: bolder;
   }
-  .create-game .card-body {
+  .home-button .create-game .card-body {
     color: #901A1E;
     display: flex;
     justify-content: center;
@@ -911,52 +927,48 @@ table.table-debug td.debug-var-value {
     font-size: 14px;
     padding-bottom: 0;
   }
-  .create-game .sack-img {
+  .home-button .create-game .sack-img {
     width: 190px;
     height: 190px;
     display: none;
   }
-  .create-game .network-img {
+  .home-button .create-game .network-img {
     width: 150px;
     height: 150px;
     display: none;
   }
-  .create-game .card-footer {
+  .home-button .create-game .card-footer {
     padding-top: 0;
     display: flex;
     justify-content: center;
   }
-  .create-game .card-footer .form-control {
+  .home-button .create-game .card-footer .form-control {
     max-width: 100%;
     margin-bottom: 20px;
     font-size: 14px;
   }
-  .create-game .card-footer .footer-row {
+  .home-button .create-game .card-footer .footer-row {
     display: flex;
     justify-content: center;
     flex-direction: row;
     align-items: center;
   }
-  .create-game .card-footer .btn-primary {
+  .home-button .create-game .card-footer .btn-primary {
     background-color: #901A1E;
     border-color: #901A1E;
     width: 100%;
   }
-  .create-game .card-footer .btn-primary:hover {
+  .home-button .create-game .card-footer .btn-primary:hover {
     background-color: #7C992B;
     border-color: transparent;
   }
-
-  /********************************************************
-  *  Admin/Teacher panel navigation - CustomSession.html  *
-  *********************************************************/
-  #admin-panel {
+  .home-button #admin-panel {
     margin-top: 3%;
   }
-  #admin-panel .nav-tabs {
+  .home-button #admin-panel .nav-tabs {
     border-color: transparent;
   }
-  #admin-panel .btn-circle {
+  .home-button #admin-panel .btn-circle {
     width: 100px;
     height: 100px;
     padding: 10px 16px;
@@ -968,30 +980,24 @@ table.table-debug td.debug-var-value {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     font-family: "Annie Use Your Telescope", serif;
   }
-  #admin-panel .btn-circle:hover {
+  .home-button #admin-panel .btn-circle:hover {
     color: white;
     background-color: #5f861e;
   }
-
-  #admin-panel .nav li > a {
+  .home-button #admin-panel .nav li > a {
     text-transform: capitalize;
     color: #901A1E;
     transition: background-color 0.2s, color 0.2s;
   }
-
-  #admin-panel .nav li.active > a {
+  .home-button #admin-panel .nav li.active > a {
     background-color: transparent;
     color: green;
   }
-  #admin-panel .nav li.active > a .btn-circle {
+  .home-button #admin-panel .nav li.active > a .btn-circle {
     background-color: #5f861e;
     color: white;
   }
-
-  /*********************************************
-  *  Start link / intro - SessionStartLinks.html  *
-  **********************************************/
-  .gamelink-content {
+  .home-button .gamelink-content {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -1004,7 +1010,7 @@ table.table-debug td.debug-var-value {
     color: white;
     text-align: center;
   }
-  .gamelink-content .game-link-info {
+  .home-button .gamelink-content .game-link-info {
     font-size: 18px;
     display: flex;
     justify-content: center;
@@ -1012,7 +1018,7 @@ table.table-debug td.debug-var-value {
     width: 70%;
     align-self: center;
   }
-  .gamelink-content .start-link {
+  .home-button .gamelink-content .start-link {
     margin-top: 20px;
     background-color: white;
     border-radius: 40px;
@@ -1022,19 +1028,15 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     align-self: center;
   }
-  .gamelink-content .start-link a {
+  .home-button .gamelink-content .start-link a {
     text-decoration: none;
     color: #901A1E;
     font-size: 16px;
   }
-  .gamelink-content .start-link a:hover {
+  .home-button .gamelink-content .start-link a:hover {
     color: #5f861e;
   }
-
-  /*********************************************
-  *  Monitor game progress - SessionMonitor.html  *
-  **********************************************/
-  .info {
+  .home-button .info {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -1042,7 +1044,7 @@ table.table-debug td.debug-var-value {
     flex-direction: column;
     font-family: "Roboto Slab", serif;
   }
-  .info .info-content {
+  .home-button .info .info-content {
     display: flex;
     justify-content: center;
     width: 90%;
@@ -1051,26 +1053,26 @@ table.table-debug td.debug-var-value {
     color: white;
     align-items: center;
   }
-  .info .info-content h1 {
+  .home-button .info .info-content h1 {
     font-size: 18px;
   }
-  .info .info-content p {
+  .home-button .info .info-content p {
     font-size: 16px;
   }
-  .info .fremryk-spiller {
+  .home-button .info .fremryk-spiller {
     display: flex;
     justify-content: center;
     flex-direction: column;
   }
-  .info .fremryk-spiller .fremryk-spiller-knap {
+  .home-button .info .fremryk-spiller .fremryk-spiller-knap {
     background-color: white;
     color: #901A1E;
     margin: 0 0 10px 0;
   }
-  .info .fremryk-spiller .fremryk-spiller-knap:hover {
+  .home-button .info .fremryk-spiller .fremryk-spiller-knap:hover {
     color: #5f861e;
   }
-  .info .player-table {
+  .home-button .info .player-table {
     width: 80%;
     background-color: white;
     border-collapse: collapse;
@@ -1078,8 +1080,7 @@ table.table-debug td.debug-var-value {
     color: #901A1E;
     font-size: 15px;
   }
-
-  .results-table {
+  .home-button .results-table {
     width: 100%;
     background-color: white;
     border-collapse: collapse;
@@ -1089,18 +1090,14 @@ table.table-debug td.debug-var-value {
     display: flex;
     justify-content: center;
   }
-
-  /*****************************************************
-  *  Game report page - BadInfluence/AdminReport.html  *
-  ******************************************************/
-  .report-container {
+  .home-button .report-container {
     width: 100%;
     display: flex;
     justify-content: center;
     color: #901A1E;
     font-family: "Roboto Slab", serif;
   }
-  .report-container .report-info {
+  .home-button .report-container .report-info {
     width: 90%;
     border-collapse: collapse;
     overflow: hidden;
@@ -1108,7 +1105,7 @@ table.table-debug td.debug-var-value {
     background-color: white;
     border-radius: 10px;
   }
-  .report-container .rapport-header {
+  .home-button .report-container .rapport-header {
     padding-top: 20px;
     justify-content: center;
     display: flex;
@@ -1116,29 +1113,29 @@ table.table-debug td.debug-var-value {
     flex-direction: column;
     align-items: center;
   }
-  .report-container .rapport-header h2 {
+  .home-button .report-container .rapport-header h2 {
     font-size: 18px;
   }
-  .report-container .rapport-header p {
+  .home-button .report-container .rapport-header p {
     font-size: 16px;
     text-align: center;
   }
-  .report-container .dropdown-questions {
+  .home-button .report-container .dropdown-questions {
     display: flex;
     justify-content: center;
     font-size: 16px;
     flex-direction: column;
   }
-  .report-container .dropdown-questions .question-title {
+  .home-button .report-container .dropdown-questions .question-title {
     font-size: 18px;
     font-weight: bold;
     padding-bottom: 5px;
   }
-  .report-container .resultater {
+  .home-button .report-container .resultater {
     display: flex;
     justify-content: center;
   }
-  .report-container .d3-row {
+  .home-button .report-container .d3-row {
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -1146,107 +1143,82 @@ table.table-debug td.debug-var-value {
     font-size: 14px;
     font-family: "Roboto Slab", serif;
   }
-  .report-container .d3-row #d3consensus {
+  .home-button .report-container .d3-row #d3consensus {
     display: flex;
     justify-content: center;
   }
-  .report-container .d3-row #d3playback {
+  .home-button .report-container .d3-row #d3playback {
     display: none;
   }
-  .report-container .alert-info {
+  .home-button .report-container .alert-info {
     color: #901A1E;
     justify-content: center;
     display: flex;
     flex-direction: column;
     align-self: center;
   }
-  .report-container .alert {
+  .home-button .report-container .alert {
     width: 100%;
   }
-  .report-container .graf {
+  .home-button .report-container .graf {
     height: 130px;
   }
-  .report-container .explanation {
+  .home-button .report-container .explanation {
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
   }
-  .report-container .dropdown-toggle {
+  .home-button .report-container .dropdown-toggle {
     background-color: #901A1E;
     color: white;
     font-size: 16px;
     width: auto !important;
   }
-  .report-container .dropdown-toggle:hover {
+  .home-button .report-container .dropdown-toggle:hover {
     background-color: #5f861e;
   }
-  .report-container .play-button {
+  .home-button .report-container .play-button {
     background-color: #901A1E;
     color: white;
     width: 100px;
     display: flex;
     justify-content: center;
   }
-  .report-container .play-button:hover {
+  .home-button .report-container .play-button:hover {
     background-color: #5f861e;
   }
-
-  .d3-container {
+  .home-button .d3-container {
     background-color: orange;
     width: 20%;
   }
-
-  /*****************************************************
-  *  Authenticated demo page - DemoIndex.html  *
-  ******************************************************/
-  .demo-container {
+  .home-button .demo-container {
     margin-top: 10%;
     padding: 10px 50px 10px 50px;
   }
-
-  /*****************************************************
-  *  Authenticated create session - Sessions.html  *
-  ******************************************************/
-  .create-session-container {
+  .home-button .create-session-container {
     margin-top: 10%;
     padding: 10px 50px 10px 50px;
   }
-
-  .game-admin {
+  .home-button .game-admin {
     margin-top: 5%;
     padding: 10px 50px 10px 50px;
     background-color: white !important;
   }
-
-  /****************************
-  *  Login view - login.html  *
-  ****************************/
-  .game-login {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 5%;
-    align-items: center;
-  }
-
-  /****************************
-  *  Rooms view - Rooms.html  *
-  ****************************/
-  .report-table-container-rooms {
+  .home-button .report-table-container-rooms {
     display: flex;
     flex-direction: column;
     align-items: center;
     color: #901A1E;
     font-family: "Roboto Slab", serif;
   }
-  .report-table-container-rooms #roomsTable {
+  .home-button .report-table-container-rooms #roomsTable {
     width: 100%;
     display: inline-table;
     border-collapse: separate;
     border-spacing: 0 0.5rem;
     border-radius: 0 10px 0 10px;
   }
-  .report-table-container-rooms #roomsTable .rooms-table-header {
+  .home-button .report-table-container-rooms #roomsTable .rooms-table-header {
     background: #901A1E;
     color: white;
     font-weight: bold;
@@ -1255,13 +1227,13 @@ table.table-debug td.debug-var-value {
     text-align: center;
     box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
   }
-  .report-table-container-rooms #roomsTable .bad_influence-table-data {
+  .home-button .report-table-container-rooms #roomsTable .bad_influence-table-data {
     font-size: 26px;
     border-top: none !important;
     text-align: center;
     vertical-align: middle;
   }
-  .report-table-container-rooms #roomsTable .bad_influence-table-row {
+  .home-button .report-table-container-rooms #roomsTable .bad_influence-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
@@ -1720,17 +1692,6 @@ table.table-debug td.debug-var-value {
   }
 
   /****************************
-  *  Login view - login.html  *
-  ****************************/
-  .game-login {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 5%;
-    align-items: center;
-  }
-
-  /****************************
   *  Rooms view - Rooms.html  *
   ****************************/
   .report-table-container-rooms {
@@ -1873,6 +1834,16 @@ table.table-debug td.debug-var-value {
     margin-bottom: 0;
   }
 
+  .home-button .fa-chalkboard-teacher {
+    font-size: 32px;
+  }
+  .home-button .fa-home {
+    font-size: 32px;
+  }
+  .home-button span {
+    display: inline;
+  }
+
   /******************************
   *        Navbar Styling       *
   ******************************/
@@ -1882,10 +1853,9 @@ table.table-debug td.debug-var-value {
     font-size: 20px;
   }
 
-  .home-button .fa-chalkboard-teacher {
-    font-size: 32px;
-  }
   .home-button .fa-home {
+    padding-right: 8px;
+    padding-top: 8px;
     font-size: 32px;
   }
   .home-button span {
@@ -2232,17 +2202,6 @@ table.table-debug td.debug-var-value {
     padding: 10px 50px 10px 50px;
     background-color: white !important;
     border-radius: 10px;
-  }
-
-  /****************************
-  *  Login view - login.html  *
-  ****************************/
-  .game-login {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 5%;
-    align-items: center;
   }
 
   /****************************
