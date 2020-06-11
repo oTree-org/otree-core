@@ -1,7 +1,7 @@
 import time
 
 import vanilla
-from django.contrib.auth.models import User
+from otree.models_concrete import User
 from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse
 
@@ -23,7 +23,7 @@ class CreateRoom(vanilla.CreateView):
 
     def get_context_data(self, **kwargs):
         context = super(CreateRoom, self).get_context_data(**kwargs)
-        context["teacher"] = User.objects.get(username=self.request.user)
+        context["teacher"] = User.objects.get(email=self.request.user)
         return context
 
     def form_valid(self, form):
