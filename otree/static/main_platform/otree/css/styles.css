@@ -306,10 +306,14 @@ table.table-debug td.debug-var-value {
     color: white;
   }
 
-  .home-button .fa-home {
-    padding-right: 8px;
-    padding-top: 8px;
+  .home-button {
     font-size: 20px;
+  }
+  .home-button .fa-chalkboard-teacher {
+    padding: 8px 8px 0 20px;
+  }
+  .home-button .fa-home {
+    padding: 8px 8px 0 0;
   }
   .home-button span {
     display: none;
@@ -704,6 +708,43 @@ table.table-debug td.debug-var-value {
     margin-top: 5%;
     align-items: center;
   }
+
+  /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
+  .report-table-container-rooms {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-table-container-rooms #roomsTable {
+    width: 100%;
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    border-radius: 10px;
+  }
+  .report-table-container-rooms #roomsTable .rooms-table-header {
+    background: #901A1E;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-data {
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
 }
 @media (min-width: 375px) {
   /*************************
@@ -817,9 +858,10 @@ table.table-debug td.debug-var-value {
     font-size: 16px;
   }
 
+  .home-button .fa-chalkboard-teacher {
+    font-size: 25px;
+  }
   .home-button .fa-home {
-    padding-right: 8px;
-    padding-top: 8px;
     font-size: 25px;
   }
   .home-button span {
@@ -1186,6 +1228,43 @@ table.table-debug td.debug-var-value {
     margin-top: 5%;
     align-items: center;
   }
+
+  /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
+  .report-table-container-rooms {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-table-container-rooms #roomsTable {
+    width: 100%;
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    border-radius: 0 10px 0 10px;
+  }
+  .report-table-container-rooms #roomsTable .rooms-table-header {
+    background: #901A1E;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-data {
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
 }
 @media (min-width: 768px) {
   /*************************
@@ -1302,9 +1381,10 @@ table.table-debug td.debug-var-value {
     font-size: 18px;
   }
 
+  .home-button .fa-chalkboard-teacher {
+    font-size: 30px;
+  }
   .home-button .fa-home {
-    padding-right: 8px;
-    padding-top: 8px;
     font-size: 30px;
   }
   .home-button span {
@@ -1649,6 +1729,43 @@ table.table-debug td.debug-var-value {
     margin-top: 5%;
     align-items: center;
   }
+
+  /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
+  .report-table-container-rooms {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-table-container-rooms #roomsTable {
+    width: 100%;
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    border-radius: 0 10px 0 10px;
+  }
+  .report-table-container-rooms #roomsTable .rooms-table-header {
+    background: #901A1E;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-data {
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
 }
 @media (min-width: 1025px) {
   /*************************
@@ -1765,9 +1882,10 @@ table.table-debug td.debug-var-value {
     font-size: 20px;
   }
 
+  .home-button .fa-chalkboard-teacher {
+    font-size: 32px;
+  }
   .home-button .fa-home {
-    padding-right: 8px;
-    padding-top: 8px;
     font-size: 32px;
   }
   .home-button span {
@@ -2125,6 +2243,66 @@ table.table-debug td.debug-var-value {
     flex-direction: column;
     margin-top: 5%;
     align-items: center;
+  }
+
+  /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
+  .room-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 7%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    width: 90%;
+    background-color: white;
+    padding-top: 40px;
+    font-family: "Roboto Slab", serif;
+  }
+  .room-container .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .room-container .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .room-container .table {
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+  }
+  .room-container .rooms-table-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .room-container .rooms-table-container .rooms-table-row {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    padding: 10px;
+    background: #901A1E;
+    color: white;
+  }
+  .room-container .rooms-table-container thead {
+    background: #901A1E;
+    color: white;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(157, 52, 55, 0.5);
+    border-radius: 10px;
+  }
+  .room-container .rooms-table-container .rooms-table-data {
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .room-container .rooms-table-container .rooms-table-row-data {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
   }
 }
 

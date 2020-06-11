@@ -133,9 +133,10 @@
 }
 
 .home-button {
+  .fa-chalkboard-teacher {
+   font-size: 25px;
+  }
   .fa-home {
-  padding-right: 8px;
-  padding-top: 8px;
   font-size: 25px;
 }
  span {
@@ -567,4 +568,48 @@
     margin-top: 5%;
     align-items: center;
   }
+
+     /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
+  .report-table-container-rooms {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: $ku-red;
+    font-family: 'Roboto Slab', serif;
+
+    #roomsTable {
+      width: 100%;
+      display: inline-table;
+      border-collapse: separate;
+      border-spacing: 0 0.5rem;
+      border-radius: 0 10px 0 10px;
+
+
+      .rooms-table-header {
+        background: $ku-red;
+        color: white;
+        font-weight: bold;
+        font-size: 20px;
+        border-top: none !important;
+        text-align: center;
+        box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+      }
+
+      .bad_influence-table-data {
+        font-size: 26px;
+
+        border-top: none !important;
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      .bad_influence-table-row {
+        box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+      }
+    }
+  }
+
 }

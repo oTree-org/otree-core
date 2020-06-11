@@ -34,27 +34,17 @@ class CreateRoom(vanilla.CreateView):
     def get_success_url(self):
         return reverse_lazy("Rooms")
 
-    """def get_success_url(self):
-        return reverse_lazy("view_room_with_pk", kwargs={'slug': self.object.slug})
 
-
-class RoomDetailView(vanilla.DetailView):
-    template_name = "otree/admin/RoomDetail.html"
-
-    def get_object(self):
-        slug_ = self.kwargs.get("slug")
-        return get_object_or_404(RoomsTest, slug=slug_)
-
-"""
-
-# This class Rooms, doesthe same as making a listView of all the rooms but not per teacher as this is defined in settings.py
+# This class Rooms, does the same as making a listView of all
+#
 class Rooms(vanilla.TemplateView):
+    """This class Rooms shows all rooms for a teacher"""
     template_name = 'otree/admin/Rooms.html'
     url_pattern = r"^rooms/$"
 
     def get_context_data(self, **kwargs):
         context = super(Rooms, self).get_context_data(**kwargs)
-        context["all_rooms"] = RoomsTest.objects.all().values()
+        context["all_rooms"] = RoomsTest.objects.filter(teacher=self.request.user).values()
         return context
 
 
@@ -147,3 +137,18 @@ class RoomWithSession(vanilla.TemplateView):
             collapse_links=True,
             **kwargs
         )
+
+
+
+    """def get_success_url(self):
+        return reverse_lazy("view_room_with_pk", kwargs={'slug': self.object.slug})
+
+
+class RoomDetailView(vanilla.DetailView):
+    template_name = "otree/admin/RoomDetail.html"
+
+    def get_object(self):
+        slug_ = self.kwargs.get("slug")
+        return get_object_or_404(RoomsTest, slug=slug_)
+
+"""

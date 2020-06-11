@@ -1,9 +1,10 @@
+{% extends "otree/BaseAdmin.html" %}
 {% load otree static %}
 {% load i18n %}
 {% block styles %}
     <style>
         body {
-            background-color: deeppink;
+            background-image: url("/static/main_platform/otree/media/create-game-background.svg");
             background-repeat: no-repeat;
               background-size: 100%, 100%;
               display: flex;
@@ -12,49 +13,46 @@
         }
     </style>
 {% endblock %}
-
+{% block content %}
 <!-- Game/session view as active or admin with settings/config-->
-{% if user.is_authenticated and user.is_staff or user.is_superuser %}
-<div>
-<p>
-    is_stafff and admin page
-</p>
+{% if user.is_authenticated and user.is_staff or user.is_superuser or user.is_active %}
 
-<div>
-<p>Opret rum</p>
-<p>Du har valgt at oprette et klasserum.</p>
-<p>Efter du har oprettet et klasserum, kan spillene begynde.</p>
-<p>Du kan altid finde og redigere dine rum øverst på siden under <b>"Mine rum"</b></p>
 
-     <form action="." method="post">
-        {% csrf_token %}
-        {{ form.name }}
-        <div>
-            <input type="submit" class="btn btn-primary" value="Opret klasserum">
+
+<div class="create-game">
+    <div class="card">
+        <a href="{% url 'games' %}" class="back-button">Gå tilbage</a>
+        <header class="card-header">
+          Opret klasserum
+        </header>
+
+        <div class="card-body">
+            <div>
+                <p>Du har valgt at oprette et <b>klasserum.</b></p>
+                <p>Dette klasserum bruger du til at lave spil til din klasse.</p>
+                <p>Indtast det navn du ønsker dit nye klasserum skal have.</p>
+                <small>Navnet kan kun indeholde <b>Bogstaver</b>, <b>Tal</b> og <b>Underscores</b>. Ingen mellemrum.</small>
+                <br>
+                <small><i>Eksempelvis: <b>IBC_2G</b></i></small>
+
+            </div>
         </div>
-    </form>
+        <div class="card-footer">
+             <form action="." method="post">
+                {% csrf_token %}
+                {{ form.name }}
+                <div>
+                    <button type="submit" class="btn btn-primary" value="Opret klasserum">Opret klasserum</button>
+                </div>
+             </form>
+        </div>
 </div>
-</div>
-
-<!-- Game/session creation without login -->
 {% else %}
-
+<!-- Game/session creation without login -->
 <div>
-<p>Opret rum</p>
-<p>Du har valgt at oprette et klasserum.</p>
-<p>Efter du har oprettet et klasserum, kan spillene begynde.</p>
-<p>Du kan altid finde og redigere dine rum øverst på siden under <b>"Mine rum"</b></p>
-
-    <form action="." method="post">
-        {% csrf_token %}
-        {{ form.name }}
-        <div>
-            <input type="submit" class="btn btn-primary" value="Opret klasserum">
-        </div>
-    </form>
+    <h3>*Du har ikke adgang til dette view, venligst log ind. </h3>
 </div>
-
 
 {% endif %}
-
+{% endblock %}
 

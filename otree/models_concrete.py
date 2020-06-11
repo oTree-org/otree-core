@@ -12,7 +12,7 @@ from unidecode import unidecode
 
 class RoomsTest(models.Model):
     """Rooms models class for creating rooms"""
-    name = otreemodels.StringField(max_length=200, null=False)
+    name = otreemodels.StringField(max_length=200, unique=True ,null=False)
     display_name = otreemodels.StringField(max_length=200)
     slug = models.SlugField(max_length=100)
     teacher = models.ForeignKey(User, db_column="username", on_delete=models.CASCADE, null=False)
