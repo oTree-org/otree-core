@@ -350,6 +350,6 @@ class Message(models.Model):
     group = models.ForeignKey('Group', on_delete=models.CASCADE, null=True)
 
     @staticmethod
-    def last_15_messages():
-        last_15 = Message.objects.order_by('-timestamp')[:15]
-        return reversed(last_15)
+    def last_30_messages():
+        last_30 = Message.objects.order_by('-timestamp')[:30]
+        return reversed(last_30)

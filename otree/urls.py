@@ -95,7 +95,7 @@ def url_patterns_from_builtin_module(module_name: str):
             # staff_member_required decorator
             # but then .test_auth_level fails on client.get():
             # NoReverseMatch: 'admin' is not a registered namespace
-           #
+        #
 
         url_pattern = ViewCls.url_pattern
         if callable(url_pattern):
@@ -129,17 +129,6 @@ def extensions_export_urlpatterns():
     return view_urls
 
 
-import django.contrib.auth.views as auth_views
-
-
-class LoginView(auth_views.LoginView):
-    template_name = 'otree/login.html'
-
-
-class LogoutView(auth_views.LogoutView):
-    next_page = 'games'
-
-
 class HomeView(vanilla.TemplateView):
     template_name = 'otree/home.html'
 
@@ -160,6 +149,7 @@ def get_urlpatterns():
                       #path('mit_klasserum/<slug:slug>/', RoomDetailView.as_view(), name='view_room_with_pk'),
                       urls.url(r'^home/$', HomeView.as_view(), name='home'),
                       urls.url(r'^admin/', admin.site.urls),
+                      urls.url(r'^accounts/', urls.include('otree.accounts.urls'))
                   ]
 
     urlpatterns += staticfiles_urlpatterns()

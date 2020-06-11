@@ -9,80 +9,169 @@
 {% endblock %}
 
 {% block internal_scripts %}
-{{ block.super }}
-<script>
-$(function () {
-    $('[data-toggle="popover"]').popover()
+    {{ block.super }}
+    <script>
+        $(function () {
+            $('[data-toggle="popover"]').popover()
 
-    // if top menu link is clicked inside iframe
-    // we exit full mode
-    $("#top_menu a").click(function() {
-        if ( window.location !== window.parent.location ) {
-                window.parent.location.href = $(this).attr("href");
-        }
-    });
+            // if top menu link is clicked inside iframe
+            // we exit full mode
+            $("#top_menu a").click(function () {
+                if (window.location !== window.parent.location) {
+                    window.parent.location.href = $(this).attr("href");
+                }
+            });
 
-    // i guess sockets must be global variables, and i should name it
-    // something other than 'socket' because there might be other sockets
-    // in descendant pages
-    var disconnectionSocket;
+            // i guess sockets must be global variables, and i should name it
+            // something other than 'socket' because there might be other sockets
+            // in descendant pages
+            var disconnectionSocket;
 
-    function setupDisconnectedAlert() {
-        disconnectionSocket = makeReconnectingWebSocket('/no_op/');
-        var socket = disconnectionSocket;
+            function setupDisconnectedAlert() {
+                disconnectionSocket = makeReconnectingWebSocket('/no_op/');
+                var socket = disconnectionSocket;
 
-        var alertStyle = document.querySelector('#disconnected-alert').style;
-        socket.onopen = function (e) {
-            alertStyle.visibility = 'hidden';
-        };
+                var alertStyle = document.querySelector('#disconnected-alert').style;
+                socket.onopen = function (e) {
+                    alertStyle.visibility = 'hidden';
+                };
 
-        socket.onclose = function (e) {
-            alertStyle.visibility = 'visible';
-        };
-    }
-    setupDisconnectedAlert();
+                socket.onclose = function (e) {
+                    alertStyle.visibility = 'visible';
+                };
+            }
 
-});
+            setupDisconnectedAlert();
 
-</script>
+        });
 
-<script src="{% static 'main_platform/otree/js/jquery.color-2.1.2.min.js' %}"></script>
-<script src="{% static 'main_platform/otree/js/jquery.timeago.js' %}"></script>
-<script src="{% static 'main_platform/otree/js/jsondiffpatch.min.js' %}"></script>
-<script src="{% static 'main_platform/otree/js/table-utils3.js' %}"></script>
+    </script>
+
+    <script src="{% static 'main_platform/otree/js/jquery.color-2.1.2.min.js' %}"></script>
+    <script src="{% static 'main_platform/otree/js/jquery.timeago.js' %}"></script>
+    <script src="{% static 'main_platform/otree/js/jsondiffpatch.min.js' %}"></script>
+    <script src="{% static 'main_platform/otree/js/table-utils3.js' %}"></script>
 
 {% endblock %}
 {% block body_main %}
     {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+ <div class="navbar-collapse collapse" id="navbarSupportedContent1">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'games' %}">Forside</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'DemoIndex' %}">Demo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'Sessions' %}">Sessions</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'Rooms' %}">Rooms</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'ExportIndex' %}">Data</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'ServerCheck' %}">Server Check</a></li>
+                    {% if request.user.is_authenticated|default:False %}
+                        <li><a class="nav-link" href="{% url 'change_password' %}">{% trans 'Skift kodeord' %}</a></li>
+                        <li><a class="nav-link" href="{% url 'logout' %}">{% trans 'Log out' %}</a></li>
 
- <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
-  <div class="container-fluid">
-    <!-- Navbar when logged in as SUPERUSER or STAFF -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="top_menu1">
-        <a class="navbar-brand" href="{% url 'games' %}">Multiplayer Dude</a>
+                    {% else %}
+                        <li><a class="nav-link" href="{% url 'login' %}">{% trans 'Log in' %}</a></li>
+                    {% endif %}
+                    <li>Bruger: {{ user.username }}</li>
+                </ul>
+            </div>
+        </nav>
 
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+    {% elif user.is_authenticated and user.is_active %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top position-absolute" id="top_menu1">
+            <a class="navbar-brand" href="{% url 'home' %}">Multiplayer Dude</a>
 
-        <div class="navbar-collapse collapse" id="navbarSupportedContent1">
-            <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link" href="{% url 'games' %}">Forside</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'DemoIndex' %}">Demo</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'Sessions' %}">Sessions</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'Rooms' %}">Rooms</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'ExportIndex' %}">Data</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'ServerCheck' %}">Server Check</a></li>
-                {% if request.user.is_authenticated|default:False %}
-                <li><a class="nav-link" href="{% url 'logout' %}">{% trans 'Log out' %}</a></li>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                {% else %}
-                <li><a class="nav-link" href="{% url 'login' %}">{% trans 'Log in' %}</a></li>
-                {% endif %}
-                <li>Bruger: {{ user.username }}</li>
-            </ul>
+            <div class="navbar-collapse collapse">
+                <ul class="navbar-nav">
+                    {% if request.user.is_authenticated|default:False %}
+                        <li><a class="nav-link" href="{% url 'change_password' %}">{% trans 'Skift kodeord' %}</a></li>
+                        <li><a class="nav-link" href="{% url 'logout' %}">{% trans 'Log out' %}</a></li>
+                    {% else %}
+
+                        <li><a class="nav-link" href="{% url 'login' %}">{% trans 'Log in' %}</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav> -->
+        <div class="page-header">
+            <h2>{% block title %}{% endblock %}</h2>
         </div>
-    </nav>
+    {% else %}
+
+        <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
+            <div class="container-fluid">
+                <ul class="nav navbar-nav login-nav navbar-left">
+                    <li>
+                        <a class="navbar-link login-button home-button" href="{% url 'games' %}" class="tilbage-button"><i
+                                class="fas fa-home"></i><span>Forside</span></a>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav ml-auto login-nav navbar-right">
+                    <li>
+                        {% if request.user.is_authenticated|default:False %}
+                            <a class="navbar-link login-button navbar-right"
+                               href="{% url 'logout' %}">{% trans 'Log out' %}</a>
+                        {% else %}
+                            <a class="navbar-link login-button navbar-right"
+                               href="{% url 'login' %}">{% trans 'Log in' %}</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+    {% endif %}
+
+    {% elif user.is_authenticated and user.is_active %}
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top position-absolute" id="top_menu1">
+            <a class="navbar-brand" href="{% url 'home' %}">Multiplayer Dude</a>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar-collapse collapse">
+                <ul class="navbar-nav">
+                    {% if request.user.is_authenticated|default:False %}
+                        <li><a class="nav-link" href="{% url 'change_password' %}">{% trans 'Skift kodeord' %}</a></li>
+                        <li><a class="nav-link" href="{% url 'logout' %}">{% trans 'Log out' %}</a></li>
+                    {% else %}
+
+                        <li><a class="nav-link" href="{% url 'login' %}">{% trans 'Log in' %}</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </nav> -->
+        <div class="page-header">
+            <h2>{% block title %}{% endblock %}</h2>
+        </div>
+    {% else %}
+
+        <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
+            <div class="container-fluid">
+                <ul class="nav navbar-nav login-nav navbar-left">
+                    <li>
+                        <a class="navbar-link login-button home-button" href="{% url 'games' %}" class="tilbage-button"><i
+                                class="fas fa-home"></i><span>Forside</span></a>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav ml-auto login-nav navbar-right">
+                    <li>
+                        {% if request.user.is_authenticated|default:False %}
+                            <a class="navbar-link login-button navbar-right"
+                               href="{% url 'logout' %}">{% trans 'Log out' %}</a>
+                        {% else %}
+                            <a class="navbar-link login-button navbar-right"
+                               href="{% url 'login' %}">{% trans 'Log in' %}</a>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+    {% endif %}
 
 {% elif user.is_authenticated and user.is_active %}
     <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
@@ -131,11 +220,11 @@ $(function () {
 {% endif %}
     <div>
         {% block menus %}{% endblock %}
-    <div>
-        {% block content %}{% endblock %}
+        <div>
+            {% block content %}{% endblock %}
+        </div>
+        <br/>
     </div>
-    <br/>
-</div>
 
 
     {% comment %}
