@@ -1,5 +1,6 @@
 from pathlib import Path
-from otree.models_concrete import RoomToSession
+
+from otree.models_concrete import RoomToSession, RoomsTest
 from otree.common import add_params_to_url, make_hash, validate_alphanumeric
 from django.conf import settings
 from django.urls import reverse
@@ -9,12 +10,8 @@ from string import ascii_lowercase, digits
 from django.contrib.auth.models import User
 
 
-
-
 class Room:
-    def __init__(
-        self, name, display_name, use_secure_urls=False, participant_label_file=None
-    ):
+    def __init__(self, name, display_name, use_secure_urls=False, participant_label_file=None):
         self.name = validate_alphanumeric(
             name, identifier_description='settings.ROOMS room name'
         )
@@ -35,8 +32,8 @@ class Room:
         try:
             return (
                 RoomToSession.objects.select_related('session')
-                .get(room_name=self.name)
-                .session
+                    .get(room_name=self.name)
+                    .session
             )
         except RoomToSession.DoesNotExist:
             return None
@@ -72,7 +69,6 @@ class Room:
         room_base_url = reverse('AssignVisitorToRoom', args=(self.name,))
         room_base_url = request.build_absolute_uri(room_base_url)
 
-
         if self.has_participant_labels():
 
             for label in self.get_participant_labels():
@@ -85,16 +81,14 @@ class Room:
         return participant_urls
 
 
+## This new get_ROOM_DICT uses the RoomsTest model where all Rooms are stored according to users
 def get_room_dict():
-    ROOM_DEFAULTS = getattr(settings, 'ROOM_DEFAULTS', {})
-    ROOMS = getattr(settings, 'ROOMS', [])
-    ROOM_DICT = {}
-    for room in ROOMS:
-        # extra layer in case ROOM_DEFAULTS has the same key
-        # as a room
-        room_object = Room(**dict(ROOM_DEFAULTS, **room))
-        ROOM_DICT[room_object.name] = room_object
-    return ROOM_DICT
+        roomModel = list(RoomsTest.objects.values('name', 'display_name'))
+        ROOM_DEFAULTS = getattr(roomModel, 'ROOM_DEFAULTS', {})
+        ROOM_DICT = {}
 
+        for room in roomModel:
+            room_object = Room(**dict(ROOM_DEFAULTS, **room))
+            ROOM_DICT[room_object.name] = room_object
+        return ROOM_DICT
 
-ROOM_DICT = get_room_dict()

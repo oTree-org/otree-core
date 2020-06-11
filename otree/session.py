@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from collections import defaultdict
 from decimal import Decimal
 from functools import reduce
@@ -451,9 +450,9 @@ def create_session(
 
     # this should happen after session.ready = True
     if room_name is not None:
-        from otree.room import ROOM_DICT
+        from otree.room import get_room_dict
 
-        room = ROOM_DICT[room_name]
+        room = get_room_dict()[room_name]
         room.set_session(session)
 
     return session

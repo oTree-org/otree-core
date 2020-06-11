@@ -62,3 +62,5 @@ wsproto==0.14.1
 xlrd==1.2.0
 XlsxWriter==0.9.3
 zope.interface==4.6.0
+unidecode==1.1.1
+bcrypt==3.1.7
