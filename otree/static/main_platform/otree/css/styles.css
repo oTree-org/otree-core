@@ -1,18 +1,2268 @@
-/* Error: expected "}".
- *     ,
- * 615 | }
- *     |  ^
- *     '
- *   media-queries\_mobile.scss 615:2  @import
- *   styles.scss 9:9                   root stylesheet */
-
-body::before {
-  font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
-      "Droid Sans Mono", monospace, monospace;
-  white-space: pre;
-  display: block;
-  padding: 1em;
-  margin-bottom: 1em;
-  border-bottom: 2px solid black;
-  content: 'Error: expected "}".\a     \2577 \a 615 \2502  }\a     \2502   ^\a     \2575 \a   media-queries\\_mobile.scss 615:2  @import\a   styles.scss 9:9                   root stylesheet';
+#monitor-table th, #monitor-table td, #results-table th, #results-table td {
+  text-align: center;
+  word-wrap: break-word;
 }
+
+table.draggable {
+  display: block;
+  overflow-x: auto;
+  margin-bottom: 0;
+  cursor: move;
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+table.draggable.grabbing {
+  cursor: move;
+}
+
+/* the 104px comes from 940/9...it's hardcoded to fit the current container
+ size...maybe there is a better way */
+table.draggable td, table.draggable th {
+  min-width: 104px;
+  max-width: 104px;
+}
+
+table.draggable thead {
+  display: block;
+}
+
+table.draggable tbody {
+  display: block;
+  max-height: 450px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/*************************
+ *         FORMS         *
+ *************************/
+/* Checkbox and radio button lists shall not have bullet points for every
+   item. */
+.controls > ul {
+  list-style-type: none;
+  padding-left: 2em;
+}
+
+/* Input fields should only take up to 400px width and not stretch over the
+   whole screen */
+.input-group,
+input.form-control,
+select.form-control,
+textarea.form-control {
+  max-width: 400px;
+}
+
+/* This allows the number field to contain around 7 digits. */
+input[type=number].form-control {
+  max-width: 100px;
+}
+
+.input-group-narrow {
+  /* Choosing a very small value that will always be filled with the input
+   * type and input-group-addon. That way we don't allow a gap between the
+   * two. See: https://github.com/oTree-org/otree-core/issues/257
+   */
+  max-width: 200px;
+}
+
+/* Dropdowns shall occupy only the needed space. */
+select.form-control {
+  width: auto;
+}
+
+.form-control-errors {
+  margin-top: 5px;
+  color: #b94a48;
+}
+
+/* Don't break BS3 wells */
+/* a little while after the oTree 2.0 upgrade, remove this */
+.instructions {
+  min-height: 20px;
+  padding: 19px;
+  margin-bottom: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #e3e3e3;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Hide those input spinners on webkit and mozilla browsers */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Slider Widget */
+.slider [data-slider-value] {
+  min-width: 5em;
+}
+
+.asteriskField {
+  display: none;
+}
+
+.radio {
+  margin-top: 0px;
+}
+
+.help-block {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.page-header {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* DEBUG TOOLBAR */
+.scrollable {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+}
+
+table.table-debug td.debug-var-name {
+  width: 20% !important;
+}
+
+table.table-debug td.debug-var-value {
+  max-width: 0px;
+}
+
+.top-left-fixed-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: lightgray;
+  font-style: italic;
+  visibility: hidden;
+  /* need to be on top of bs4 navbar which is 1030 */
+  z-index: 1100;
+}
+
+.otree-body {
+  max-width: 970px;
+}
+
+.page-header {
+  padding-top: 40px;
+}
+
+@media (min-width: 0px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  *********************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px;
+    margin-top: 6%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    font-family: "Roboto Slab", serif;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+    font-family: "Roboto Slab", serif;
+  }
+  .align-games .card-header {
+    padding-bottom: 0;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 12px;
+  }
+  .align-games .sack-img {
+    display: none;
+  }
+  .align-games .network-img {
+    display: none;
+  }
+  .align-games .card-footer {
+    padding-top: 0;
+  }
+  .align-games .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .align-games .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .align-games .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+  .align-games .card-footer .game-info {
+    padding-bottom: 20px;
+    font-size: 11px;
+  }
+  .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+    font-family: "Roboto Slab", serif;
+  }
+  .login-button:hover {
+    text-decoration: none;
+    color: #A7C5E9;
+  }
+
+  .tilbage-button {
+    justify-content: left;
+    display: flex;
+    font-family: "Roboto Slab", serif;
+    font-weight: bold;
+    color: white;
+    font-size: 12px;
+  }
+  .tilbage-button:hover {
+    text-decoration: none;
+    color: #5f861e;
+  }
+  .tilbage-button img {
+    color: white;
+  }
+
+  .home-button {
+    font-size: 20px;
+  }
+  .home-button .fa-chalkboard-teacher {
+    padding: 8px 8px 0 20px;
+  }
+  .home-button .fa-home {
+    padding: 8px 8px 0 0;
+  }
+  .home-button span {
+    display: none;
+  }
+
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+  ***********************************************************/
+  .back-button {
+    color: #901A1E;
+    padding-left: 20px;
+    padding-top: 10px;
+    font-family: "Roboto Slab", serif;
+  }
+  .back-button:hover {
+    color: #41739D;
+  }
+
+  .create-game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
+  .create-game .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+    font-family: "Roboto Slab", serif;
+  }
+  .create-game .card-header {
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+    padding-top: 0;
+  }
+  .create-game .card-header,
+.create-game .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
+  }
+  .create-game .card-body {
+    color: #901A1E;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    padding-bottom: 0;
+  }
+  .create-game .sack-img {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+  .create-game .network-img {
+    width: 80px;
+    height: 80px;
+    display: none;
+  }
+  .create-game .card-footer {
+    padding-top: 0;
+  }
+  .create-game .card-footer .form-control {
+    max-width: 100%;
+    margin-bottom: 20px;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .create-game .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .create-game .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .create-game .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+
+  /********************************************************
+  *  Admin/Teacher panel navigation - CustomSession.html  *
+  *********************************************************/
+  #admin-panel {
+    margin-top: 3%;
+  }
+  #admin-panel .nav-tabs {
+    border-color: transparent;
+  }
+  #admin-panel .btn-circle {
+    width: 100px;
+    height: 100px;
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.33;
+    border-radius: 150px;
+    background-color: white;
+    color: #901A1E;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+  }
+  #admin-panel .btn-circle:hover {
+    color: white;
+    background-color: #5f861e;
+  }
+
+  #admin-panel .nav li > a {
+    text-transform: capitalize;
+    color: #901A1E;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  #admin-panel .nav li.active > a {
+    background-color: transparent;
+    color: green;
+  }
+  #admin-panel .nav li.active > a .btn-circle {
+    background-color: #5f861e;
+    color: white;
+  }
+
+  /*********************************************
+  *  Start link / intro - SessionStartLinks.html  *
+  **********************************************/
+  .gamelink-content {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Roboto Slab", serif;
+    padding-top: 3%;
+    padding-bottom: 4%;
+    position: relative;
+    margin-top: 10px;
+    color: white;
+    text-align: center;
+  }
+  .gamelink-content .game-link-info {
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 90%;
+    align-self: center;
+  }
+  .gamelink-content .start-link {
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 40px;
+    padding: 20px 0 20px 0;
+    width: 95%;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+  }
+  .gamelink-content .start-link a {
+    text-decoration: none;
+    color: #901A1E;
+    font-size: 16px;
+  }
+  .gamelink-content .start-link a:hover {
+    color: #5f861e;
+  }
+
+  /*********************************************
+  *  Monitor game progress - SessionMonitor.html  *
+  **********************************************/
+  .info {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: "Roboto Slab", serif;
+  }
+  .info .info-content {
+    display: flex;
+    justify-content: center;
+    width: 90%;
+    flex-direction: column;
+    text-align: center;
+    color: white;
+    align-items: center;
+  }
+  .info .info-content h1 {
+    font-size: 18px;
+  }
+  .info .info-content p {
+    font-size: 16px;
+  }
+  .info .info-content .fremryk-spiller {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .info .info-content .fremryk-spiller .fremryk-spiller-knap {
+    background-color: white;
+    color: #901A1E;
+    margin: 0 0 10px 0;
+  }
+  .info .info-content .fremryk-spiller .fremryk-spiller-knap:hover {
+    color: white;
+    background-color: #5f861e;
+  }
+  .info .player-table {
+    background-color: white;
+    border-collapse: collapse;
+    overflow: scroll;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+    font-size: 10px;
+    border-radius: 8px;
+  }
+
+  .results-table {
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+    overflow: scroll;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    border-radius: 8px;
+  }
+
+  /*****************************************************
+  *  Game report page - BadInfluence/AdminReport.html  *
+  ******************************************************/
+  .report-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-container .report-info {
+    width: 90%;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    border-radius: 10px;
+  }
+  .report-container .rapport-header {
+    padding-top: 20px;
+    justify-content: center;
+    display: flex;
+    padding-bottom: 20px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .report-container .rapport-header h2 {
+    font-size: 16px;
+    width: 90%;
+  }
+  .report-container .rapport-header p {
+    font-size: 16px;
+  }
+  .report-container .rapport-header #badInfluenceTableReport {
+    width: 80%;
+  }
+  .report-container .rapport-header #badInfluenceTableReport .bad_influence-table-header {
+    font-size: 12px;
+  }
+  .report-container .dropdown-questions {
+    display: flex;
+    justify-content: center;
+    font-size: 16px;
+    flex-direction: column;
+  }
+  .report-container .dropdown-questions .question-title {
+    font-size: 16px;
+    font-weight: bold;
+    padding-bottom: 10px;
+    padding-top: 20px;
+  }
+  .report-container .resultater {
+    display: flex;
+    justify-content: center;
+  }
+  .report-container .d3-row {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-evenly;
+    font-size: 14px;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-container .d3-row #d3consensus {
+    display: flex;
+    justify-content: center;
+    width: 95%;
+  }
+  .report-container .d3-row #d3playback {
+    display: none;
+  }
+  .report-container .alert-info {
+    color: #901A1E;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+    text-align: center;
+    padding-top: 0;
+    padding-bottom: 20px;
+  }
+  .report-container .alert {
+    width: 100%;
+  }
+  .report-container .graf {
+    height: 130px;
+  }
+  .report-container .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+  }
+  .report-container .dropdown-toggle {
+    background-color: #901A1E;
+    color: white;
+    font-size: 14px;
+    width: auto !important;
+  }
+  .report-container .dropdown-toggle:hover {
+    background-color: #5f861e;
+  }
+  .report-container .play-button {
+    background-color: #901A1E;
+    color: white;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+  .report-container .play-button:hover {
+    background-color: #5f861e;
+  }
+
+  .d3-container {
+    background-color: orange;
+    width: 20%;
+  }
+
+  /*****************************************************
+  *  Authenticated demo page - DemoIndex.html  *
+  ******************************************************/
+  .demo-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
+
+  /*****************************************************
+  *  Authenticated create session - Sessions.html  *
+  ******************************************************/
+  .create-session-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
+
+  .game-admin {
+    margin-top: 5%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+  }
+
+  /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
+  .report-table-container-rooms {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-table-container-rooms #roomsTable {
+    width: 100%;
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    border-radius: 10px;
+  }
+  .report-table-container-rooms #roomsTable .rooms-table-header {
+    background: #901A1E;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-data {
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+}
+@media (min-width: 375px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 20px;
+    margin-top: 7%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 20px;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 14px;
+  }
+  .align-games .sack-img {
+    width: 190px;
+    height: 190px;
+    display: none;
+  }
+  .align-games .network-img {
+    width: 150px;
+    height: 150px;
+    display: none;
+  }
+  .align-games .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .align-games .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .align-games .card-footer .game-info {
+    padding-bottom: 20px;
+    font-size: 11px;
+  }
+  .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+  }
+
+  .home-button {
+    /**********************************************************
+    *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+    ***********************************************************/
+    /********************************************************
+    *  Admin/Teacher panel navigation - CustomSession.html  *
+    *********************************************************/
+    /*********************************************
+    *  Start link / intro - SessionStartLinks.html  *
+    **********************************************/
+    /*********************************************
+    *  Monitor game progress - SessionMonitor.html  *
+    **********************************************/
+    /*****************************************************
+    *  Game report page - BadInfluence/AdminReport.html  *
+    ******************************************************/
+    /*****************************************************
+    *  Authenticated demo page - DemoIndex.html  *
+    ******************************************************/
+    /*****************************************************
+    *  Authenticated create session - Sessions.html  *
+    ******************************************************/
+    /****************************
+    *  Rooms view - Rooms.html  *
+    ****************************/
+  }
+  .home-button .fa-home {
+    padding-right: 8px;
+    padding-top: 8px;
+    font-size: 25px;
+  }
+  .home-button .home-button .fa-chalkboard-teacher {
+    font-size: 25px;
+  }
+  .home-button .home-button .fa-home {
+    font-size: 25px;
+  }
+  .home-button .home-button span {
+    display: none;
+  }
+  .home-button .create-game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
+  .home-button .create-game .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .home-button .create-game .card-header {
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .home-button .create-game .card-header,
+.home-button .create-game .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
+  }
+  .home-button .create-game .card-body {
+    color: #901A1E;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 14px;
+    padding-bottom: 0;
+  }
+  .home-button .create-game .sack-img {
+    width: 190px;
+    height: 190px;
+    display: none;
+  }
+  .home-button .create-game .network-img {
+    width: 150px;
+    height: 150px;
+    display: none;
+  }
+  .home-button .create-game .card-footer {
+    padding-top: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .home-button .create-game .card-footer .form-control {
+    max-width: 100%;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .home-button .create-game .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+  }
+  .home-button .create-game .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+  }
+  .home-button .create-game .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+  .home-button #admin-panel {
+    margin-top: 3%;
+  }
+  .home-button #admin-panel .nav-tabs {
+    border-color: transparent;
+  }
+  .home-button #admin-panel .btn-circle {
+    width: 100px;
+    height: 100px;
+    padding: 10px 16px;
+    font-size: 18px;
+    line-height: 1.33;
+    border-radius: 150px;
+    background-color: white;
+    color: #901A1E;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+  }
+  .home-button #admin-panel .btn-circle:hover {
+    color: white;
+    background-color: #5f861e;
+  }
+  .home-button #admin-panel .nav li > a {
+    text-transform: capitalize;
+    color: #901A1E;
+    transition: background-color 0.2s, color 0.2s;
+  }
+  .home-button #admin-panel .nav li.active > a {
+    background-color: transparent;
+    color: green;
+  }
+  .home-button #admin-panel .nav li.active > a .btn-circle {
+    background-color: #5f861e;
+    color: white;
+  }
+  .home-button .gamelink-content {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Roboto Slab", serif;
+    padding-top: 3%;
+    padding-bottom: 4%;
+    position: relative;
+    margin-top: 10px;
+    color: white;
+    text-align: center;
+  }
+  .home-button .gamelink-content .game-link-info {
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 70%;
+    align-self: center;
+  }
+  .home-button .gamelink-content .start-link {
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 40px;
+    padding: 20px 0 20px 0;
+    width: 70%;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+  }
+  .home-button .gamelink-content .start-link a {
+    text-decoration: none;
+    color: #901A1E;
+    font-size: 16px;
+  }
+  .home-button .gamelink-content .start-link a:hover {
+    color: #5f861e;
+  }
+  .home-button .info {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: "Roboto Slab", serif;
+  }
+  .home-button .info .info-content {
+    display: flex;
+    justify-content: center;
+    width: 90%;
+    flex-direction: column;
+    text-align: center;
+    color: white;
+    align-items: center;
+  }
+  .home-button .info .info-content h1 {
+    font-size: 18px;
+  }
+  .home-button .info .info-content p {
+    font-size: 16px;
+  }
+  .home-button .info .fremryk-spiller {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .home-button .info .fremryk-spiller .fremryk-spiller-knap {
+    background-color: white;
+    color: #901A1E;
+    margin: 0 0 10px 0;
+  }
+  .home-button .info .fremryk-spiller .fremryk-spiller-knap:hover {
+    color: #5f861e;
+  }
+  .home-button .info .player-table {
+    width: 80%;
+    background-color: white;
+    border-collapse: collapse;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+    font-size: 15px;
+  }
+  .home-button .results-table {
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+    font-size: 15px;
+    display: flex;
+    justify-content: center;
+  }
+  .home-button .report-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .home-button .report-container .report-info {
+    width: 90%;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    border-radius: 10px;
+  }
+  .home-button .report-container .rapport-header {
+    padding-top: 20px;
+    justify-content: center;
+    display: flex;
+    padding-bottom: 20px;
+    flex-direction: column;
+    align-items: center;
+  }
+  .home-button .report-container .rapport-header h2 {
+    font-size: 18px;
+  }
+  .home-button .report-container .rapport-header p {
+    font-size: 16px;
+    text-align: center;
+  }
+  .home-button .report-container .dropdown-questions {
+    display: flex;
+    justify-content: center;
+    font-size: 16px;
+    flex-direction: column;
+  }
+  .home-button .report-container .dropdown-questions .question-title {
+    font-size: 18px;
+    font-weight: bold;
+    padding-bottom: 5px;
+  }
+  .home-button .report-container .resultater {
+    display: flex;
+    justify-content: center;
+  }
+  .home-button .report-container .d3-row {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-evenly;
+    font-size: 14px;
+    font-family: "Roboto Slab", serif;
+  }
+  .home-button .report-container .d3-row #d3consensus {
+    display: flex;
+    justify-content: center;
+  }
+  .home-button .report-container .d3-row #d3playback {
+    display: none;
+  }
+  .home-button .report-container .alert-info {
+    color: #901A1E;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+  }
+  .home-button .report-container .alert {
+    width: 100%;
+  }
+  .home-button .report-container .graf {
+    height: 130px;
+  }
+  .home-button .report-container .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+  }
+  .home-button .report-container .dropdown-toggle {
+    background-color: #901A1E;
+    color: white;
+    font-size: 16px;
+    width: auto !important;
+  }
+  .home-button .report-container .dropdown-toggle:hover {
+    background-color: #5f861e;
+  }
+  .home-button .report-container .play-button {
+    background-color: #901A1E;
+    color: white;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+  }
+  .home-button .report-container .play-button:hover {
+    background-color: #5f861e;
+  }
+  .home-button .d3-container {
+    background-color: orange;
+    width: 20%;
+  }
+  .home-button .demo-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
+  .home-button .create-session-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
+  .home-button .game-admin {
+    margin-top: 5%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+  }
+  .home-button .report-table-container-rooms {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .home-button .report-table-container-rooms #roomsTable {
+    width: 100%;
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    border-radius: 0 10px 0 10px;
+  }
+  .home-button .report-table-container-rooms #roomsTable .rooms-table-header {
+    background: #901A1E;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+  }
+  .home-button .report-table-container-rooms #roomsTable .bad_influence-table-data {
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .home-button .report-table-container-rooms #roomsTable .bad_influence-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+}
+@media (min-width: 768px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 30px;
+    margin-top: 7%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 20px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 20px;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 14px;
+    margin-left: 20px;
+  }
+  .align-games .sack-img {
+    width: 150px;
+    height: 150px;
+    display: block;
+  }
+  .align-games .network-img {
+    width: 130px;
+    height: 130px;
+    display: block;
+  }
+  .align-games .card-footer .footer-row {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: row;
+    align-items: center;
+  }
+  .align-games .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 180px;
+  }
+  .align-games .card-footer .game-info {
+    padding-bottom: 20px;
+    padding-right: 20px;
+    font-size: 11px;
+  }
+  .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+  }
+
+  .home-button .fa-chalkboard-teacher {
+    font-size: 30px;
+  }
+  .home-button .fa-home {
+    font-size: 30px;
+  }
+  .home-button span {
+    display: inline;
+  }
+
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+  ***********************************************************/
+  .create-game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
+  .create-game .card {
+    margin-bottom: 30px;
+    width: 70%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .create-game .card-header {
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-header,
+.create-game .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 22px;
+    font-weight: bolder;
+  }
+  .create-game .card-body {
+    color: #901A1E;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px;
+    padding-bottom: 0;
+  }
+  .create-game .card-footer {
+    padding-top: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-footer .form-control {
+    max-width: 100%;
+    margin-bottom: 20px;
+    font-size: 18px;
+  }
+  .create-game .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+  }
+  .create-game .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+    font-size: 18px;
+  }
+  .create-game .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+
+  /********************************************************
+  *  Admin/Teacher panel navigation - CustomSession.html  *
+  *********************************************************/
+  #admin-panel {
+    margin-top: 3%;
+  }
+  #admin-panel .nav-tabs {
+    border-color: transparent;
+  }
+  #admin-panel .btn-circle {
+    width: 150px;
+    height: 150px;
+    padding: 10px 16px;
+    font-size: 22px;
+    line-height: 1.33;
+    border-radius: 150px;
+    background-color: white;
+    color: #901A1E;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+  }
+  #admin-panel .btn-circle:hover {
+    color: white;
+    background-color: #5f861e;
+  }
+
+  #admin-panel .nav li > a {
+    text-transform: capitalize;
+    color: #901A1E;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  #admin-panel .nav li.active > a {
+    background-color: transparent;
+    color: green;
+  }
+  #admin-panel .nav li.active > a .btn-circle {
+    background-color: #5f861e;
+    color: white;
+  }
+
+  /*********************************************
+  *  Start link / intro - SessionStartLinks.html  *
+  **********************************************/
+  .gamelink-content {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-family: "Roboto Slab", serif;
+    padding-top: 3%;
+    padding-bottom: 4%;
+    position: relative;
+    margin-top: 10px;
+    color: white;
+    text-align: center;
+  }
+  .gamelink-content .game-link-info {
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 70%;
+    align-self: center;
+  }
+  .gamelink-content .start-link {
+    margin-top: 20px;
+    background-color: white;
+    border-radius: 40px;
+    padding: 20px 0 20px 0;
+    width: 70%;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+  }
+  .gamelink-content .start-link a {
+    text-decoration: none;
+    color: #901A1E;
+    font-size: 20px;
+  }
+  .gamelink-content .start-link a:hover {
+    color: #5f861e;
+  }
+
+  /*********************************************
+  *  Monitor game progress - SessionMonitor.html  *
+  **********************************************/
+  .info {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: "Roboto Slab", serif;
+  }
+  .info .info-content {
+    display: flex;
+    justify-content: center;
+    width: 90%;
+    flex-direction: column;
+    text-align: center;
+    color: white;
+    align-items: center;
+  }
+  .info .info-content h1 {
+    font-size: 18px;
+  }
+  .info .info-content p {
+    font-size: 16px;
+  }
+  .info .player-table {
+    width: auto;
+    background-color: white;
+    border-collapse: collapse;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+  }
+
+  .results-table {
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /*****************************************************
+  *  Game report page - BadInfluence/AdminReport.html  *
+  ******************************************************/
+  .report-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-container .report-info {
+    width: 90%;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    border-radius: 10px;
+  }
+  .report-container .rapport-header {
+    padding-top: 20px;
+    justify-content: center;
+    display: flex;
+    padding-bottom: 20px;
+    flex-direction: column;
+    align-items: center;
+  }
+  .report-container .rapport-header h2 {
+    font-size: 20px;
+  }
+  .report-container .rapport-header p {
+    font-size: 18px;
+    text-align: center;
+  }
+  .report-container .dropdown-questions {
+    display: flex;
+    justify-content: center;
+    font-size: 16px;
+    flex-direction: column;
+  }
+  .report-container .dropdown-questions .question-title {
+    font-size: 20px;
+    font-weight: bold;
+    padding-bottom: 5px;
+  }
+  .report-container .resultater {
+    display: flex;
+    justify-content: center;
+  }
+  .report-container .d3-row {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-evenly;
+    font-size: 18px;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-container .d3-row #d3consensus {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  .report-container .d3-row #d3playback {
+    display: none;
+  }
+  .report-container .alert-info {
+    color: #901A1E;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+  }
+  .report-container .alert {
+    width: 100%;
+  }
+  .report-container .graf {
+    height: 130px;
+  }
+  .report-container .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: column;
+  }
+  .report-container .dropdown-toggle {
+    background-color: #901A1E;
+    color: white;
+    font-size: 18px;
+    width: auto !important;
+  }
+  .report-container .dropdown-toggle:hover {
+    background-color: #5f861e;
+  }
+  .report-container .play-button {
+    background-color: #901A1E;
+    color: white;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+  }
+  .report-container .play-button:hover {
+    background-color: #5f861e;
+  }
+
+  .d3-container {
+    background-color: orange;
+    width: 20%;
+  }
+
+  /*****************************************************
+  *  Authenticated demo page - DemoIndex.html  *
+  ******************************************************/
+  .demo-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
+
+  /*****************************************************
+  *  Authenticated create session - Sessions.html  *
+  ******************************************************/
+  .create-session-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
+
+  .game-admin {
+    margin-top: 5%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+  }
+
+  /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
+  .report-table-container-rooms {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-table-container-rooms #roomsTable {
+    width: 100%;
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    border-radius: 0 10px 0 10px;
+  }
+  .report-table-container-rooms #roomsTable .rooms-table-header {
+    background: #901A1E;
+    color: white;
+    font-weight: bold;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-data {
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .report-table-container-rooms #roomsTable .bad_influence-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+}
+@media (min-width: 1025px) {
+  /*************************
+  *       Base.html        *
+  *************************/
+  .top-left-fixed-alert {
+    visbility: hidden;
+  }
+
+  /**************************************
+  *  Main container  - BaseAdmin.html  *
+  **************************************/
+  .container {
+    max-width: 100%;
+  }
+  .container .page-header {
+    padding-top: 40px;
+  }
+
+  /******************************
+  *  Front Page  - games.html  *
+  ******************************/
+  .title-container {
+    margin-bottom: 5%;
+  }
+
+  .games-title {
+    color: white;
+    font-weight: bold;
+    font-family: "Catamaran", sans-serif;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 60px;
+    margin-top: 6%;
+    margin-bottom: 0;
+  }
+
+  .sub-games-title {
+    color: white;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 30px;
+  }
+
+  .align-games {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+  }
+  .align-games .card {
+    margin-bottom: 30px;
+    width: 60%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .align-games .card-header,
+.align-games .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 24px;
+  }
+  .align-games .card-body {
+    color: #901A1E;
+  }
+  .align-games .card-body .body-row {
+    flex-direction: row;
+    display: flex;
+  }
+  .align-games .card-body .body-row span {
+    font-size: 18px;
+    margin-left: 20px;
+  }
+  .align-games .sack-img {
+    width: 170px;
+    height: 170px;
+    display: block;
+  }
+  .align-games .network-img {
+    width: 150px;
+    height: 150px;
+    display: block;
+  }
+  .align-games .card-footer .footer-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  .align-games .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 200px;
+    height: 50px;
+    font-size: 20px;
+  }
+  .align-games .card-footer .game-info {
+    padding-right: 20px;
+    font-size: 14px;
+  }
+  .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  .home-button .fa-chalkboard-teacher {
+    font-size: 32px;
+  }
+  .home-button .fa-home {
+    font-size: 32px;
+  }
+  .home-button span {
+    display: inline;
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+  .login-button {
+    color: white;
+    text-decoration: none;
+    font-size: 20px;
+  }
+
+  .home-button .fa-home {
+    padding-right: 8px;
+    padding-top: 8px;
+    font-size: 32px;
+  }
+  .home-button span {
+    display: inline;
+  }
+
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+  ***********************************************************/
+  .create-game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: auto;
+  }
+  .create-game .card {
+    margin-bottom: 30px;
+    width: 55%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+  }
+  .create-game .card-header {
+    padding-bottom: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-header,
+.create-game .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 24px;
+    font-weight: bolder;
+  }
+  .create-game .card-body {
+    color: #901A1E;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px;
+    padding-bottom: 0;
+  }
+  .create-game .sack-img {
+    width: 190px;
+    height: 190px;
+    display: none;
+  }
+  .create-game .network-img {
+    width: 150px;
+    height: 150px;
+    display: none;
+  }
+  .create-game .card-footer {
+    padding-top: 0;
+    display: flex;
+    justify-content: center;
+  }
+  .create-game .card-footer .form-control {
+    max-width: 100%;
+    margin-bottom: 20px;
+    font-size: 18px;
+  }
+  .create-game .card-footer .footer-row {
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+    align-items: center;
+  }
+  .create-game .card-footer .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+    font-size: 18px;
+  }
+  .create-game .card-footer .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+
+  /********************************************************
+  *  Admin/Teacher panel navigation - CustomSession.html  *
+  *********************************************************/
+  #admin-panel {
+    margin-top: 3%;
+  }
+  #admin-panel .nav-tabs {
+    border-color: transparent;
+  }
+  #admin-panel .btn-circle {
+    width: 180px;
+    height: 180px;
+    padding: 10px 16px;
+    font-size: 26px;
+    line-height: 1.33;
+    border-radius: 150px;
+    background-color: white;
+    color: #901A1E;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    font-family: "Annie Use Your Telescope", serif;
+  }
+  #admin-panel .btn-circle:hover {
+    color: white;
+    background-color: #5f861e;
+  }
+
+  #admin-panel .nav li > a {
+    text-transform: capitalize;
+    color: #901A1E;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  #admin-panel .nav li.active > a {
+    background-color: transparent;
+    color: green;
+  }
+  #admin-panel .nav li.active > a .btn-circle {
+    background-color: #5f861e;
+    color: white;
+  }
+
+  .tilbage-button {
+    justify-content: center;
+    display: flex;
+    width: 10%;
+    font-family: "Roboto Slab", serif;
+    font-weight: bold;
+    color: white;
+    font-size: 18px;
+  }
+  .tilbage-button:hover {
+    text-decoration: none;
+    color: #5f861e;
+  }
+  .tilbage-button img {
+    color: white;
+  }
+
+  /*********************************************
+  *  Start link / intro - SessionStartLinks.html  *
+  **********************************************/
+  .gamelink-content {
+    width: 100%;
+    position: relative;
+    margin-top: 10px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    font-size: 26px;
+    padding-top: 3%;
+    padding-bottom: 4%;
+    font-family: "Roboto Slab", serif;
+  }
+  .gamelink-content .start-link {
+    margin-top: 20px;
+    font-size: 30px;
+    background-color: white;
+    border-radius: 40px;
+    padding: 20px 0 20px 0;
+    width: 40%;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+  }
+  .gamelink-content .start-link a {
+    text-decoration: none;
+    color: #901A1E;
+  }
+  .gamelink-content .start-link a:hover {
+    color: #5f861e;
+  }
+
+  /*********************************************
+  *  Monitor game progress - SessionMonitor.html  *
+  **********************************************/
+  .info {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: "Roboto Slab", serif;
+    color: white;
+  }
+  .info .info-content h1 {
+    font-size: 22px;
+  }
+  .info .info-content p {
+    font-size: 18px;
+  }
+  .info .player-table {
+    width: auto;
+    background-color: white;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+    font-size: 18px;
+  }
+
+  .results-table {
+    width: 100%;
+    background-color: white;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    color: #901A1E;
+    font-size: 20px;
+    display: flex;
+    justify-content: center;
+  }
+
+  /*****************************************************
+  *  Game report page - BadInfluence/AdminReport.html  *
+  ******************************************************/
+  .report-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-container .report-info {
+    width: 90%;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    border-radius: 10px;
+  }
+  .report-container .rapport-header {
+    padding-top: 22px;
+    justify-content: center;
+    display: flex;
+    padding-bottom: 20px;
+    flex-direction: column;
+    align-items: center;
+  }
+  .report-container .rapport-header h2 {
+    font-size: 20px;
+  }
+  .report-container .rapport-header p {
+    font-size: 16px;
+    text-align: center;
+  }
+  .report-container .dropdown-questions {
+    display: flex;
+    justify-content: center;
+    font-size: 16px;
+    flex-direction: column;
+  }
+  .report-container .dropdown-questions .question-title {
+    font-size: 20px;
+    font-weight: bold;
+    padding-bottom: 5px;
+  }
+  .report-container .resultater {
+    display: flex;
+    justify-content: center;
+  }
+  .report-container .d3-row {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    font-size: 16px;
+    font-family: "Roboto Slab", serif;
+  }
+  .report-container .d3-row #d3consensus {
+    width: 50%;
+  }
+  .report-container .d3-row #d3playback {
+    display: inline;
+  }
+  .report-container .alert-info {
+    color: #901A1E;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
+  }
+  .report-container .alert {
+    width: 60%;
+  }
+  .report-container .graf {
+    width: 40%;
+    height: 140px;
+  }
+  .report-container .explanation {
+    display: flex;
+    justify-content: space-evenly;
+    flex-direction: row;
+  }
+  .report-container .dropdown-toggle {
+    background-color: #901A1E;
+    color: white;
+    font-size: 18px;
+    width: auto !important;
+  }
+  .report-container .dropdown-toggle:hover {
+    background-color: #5f861e;
+  }
+  .report-container .play-button {
+    background-color: #901A1E;
+    color: white;
+    width: 100px;
+    display: flex;
+    justify-content: center;
+  }
+  .report-container .play-button:hover {
+    background-color: #5f861e;
+  }
+
+  .d3-container {
+    background-color: orange;
+    width: 20%;
+  }
+
+  /*****************************************************
+  *  Authenticated demo page - DemoIndex.html  *
+  ******************************************************/
+  .demo-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
+
+  /*****************************************************
+  *  Authenticated create session - Sessions.html  *
+  ******************************************************/
+  .create-session-container {
+    margin-top: 10%;
+    padding: 10px 50px 10px 50px;
+  }
+
+  .game-admin {
+    margin-top: 5%;
+    padding: 10px 50px 10px 50px;
+    background-color: white !important;
+    border-radius: 10px;
+  }
+
+  /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
+  .room-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 7%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    width: 90%;
+    background-color: white;
+    padding-top: 40px;
+    font-family: "Roboto Slab", serif;
+  }
+  .room-container .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .room-container .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .room-container .table {
+    display: inline-table;
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+  }
+  .room-container .rooms-table-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #901A1E;
+    font-family: "Roboto Slab", serif;
+  }
+  .room-container .rooms-table-container .rooms-table-row {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    padding: 10px;
+    background: #901A1E;
+    color: white;
+  }
+  .room-container .rooms-table-container thead {
+    background: #901A1E;
+    color: white;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(157, 52, 55, 0.5);
+    border-radius: 10px;
+  }
+  .room-container .rooms-table-container .rooms-table-data {
+    font-size: 26px;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .room-container .rooms-table-container .rooms-table-row-data {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+}
+
+/*# sourceMappingURL=styles.css.map */
