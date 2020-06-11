@@ -43,7 +43,7 @@ class ResetPasswordDone(PasswordResetDoneView):
 
 class ResetPasswordConfirm(PasswordResetConfirmView):
     template_name = 'otree/accounts/reset_password_confirm.html'
-    success_url = '/accounts/reset-password/complete/'
+    success_url = '/accounts/login/'
 
 
 class ResetPasswordComplete(PasswordResetCompleteView):

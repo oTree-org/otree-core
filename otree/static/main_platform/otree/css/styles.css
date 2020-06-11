@@ -693,17 +693,6 @@ table.table-debug td.debug-var-value {
     padding: 10px 50px 10px 50px;
     background-color: white !important;
   }
-
-  /****************************
-  *  Login view - login.html  *
-  ****************************/
-  .game-login {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 5%;
-    align-items: center;
-  }
 }
 @media (min-width: 375px) {
   /*************************
@@ -1175,17 +1164,6 @@ table.table-debug td.debug-var-value {
     padding: 10px 50px 10px 50px;
     background-color: white !important;
   }
-
-  /****************************
-  *  Login view - login.html  *
-  ****************************/
-  .game-login {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 5%;
-    align-items: center;
-  }
 }
 @media (min-width: 768px) {
   /*************************
@@ -1637,17 +1615,6 @@ table.table-debug td.debug-var-value {
     margin-top: 5%;
     padding: 10px 50px 10px 50px;
     background-color: white !important;
-  }
-
-  /****************************
-  *  Login view - login.html  *
-  ****************************/
-  .game-login {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 5%;
-    align-items: center;
   }
 }
 @media (min-width: 1025px) {
@@ -2114,17 +2081,6 @@ table.table-debug td.debug-var-value {
     padding: 10px 50px 10px 50px;
     background-color: white !important;
     border-radius: 10px;
-  }
-
-  /****************************
-  *  Login view - login.html  *
-  ****************************/
-  .game-login {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    margin-top: 5%;
-    align-items: center;
   }
 }
 

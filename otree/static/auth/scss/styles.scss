@@ -1,0 +1,8 @@
+// Variables should always be the first import
+@import "../../main_platform/otree/sass/modules/variables";
+
+// Media Queries for Bad Influence
+@import "media-queries/desktop";
+@import "media-queries/tablet";
+@import "media-queries/mobile";
+@import "media-queries/xs_mobile";

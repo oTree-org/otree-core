@@ -9,23 +9,42 @@
         }
     </style>
     <br><br>
-    <div class="container">
-        <h2>Opret Bruger</h2>
-        <form method="post">
-            {% csrf_token %}
-            <p>
-                {{ form.email.label_tag }}
-                {{ form.email }}
-            </p>
-            <p>
-                {{ form.password1.label_tag }}
-                {{ form.password1 }}
-            </p>
-            <p>
-                {{ form.password2.label_tag }}
-                {{ form.password2 }}
-            </p>
-            <button class="btn btn-secondary" type="submit">Opret Bruger</button>
-        </form>
+    <div class="register-container">
+        <div class="register-form-container">
+            <div class="content-container">
+                <h4 class="register-title">Opret Bruger</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-label">
+                            <i class="fas fa-envelope"></i>
+                            <label for="id_email">Email:</label>
+                        </div>
+                        <div class="form-input">
+                            <input id="id_email" class="form-control" type="email" name="email" autofocus required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-label">
+                            <i class="fas fa-key"></i>
+                            <label for="id_password1">Kodeord:</label>
+                        </div>
+                        <div class="form-input">
+                            <input id="id_password1" class="form-control" type="password" name="password1" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-label">
+                            <i class="fas fa-key"></i>
+                            <label for="id_password2">Gentag kodeord:</label>
+                        </div>
+                        <div class="form-input">
+                            <input id="id_password2" class="form-control" type="password" name="password2" required>
+                        </div>
+                    </div>
+                    <button id="btn-register" type="submit">Opret Bruger</button>
+                </form>
+            </div>
+        </div>
     </div>
 {% endblock %}
