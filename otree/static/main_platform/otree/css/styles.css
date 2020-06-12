@@ -461,7 +461,6 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     flex-direction: column;
     font-family: "Roboto Slab", serif;
-    padding-top: 3%;
     padding-bottom: 4%;
     position: relative;
     margin-top: 10px;
@@ -477,10 +476,8 @@ table.table-debug td.debug-var-value {
     align-self: center;
   }
   .gamelink-content .start-link {
-    margin-top: 20px;
     background-color: white;
     border-radius: 40px;
-    padding: 20px 0 20px 0;
     width: 95%;
     display: flex;
     justify-content: center;
@@ -1002,11 +999,8 @@ table.table-debug td.debug-var-value {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    font-family: "Roboto Slab", serif;
-    padding-top: 3%;
     padding-bottom: 4%;
     position: relative;
-    margin-top: 10px;
     color: white;
     text-align: center;
   }
@@ -1019,14 +1013,9 @@ table.table-debug td.debug-var-value {
     align-self: center;
   }
   .home-button .gamelink-content .start-link {
-    margin-top: 20px;
     background-color: white;
     border-radius: 40px;
-    padding: 20px 0 20px 0;
     width: 70%;
-    display: flex;
-    justify-content: center;
-    align-self: center;
   }
   .home-button .gamelink-content .start-link a {
     text-decoration: none;
@@ -1479,14 +1468,8 @@ table.table-debug td.debug-var-value {
   **********************************************/
   .gamelink-content {
     width: 100%;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    font-family: "Roboto Slab", serif;
-    padding-top: 3%;
     padding-bottom: 4%;
     position: relative;
-    margin-top: 10px;
     color: white;
     text-align: center;
   }
@@ -1499,10 +1482,8 @@ table.table-debug td.debug-var-value {
     align-self: center;
   }
   .gamelink-content .start-link {
-    margin-top: 20px;
     background-color: white;
     border-radius: 40px;
-    padding: 20px 0 20px 0;
     width: 70%;
     display: flex;
     justify-content: center;
@@ -2013,24 +1994,20 @@ table.table-debug td.debug-var-value {
     flex-direction: column;
     text-align: center;
     font-size: 26px;
-    padding-top: 3%;
     padding-bottom: 4%;
-    font-family: "Roboto Slab", serif;
   }
   .gamelink-content .start-link {
-    margin-top: 20px;
     font-size: 30px;
-    background-color: white;
+    background-color: #901A1E;
     border-radius: 40px;
-    padding: 20px 0 20px 0;
-    width: 40%;
+    width: 80%;
     display: flex;
     justify-content: center;
     align-self: center;
   }
   .gamelink-content .start-link a {
     text-decoration: none;
-    color: #901A1E;
+    color: white;
   }
   .gamelink-content .start-link a:hover {
     color: #5f861e;

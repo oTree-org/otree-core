@@ -16,7 +16,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'session_config_name', help="The session config name"
+            'session_config_name', help="Vælg type spil"
         )
         parser.add_argument(
             'num_participants',

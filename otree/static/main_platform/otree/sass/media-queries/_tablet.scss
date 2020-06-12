@@ -293,14 +293,9 @@
 
 .gamelink-content {
   width: 100%;
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  font-family: 'Roboto Slab', serif;
-  padding-top: 3%;
+
   padding-bottom: 4%;
   position: relative;
-  margin-top: 10px;
   color: white;
   text-align: center;
 
@@ -313,22 +308,18 @@
     align-self: center;
   }
 
-
   .start-link {
-    margin-top: 20px;
     background-color: white;
     border-radius: 40px;
-    padding: 20px 0 20px 0;
     width: 70%;
     display: flex;
     justify-content: center;
     align-self: center;
 
-
     a {
       text-decoration: none;
       color: $ku-red;
-       font-size: 20px;
+      font-size: 20px;
 
       &:hover {
         color: $ku-dark-green;

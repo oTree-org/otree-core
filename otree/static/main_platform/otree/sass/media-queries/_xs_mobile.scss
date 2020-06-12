@@ -352,7 +352,6 @@
     justify-content: center;
     flex-direction: column;
     font-family: 'Roboto Slab', serif;
-    padding-top: 3%;
     padding-bottom: 4%;
     position: relative;
     margin-top: 10px;
@@ -370,11 +369,8 @@
 
 
     .start-link {
-      margin-top: 20px;
-
       background-color: white;
       border-radius: 40px;
-      padding: 20px 0 20px 0;
       width: 95%;
       display: flex;
       justify-content: center;
