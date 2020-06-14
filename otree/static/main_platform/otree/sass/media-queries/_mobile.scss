@@ -126,31 +126,37 @@
   *        Navbar Styling       *
   ******************************/
 
-  .login-button {
-    color: white;
-    text-decoration: none;
-    font-size: 16px;
-
+  nav.desktop-nav {
+    display: none;
   }
 
-  .home-button {
-    .fa-home {
-      padding-right: 8px;
-      padding-top: 8px;
-      font-size: 25px;
+  nav.mobile-nav {
+    display: flex;
+
+    div.nav-container {
+      margin-top: 16px;
+
+      div.nav-home {
+
+        a {
+          font-size: 24px;
+          padding-left: 16px;
+        }
+      }
+
+      div.nav-logout {
+        display: flex;
+        width: 60%;
+        justify-content: flex-end;
+
+        a {
+          color: white;
+          font-size: 20px;
+          padding-right: 16px;
+        }
+      }
     }
-
-.home-button {
-  .fa-chalkboard-teacher {
-   font-size: 25px;
   }
-  .fa-home {
-  font-size: 25px;
-}
- span {
-   display: none;
- }
-}
 
   /**********************************************************
 *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
@@ -560,9 +566,9 @@
     background-color: white !important;
   }
 
-     /****************************
-  *  Rooms view - Rooms.html  *
-  ****************************/
+  /****************************
+*  Rooms view - Rooms.html  *
+****************************/
   .report-table-container-rooms {
     display: flex;
     flex-direction: column;
@@ -602,6 +608,4 @@
       }
     }
   }
-  }
-
 }

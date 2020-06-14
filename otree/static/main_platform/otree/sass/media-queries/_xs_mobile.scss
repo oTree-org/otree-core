@@ -22,15 +22,9 @@
   /******************************
   *  Front Page  - games.html  *
   ******************************/
-
-
-
   .title-container {
     margin-bottom: 5%;
   }
-
-
-
   .games-title {
     color: white;
     font-weight: bold;
@@ -41,6 +35,7 @@
     font-size: 18px;
     margin-top: 6%;
     margin-bottom: 0;
+    padding-top: 8%;
   }
 
   .sub-games-title {
@@ -57,6 +52,7 @@
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    padding-top: 10%;
 
     .card {
       margin-bottom: 30px;
@@ -137,50 +133,45 @@
   /******************************
   *        Navbar Styling       *
   ******************************/
-
-  .login-button {
-    color: white;
-    text-decoration: none;
-    font-size: 12px;
-    font-family: 'Roboto Slab', serif;
-
-    &:hover {
-      text-decoration: none;
-      color: #A7C5E9;
-    }
+  nav.desktop-nav {
+    display: none;
   }
 
-  .tilbage-button {
-    justify-content: left;
+  nav.mobile-nav {
     display: flex;
-    font-family: "Roboto Slab", serif;
-    font-weight: bold;
-    color: white;
-    font-size: 12px;
 
+    div.nav-container {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      margin-top: 8px;
 
-    &:hover {
-      text-decoration: none;
-      color: $ku-dark-green;
-    }
+      div.nav-home {
+        display: flex;
+        width: 40%;
 
-    img {
-      color: white;
-    }
-  }
+        a {
+          color: white;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          font-size: 20px;
+          padding-left: 16px;
+        }
+      }
 
-  .home-button {
-    font-size: 20px;
+      div.nav-logout {
+        display: flex;
+        width: 60%;
+        justify-content: flex-end;
 
-    .fa-chalkboard-teacher {
-      padding: 8px 8px 0 20px;
-    }
-    .fa-home {
-      padding: 8px 8px 0 0;
-    }
+        a {
+          color: white;
+          font-size: 16px;
+          padding-right: 16px;
+        }
 
-    span {
-      display: none;
+      }
     }
   }
 
@@ -629,10 +620,9 @@
   }
 
 
-
-    /****************************
-  *  Rooms view - Rooms.html  *
-  ****************************/
+  /****************************
+*  Rooms view - Rooms.html  *
+****************************/
   .report-table-container-rooms {
     display: flex;
     flex-direction: column;
@@ -645,7 +635,7 @@
       display: inline-table;
       border-collapse: separate;
       border-spacing: 0 0.5rem;
-       border-radius: 10px;
+      border-radius: 10px;
 
 
       .rooms-table-header {

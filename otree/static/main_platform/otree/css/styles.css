@@ -199,6 +199,7 @@ table.table-debug td.debug-var-value {
     font-size: 18px;
     margin-top: 6%;
     margin-bottom: 0;
+    padding-top: 8%;
   }
 
   .sub-games-title {
@@ -215,6 +216,7 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    padding-top: 10%;
   }
   .align-games .card {
     margin-bottom: 30px;
@@ -279,44 +281,40 @@ table.table-debug td.debug-var-value {
   /******************************
   *        Navbar Styling       *
   ******************************/
-  .login-button {
-    color: white;
-    text-decoration: none;
-    font-size: 12px;
-    font-family: "Roboto Slab", serif;
-  }
-  .login-button:hover {
-    text-decoration: none;
-    color: #A7C5E9;
-  }
-
-  .tilbage-button {
-    justify-content: left;
-    display: flex;
-    font-family: "Roboto Slab", serif;
-    font-weight: bold;
-    color: white;
-    font-size: 12px;
-  }
-  .tilbage-button:hover {
-    text-decoration: none;
-    color: #5f861e;
-  }
-  .tilbage-button img {
-    color: white;
-  }
-
-  .home-button {
-    font-size: 20px;
-  }
-  .home-button .fa-chalkboard-teacher {
-    padding: 8px 8px 0 20px;
-  }
-  .home-button .fa-home {
-    padding: 8px 8px 0 0;
-  }
-  .home-button span {
+  nav.desktop-nav {
     display: none;
+  }
+
+  nav.mobile-nav {
+    display: flex;
+  }
+  nav.mobile-nav div.nav-container {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin-top: 8px;
+  }
+  nav.mobile-nav div.nav-container div.nav-home {
+    display: flex;
+    width: 40%;
+  }
+  nav.mobile-nav div.nav-container div.nav-home a {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 20px;
+    padding-left: 16px;
+  }
+  nav.mobile-nav div.nav-container div.nav-logout {
+    display: flex;
+    width: 60%;
+    justify-content: flex-end;
+  }
+  nav.mobile-nav div.nav-container div.nav-logout a {
+    color: white;
+    font-size: 16px;
+    padding-right: 16px;
   }
 
   /**********************************************************
@@ -838,53 +836,35 @@ table.table-debug td.debug-var-value {
   /******************************
   *        Navbar Styling       *
   ******************************/
-  .login-button {
-    color: white;
-    text-decoration: none;
-    font-size: 16px;
-  }
-
-  .home-button {
-    /**********************************************************
-    *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
-    ***********************************************************/
-    /********************************************************
-    *  Admin/Teacher panel navigation - CustomSession.html  *
-    *********************************************************/
-    /*********************************************
-    *  Start link / intro - SessionStartLinks.html  *
-    **********************************************/
-    /*********************************************
-    *  Monitor game progress - SessionMonitor.html  *
-    **********************************************/
-    /*****************************************************
-    *  Game report page - BadInfluence/AdminReport.html  *
-    ******************************************************/
-    /*****************************************************
-    *  Authenticated demo page - DemoIndex.html  *
-    ******************************************************/
-    /*****************************************************
-    *  Authenticated create session - Sessions.html  *
-    ******************************************************/
-    /****************************
-    *  Rooms view - Rooms.html  *
-    ****************************/
-  }
-  .home-button .fa-home {
-    padding-right: 8px;
-    padding-top: 8px;
-    font-size: 25px;
-  }
-  .home-button .home-button .fa-chalkboard-teacher {
-    font-size: 25px;
-  }
-  .home-button .home-button .fa-home {
-    font-size: 25px;
-  }
-  .home-button .home-button span {
+  nav.desktop-nav {
     display: none;
   }
-  .home-button .create-game {
+
+  nav.mobile-nav {
+    display: flex;
+  }
+  nav.mobile-nav div.nav-container {
+    margin-top: 16px;
+  }
+  nav.mobile-nav div.nav-container div.nav-home a {
+    font-size: 24px;
+    padding-left: 16px;
+  }
+  nav.mobile-nav div.nav-container div.nav-logout {
+    display: flex;
+    width: 60%;
+    justify-content: flex-end;
+  }
+  nav.mobile-nav div.nav-container div.nav-logout a {
+    color: white;
+    font-size: 20px;
+    padding-right: 16px;
+  }
+
+  /**********************************************************
+  *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
+  ***********************************************************/
+  .create-game {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -896,27 +876,27 @@ table.table-debug td.debug-var-value {
     right: 0;
     overflow: auto;
   }
-  .home-button .create-game .card {
+  .create-game .card {
     margin-bottom: 30px;
     width: 90%;
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
   }
-  .home-button .create-game .card-header {
+  .create-game .card-header {
     padding-bottom: 0;
     display: flex;
     justify-content: center;
   }
-  .home-button .create-game .card-header,
-.home-button .create-game .card-footer {
+  .create-game .card-header,
+.create-game .card-footer {
     color: #901A1E;
     border: none;
     background-color: white;
     font-size: 18px;
     font-weight: bolder;
   }
-  .home-button .create-game .card-body {
+  .create-game .card-body {
     color: #901A1E;
     display: flex;
     justify-content: center;
@@ -924,48 +904,52 @@ table.table-debug td.debug-var-value {
     font-size: 14px;
     padding-bottom: 0;
   }
-  .home-button .create-game .sack-img {
+  .create-game .sack-img {
     width: 190px;
     height: 190px;
     display: none;
   }
-  .home-button .create-game .network-img {
+  .create-game .network-img {
     width: 150px;
     height: 150px;
     display: none;
   }
-  .home-button .create-game .card-footer {
+  .create-game .card-footer {
     padding-top: 0;
     display: flex;
     justify-content: center;
   }
-  .home-button .create-game .card-footer .form-control {
+  .create-game .card-footer .form-control {
     max-width: 100%;
     margin-bottom: 20px;
     font-size: 14px;
   }
-  .home-button .create-game .card-footer .footer-row {
+  .create-game .card-footer .footer-row {
     display: flex;
     justify-content: center;
     flex-direction: row;
     align-items: center;
   }
-  .home-button .create-game .card-footer .btn-primary {
+  .create-game .card-footer .btn-primary {
     background-color: #901A1E;
     border-color: #901A1E;
     width: 100%;
   }
-  .home-button .create-game .card-footer .btn-primary:hover {
+  .create-game .card-footer .btn-primary:hover {
     background-color: #7C992B;
     border-color: transparent;
   }
-  .home-button #admin-panel {
+
+  /********************************************************
+  *  Admin/Teacher panel navigation - CustomSession.html  *
+  *********************************************************/
+  #admin-panel {
     margin-top: 3%;
   }
-  .home-button #admin-panel .nav-tabs {
+  #admin-panel .nav-tabs {
     border-color: transparent;
   }
-  .home-button #admin-panel .btn-circle {
+  #admin-panel .btn-circle {
     width: 100px;
     height: 100px;
     padding: 10px 16px;
@@ -977,24 +961,30 @@ table.table-debug td.debug-var-value {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     font-family: "Annie Use Your Telescope", serif;
   }
-  .home-button #admin-panel .btn-circle:hover {
+  #admin-panel .btn-circle:hover {
     color: white;
     background-color: #5f861e;
   }
-  .home-button #admin-panel .nav li > a {
+
+  #admin-panel .nav li > a {
     text-transform: capitalize;
     color: #901A1E;
     transition: background-color 0.2s, color 0.2s;
   }
-  .home-button #admin-panel .nav li.active > a {
+
+  #admin-panel .nav li.active > a {
     background-color: transparent;
     color: green;
   }
-  .home-button #admin-panel .nav li.active > a .btn-circle {
+  #admin-panel .nav li.active > a .btn-circle {
     background-color: #5f861e;
     color: white;
   }
-  .home-button .gamelink-content {
+
+  /*********************************************
+  *  Start link / intro - SessionStartLinks.html  *
+  **********************************************/
+  .gamelink-content {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -1004,7 +994,7 @@ table.table-debug td.debug-var-value {
     color: white;
     text-align: center;
   }
-  .home-button .gamelink-content .game-link-info {
+  .gamelink-content .game-link-info {
     font-size: 18px;
     display: flex;
     justify-content: center;
@@ -1012,20 +1002,25 @@ table.table-debug td.debug-var-value {
     width: 70%;
     align-self: center;
   }
-  .home-button .gamelink-content .start-link {
+  .gamelink-content .start-link {
+    margin-top: 20px;
     background-color: white;
     border-radius: 40px;
     width: 70%;
   }
-  .home-button .gamelink-content .start-link a {
+  .gamelink-content .start-link a {
     text-decoration: none;
     color: #901A1E;
     font-size: 16px;
   }
-  .home-button .gamelink-content .start-link a:hover {
+  .gamelink-content .start-link a:hover {
     color: #5f861e;
   }
-  .home-button .info {
+
+  /*********************************************
+  *  Monitor game progress - SessionMonitor.html  *
+  **********************************************/
+  .info {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -1033,7 +1028,7 @@ table.table-debug td.debug-var-value {
     flex-direction: column;
     font-family: "Roboto Slab", serif;
   }
-  .home-button .info .info-content {
+  .info .info-content {
     display: flex;
     justify-content: center;
     width: 90%;
@@ -1042,26 +1037,26 @@ table.table-debug td.debug-var-value {
     color: white;
     align-items: center;
   }
-  .home-button .info .info-content h1 {
+  .info .info-content h1 {
     font-size: 18px;
   }
-  .home-button .info .info-content p {
+  .info .info-content p {
     font-size: 16px;
   }
-  .home-button .info .fremryk-spiller {
+  .info .fremryk-spiller {
     display: flex;
     justify-content: center;
     flex-direction: column;
   }
-  .home-button .info .fremryk-spiller .fremryk-spiller-knap {
+  .info .fremryk-spiller .fremryk-spiller-knap {
     background-color: white;
     color: #901A1E;
     margin: 0 0 10px 0;
   }
-  .home-button .info .fremryk-spiller .fremryk-spiller-knap:hover {
+  .info .fremryk-spiller .fremryk-spiller-knap:hover {
     color: #5f861e;
   }
-  .home-button .info .player-table {
+  .info .player-table {
     width: 80%;
     background-color: white;
     border-collapse: collapse;
@@ -1069,7 +1064,8 @@ table.table-debug td.debug-var-value {
     color: #901A1E;
     font-size: 15px;
   }
-  .home-button .results-table {
+
+  .results-table {
     width: 100%;
     background-color: white;
     border-collapse: collapse;
@@ -1079,14 +1075,18 @@ table.table-debug td.debug-var-value {
     display: flex;
     justify-content: center;
   }
-  .home-button .report-container {
+
+  /*****************************************************
+  *  Game report page - BadInfluence/AdminReport.html  *
+  ******************************************************/
+  .report-container {
     width: 100%;
     display: flex;
     justify-content: center;
     color: #901A1E;
     font-family: "Roboto Slab", serif;
   }
-  .home-button .report-container .report-info {
+  .report-container .report-info {
     width: 90%;
     border-collapse: collapse;
     overflow: hidden;
@@ -1094,7 +1094,7 @@ table.table-debug td.debug-var-value {
     background-color: white;
     border-radius: 10px;
   }
-  .home-button .report-container .rapport-header {
+  .report-container .rapport-header {
     padding-top: 20px;
     justify-content: center;
     display: flex;
@@ -1102,29 +1102,29 @@ table.table-debug td.debug-var-value {
     flex-direction: column;
     align-items: center;
   }
-  .home-button .report-container .rapport-header h2 {
+  .report-container .rapport-header h2 {
     font-size: 18px;
   }
-  .home-button .report-container .rapport-header p {
+  .report-container .rapport-header p {
     font-size: 16px;
     text-align: center;
   }
-  .home-button .report-container .dropdown-questions {
+  .report-container .dropdown-questions {
     display: flex;
     justify-content: center;
     font-size: 16px;
     flex-direction: column;
   }
-  .home-button .report-container .dropdown-questions .question-title {
+  .report-container .dropdown-questions .question-title {
     font-size: 18px;
     font-weight: bold;
     padding-bottom: 5px;
   }
-  .home-button .report-container .resultater {
+  .report-container .resultater {
     display: flex;
     justify-content: center;
   }
-  .home-button .report-container .d3-row {
+  .report-container .d3-row {
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -1132,82 +1132,96 @@ table.table-debug td.debug-var-value {
     font-size: 14px;
     font-family: "Roboto Slab", serif;
   }
-  .home-button .report-container .d3-row #d3consensus {
+  .report-container .d3-row #d3consensus {
     display: flex;
     justify-content: center;
   }
-  .home-button .report-container .d3-row #d3playback {
+  .report-container .d3-row #d3playback {
     display: none;
   }
-  .home-button .report-container .alert-info {
+  .report-container .alert-info {
     color: #901A1E;
     justify-content: center;
     display: flex;
     flex-direction: column;
     align-self: center;
   }
-  .home-button .report-container .alert {
+  .report-container .alert {
     width: 100%;
   }
-  .home-button .report-container .graf {
+  .report-container .graf {
     height: 130px;
   }
-  .home-button .report-container .explanation {
+  .report-container .explanation {
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
   }
-  .home-button .report-container .dropdown-toggle {
+  .report-container .dropdown-toggle {
     background-color: #901A1E;
     color: white;
     font-size: 16px;
     width: auto !important;
   }
-  .home-button .report-container .dropdown-toggle:hover {
+  .report-container .dropdown-toggle:hover {
     background-color: #5f861e;
   }
-  .home-button .report-container .play-button {
+  .report-container .play-button {
     background-color: #901A1E;
     color: white;
     width: 100px;
     display: flex;
     justify-content: center;
   }
-  .home-button .report-container .play-button:hover {
+  .report-container .play-button:hover {
     background-color: #5f861e;
   }
-  .home-button .d3-container {
+
+  .d3-container {
     background-color: orange;
     width: 20%;
   }
-  .home-button .demo-container {
+
+  /*****************************************************
+  *  Authenticated demo page - DemoIndex.html  *
+  ******************************************************/
+  .demo-container {
     margin-top: 10%;
     padding: 10px 50px 10px 50px;
   }
-  .home-button .create-session-container {
+
+  /*****************************************************
+  *  Authenticated create session - Sessions.html  *
+  ******************************************************/
+  .create-session-container {
     margin-top: 10%;
     padding: 10px 50px 10px 50px;
   }
-  .home-button .game-admin {
+
+  .game-admin {
     margin-top: 5%;
     padding: 10px 50px 10px 50px;
     background-color: white !important;
   }
-  .home-button .report-table-container-rooms {
+
+  /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
+  .report-table-container-rooms {
     display: flex;
     flex-direction: column;
     align-items: center;
     color: #901A1E;
     font-family: "Roboto Slab", serif;
   }
-  .home-button .report-table-container-rooms #roomsTable {
+  .report-table-container-rooms #roomsTable {
     width: 100%;
     display: inline-table;
     border-collapse: separate;
     border-spacing: 0 0.5rem;
     border-radius: 0 10px 0 10px;
   }
-  .home-button .report-table-container-rooms #roomsTable .rooms-table-header {
+  .report-table-container-rooms #roomsTable .rooms-table-header {
     background: #901A1E;
     color: white;
     font-weight: bold;
@@ -1216,13 +1230,13 @@ table.table-debug td.debug-var-value {
     text-align: center;
     box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
   }
-  .home-button .report-table-container-rooms #roomsTable .bad_influence-table-data {
+  .report-table-container-rooms #roomsTable .bad_influence-table-data {
     font-size: 26px;
     border-top: none !important;
     text-align: center;
     vertical-align: middle;
   }
-  .home-button .report-table-container-rooms #roomsTable .bad_influence-table-row {
+  .report-table-container-rooms #roomsTable .bad_influence-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
@@ -1336,20 +1350,41 @@ table.table-debug td.debug-var-value {
   /******************************
   *        Navbar Styling       *
   ******************************/
-  .login-button {
+  nav.desktop-nav {
+    display: flex;
+  }
+  nav.desktop-nav div.nav-container {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin-top: 1.5%;
+  }
+  nav.desktop-nav div.nav-container div.nav-home {
+    display: flex;
+    width: 50%;
+  }
+  nav.desktop-nav div.nav-container div.nav-home a {
     color: white;
-    text-decoration: none;
-    font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 20px;
+    padding: 0 24px;
+    text-align: center;
+  }
+  nav.desktop-nav div.nav-container div.nav-logout {
+    display: flex;
+    justify-content: flex-end;
+    width: 50%;
+  }
+  nav.desktop-nav div.nav-container div.nav-logout a {
+    color: white;
+    font-size: 20px;
+    padding-right: 24px;
   }
 
-  .home-button .fa-chalkboard-teacher {
-    font-size: 30px;
-  }
-  .home-button .fa-home {
-    font-size: 30px;
-  }
-  .home-button span {
-    display: inline;
+  nav.mobile-nav {
+    display: none;
   }
 
   /**********************************************************
@@ -1828,19 +1863,8 @@ table.table-debug td.debug-var-value {
   /******************************
   *        Navbar Styling       *
   ******************************/
-  .login-button {
-    color: white;
+  nav.desktop-nav a:hover {
     text-decoration: none;
-    font-size: 20px;
-  }
-
-  .home-button .fa-home {
-    padding-right: 8px;
-    padding-top: 8px;
-    font-size: 32px;
-  }
-  .home-button span {
-    display: inline;
   }
 
   /**********************************************************
