@@ -307,7 +307,7 @@ class BaseCreateSession(_OTreeAsyncJsonWebsocketConsumer):
             raise
 
         session_home_view = (
-            'MTurkCreateHIT' if session.is_mturk() else 'SessionStartLinks'
+            'MTurkCreateHIT' if session.is_mturk() else 'SessionMonitor'
         )
 
         await self.send_response_to_browser(
