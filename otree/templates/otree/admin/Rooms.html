@@ -26,14 +26,32 @@
             </thead>
 
             {% for room in all_rooms %}
-            <tbody class="rooms-table-data">
-                <tr class="rooms-table-row-data">
-                    <td><a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a></td>
-                    <td><i class="fas fa-home"></i></td>
-                    <td><i class="fas fa-home"></i></td>
-                    <td><i class="fas fa-home"></i></td>
-                </tr>
-            </tbody>
+                     <tbody class="rooms-table-data">
+                        <tr class="rooms-table-row-data">
+                            <td>
+                                <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>
+                            </td>
+
+                            <td>
+                                <i class="fas fa-home"></i>
+                            </td>
+
+                            <td>
+                                <i class="fas fa-home"></i>
+                                </td>
+
+                            <td>
+                                <a href="{% url 'delete_view_with_pk' room.id %}" data-toggle="tooltip"
+                                   title="Slet Evaluering" data-placement="bottom">
+                                    <span class="fas fa-times slet_eval" aria-hidden="true"></span>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                {% empty %}
+             <p>Der er ikke oprettet nogle klasserum endnu - vil du oprette et klasserum?</p>
+                    <p>**TODO knap til opret klasserum</p>
+                   <!-- <button class="btn btn-primary" type="button" href="{% url 'create_room' %}">Ja tak</button> -->
             {% endfor %}
         </table>
 </div>

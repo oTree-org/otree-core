@@ -56,7 +56,7 @@ class User(AbstractUser):
     objects = UserManager()
 
 
-class RoomsTest(models.Model):
+class RoomsStorage(models.Model):
     """Rooms models class for creating rooms"""
     name = otreemodels.StringField(max_length=200, unique=True ,null=False)
     display_name = otreemodels.StringField(max_length=200)
@@ -76,7 +76,7 @@ class RoomsTest(models.Model):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(unidecode(self.name))
-        super(RoomsTest, self).save(*args, **kwargs)
+        super(RoomsStorage, self).save(*args, **kwargs)
 
 
 class PageCompletion(models.Model):

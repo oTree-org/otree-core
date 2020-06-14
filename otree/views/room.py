@@ -6,7 +6,7 @@ from django.urls import reverse, reverse_lazy
 from django.http import JsonResponse
 
 from otree.channels import utils as channel_utils
-from otree.models_concrete import ParticipantRoomVisit, RoomsTest
+from otree.models_concrete import ParticipantRoomVisit, RoomsStorage
 from otree.room import get_room_dict
 from otree.views.admin import CreateSessionForm, CreateRoomForm
 from django.shortcuts import redirect, get_object_or_404
@@ -17,9 +17,9 @@ from otree.session import SESSION_CONFIGS_DICT
 
 class CreateRoom(vanilla.CreateView):
     template_name = 'otree/admin/CreateRoom.html'
-    model = RoomsTest
+    model = RoomsStorage
     form_class = CreateRoomForm
-    queryset = RoomsTest.objects.all()
+    queryset = RoomsStorage.objects.all()
 
     def get_context_data(self, **kwargs):
         context = super(CreateRoom, self).get_context_data(**kwargs)
@@ -35,8 +35,7 @@ class CreateRoom(vanilla.CreateView):
         return reverse_lazy("Rooms")
 
 
-# This class Rooms, does the same as making a listView of all
-#
+# This class Rooms, does the same as making a listView of all Rooms
 class Rooms(vanilla.TemplateView):
     """This class Rooms shows all rooms for a teacher"""
     template_name = 'otree/admin/Rooms.html'
@@ -44,8 +43,16 @@ class Rooms(vanilla.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(Rooms, self).get_context_data(**kwargs)
-        context["all_rooms"] = RoomsTest.objects.filter(teacher=self.request.user).values()
+        context["all_rooms"] = RoomsStorage.objects.filter(teacher=self.request.user).values()
+        print(context)
         return context
+
+
+# This class DeleteRoom, deletes a room record ("Mine klasserum")
+class DeleteRoom(vanilla.DeleteView):
+    model = RoomsStorage
+    template_name = 'otree/admin/DeleteRoom.html'
+    success_url = reverse_lazy("Rooms")
 
 
 class RoomWithoutSession(vanilla.TemplateView):
@@ -149,6 +156,6 @@ class RoomDetailView(vanilla.DetailView):
 
     def get_object(self):
         slug_ = self.kwargs.get("slug")
-        return get_object_or_404(RoomsTest, slug=slug_)
+        return get_object_or_404(RoomsStorage, slug=slug_)
 
 """
