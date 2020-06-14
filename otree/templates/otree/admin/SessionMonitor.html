@@ -1,6 +1,7 @@
  {% extends "otree/BaseAdmin.html" %}
 {% load otree_internal static %}
 {% block styles %}
+    {% if column_names == "Daytrader" %}
     <style>
         html, body {
             padding:0;
@@ -11,6 +12,18 @@
         }
 
     </style>
+    {% else %}
+    <style>
+        html, body {
+            padding:0;
+            margin:0;
+            height: 100%;
+            background-color: #41739D !important;
+
+        }
+
+    </style>
+    {% endif %}
 {% endblock %}
 {% block content %}
 
@@ -68,7 +81,7 @@
         <h1>Spillets fremgang</h1>
         <p>Spillet er oprettet og klar til at blive startet. Spillet starter når alle spillerne er indlæst i spillet.</p>
         <p>Dine spiller kan via. dette link spille spillet</p>
-          
+
         <p>Du kan til enhver tid komme tilbage til denne side ved at vælge gå til <b>"Mine Klasserum"</b> og vælge dit rum igen.</p>
         <p>Forneden kan du følge med i spillernes fremgang. </p>
         <p>Når spillet er slut kan du gå hen til rapport siden hvor du kan gennemgå spillets resultater med klassen.</p>

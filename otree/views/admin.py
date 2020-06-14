@@ -394,7 +394,6 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
     def vars_for_template(self):
-
         field_names = otree.export.get_field_names_for_live_update(Participant)
         display_names = {
             '_id_in_session': 'Spiller ID',
