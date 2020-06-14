@@ -121,38 +121,29 @@
       }
     }
   }
-.home-button {
-  .fa-chalkboard-teacher {
-    font-size: 32px;
-  }
-
-  .fa-home {
-    font-size: 32px;
-  }
- span {
-   display: inline;
- }
-}
-
-  /******************************
-  *        Navbar Styling       *
-  ******************************/
-
-  .login-button {
-    color: white;
-    text-decoration: none;
-    font-size: 20px;
-  }
-
   .home-button {
+    .fa-chalkboard-teacher {
+      font-size: 32px;
+    }
+
     .fa-home {
-      padding-right: 8px;
-      padding-top: 8px;
       font-size: 32px;
     }
 
     span {
       display: inline;
+    }
+  }
+
+  /******************************
+  *        Navbar Styling       *
+  ******************************/
+
+  nav.desktop-nav {
+    a {
+      &:hover {
+        text-decoration: none;
+      }
     }
   }
 
@@ -563,9 +554,9 @@
     border-radius: 10px;
   }
 
-/****************************
-*  Rooms view - Rooms.html  *
-****************************/
+  /****************************
+  *  Rooms view - Rooms.html  *
+  ****************************/
   .room-container {
     display: flex;
     flex-direction: column;
@@ -576,17 +567,17 @@
     width: 90%;
     background-color: white;
     padding-top: 40px;
-   font-family: 'Roboto Slab', serif;
+    font-family: 'Roboto Slab', serif;
 
-       .border-corner-left {
-        border-radius: 10px 0 0 10px;
-      }
+    .border-corner-left {
+      border-radius: 10px 0 0 10px;
+    }
 
-      .border-corner-right {
-        border-radius: 0 10px 10px 0;
-      }
+    .border-corner-right {
+      border-radius: 0 10px 10px 0;
+    }
 
-      .table {
+    .table {
 
       display: inline-table;
       border-collapse: separate;
@@ -594,26 +585,24 @@
 
     }
 
-  .rooms-table-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: $ku-red;
-    font-family: 'Roboto Slab', serif;
+    .rooms-table-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: $ku-red;
+      font-family: 'Roboto Slab', serif;
 
 
+      .rooms-table-row {
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+        padding: 10px;
+        background: $ku-red;
+        color: white;
+      }
 
 
-    .rooms-table-row {
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
-      border-radius: 10px;
-      padding: 10px;
-      background: $ku-red;
-      color: white;
-    }
-
-
-    thead {
+      thead {
         background: $ku-red;
         color: white;
         font-size: 20px;
@@ -623,21 +612,21 @@
         border-radius: 10px;
       }
 
-    .rooms-table-data {
+      .rooms-table-data {
         font-size: 26px;
         border-top: none !important;
         text-align: center;
         vertical-align: middle;
 
+      }
+
+      .rooms-table-row-data {
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+      }
+
+
     }
-
-    .rooms-table-row-data {
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
-      border-radius: 10px;
-    }
-
-
-  }
   }
 
 }

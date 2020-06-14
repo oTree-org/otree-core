@@ -199,6 +199,7 @@ table.table-debug td.debug-var-value {
     font-size: 18px;
     margin-top: 6%;
     margin-bottom: 0;
+    padding-top: 8%;
   }
 
   .sub-games-title {
@@ -215,6 +216,7 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     flex-direction: column;
     align-items: center;
+    padding-top: 10%;
   }
   .align-games .card {
     margin-bottom: 30px;
@@ -279,44 +281,40 @@ table.table-debug td.debug-var-value {
   /******************************
   *        Navbar Styling       *
   ******************************/
-  .login-button {
-    color: white;
-    text-decoration: none;
-    font-size: 12px;
-    font-family: "Roboto Slab", serif;
-  }
-  .login-button:hover {
-    text-decoration: none;
-    color: #A7C5E9;
-  }
-
-  .tilbage-button {
-    justify-content: left;
-    display: flex;
-    font-family: "Roboto Slab", serif;
-    font-weight: bold;
-    color: white;
-    font-size: 12px;
-  }
-  .tilbage-button:hover {
-    text-decoration: none;
-    color: #5f861e;
-  }
-  .tilbage-button img {
-    color: white;
-  }
-
-  .home-button {
-    font-size: 20px;
-  }
-  .home-button .fa-chalkboard-teacher {
-    padding: 8px 8px 0 20px;
-  }
-  .home-button .fa-home {
-    padding: 8px 8px 0 0;
-  }
-  .home-button span {
+  nav.desktop-nav {
     display: none;
+  }
+
+  nav.mobile-nav {
+    display: flex;
+  }
+  nav.mobile-nav div.nav-container {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin-top: 8px;
+  }
+  nav.mobile-nav div.nav-container div.nav-home {
+    display: flex;
+    width: 40%;
+  }
+  nav.mobile-nav div.nav-container div.nav-home a {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 20px;
+    padding-left: 16px;
+  }
+  nav.mobile-nav div.nav-container div.nav-logout {
+    display: flex;
+    width: 60%;
+    justify-content: flex-end;
+  }
+  nav.mobile-nav div.nav-container div.nav-logout a {
+    color: white;
+    font-size: 16px;
+    padding-right: 16px;
   }
 
   /**********************************************************
@@ -841,6 +839,31 @@ table.table-debug td.debug-var-value {
   /******************************
   *        Navbar Styling       *
   ******************************/
+  nav.desktop-nav {
+    display: none;
+  }
+
+  nav.mobile-nav {
+    display: flex;
+  }
+  nav.mobile-nav div.nav-container {
+    margin-top: 16px;
+  }
+  nav.mobile-nav div.nav-container div.nav-home a {
+    font-size: 24px;
+    padding-left: 16px;
+  }
+  nav.mobile-nav div.nav-container div.nav-logout {
+    display: flex;
+    width: 60%;
+    justify-content: flex-end;
+  }
+  nav.mobile-nav div.nav-container div.nav-logout a {
+    color: white;
+    font-size: 20px;
+    padding-right: 16px;
+  }
+
   .login-button {
     color: white;
     text-decoration: none;
@@ -1347,20 +1370,40 @@ table.table-debug td.debug-var-value {
   /******************************
   *        Navbar Styling       *
   ******************************/
-  .login-button {
+  nav.desktop-nav {
+    display: flex;
+  }
+  nav.desktop-nav div.nav-container {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    margin-top: 1.5%;
+  }
+  nav.desktop-nav div.nav-container div.nav-home {
+    display: flex;
+    width: 50%;
+  }
+  nav.desktop-nav div.nav-container div.nav-home a {
     color: white;
-    text-decoration: none;
-    font-size: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 20px;
+    padding: 0 24px;
+  }
+  nav.desktop-nav div.nav-container div.nav-logout {
+    display: flex;
+    justify-content: flex-end;
+    width: 50%;
+  }
+  nav.desktop-nav div.nav-container div.nav-logout a {
+    color: white;
+    font-size: 20px;
+    padding-right: 24px;
   }
 
-  .home-button .fa-chalkboard-teacher {
-    font-size: 30px;
-  }
-  .home-button .fa-home {
-    font-size: 30px;
-  }
-  .home-button span {
-    display: inline;
+  nav.mobile-nav {
+    display: none;
   }
 
   /**********************************************************
@@ -1847,19 +1890,8 @@ table.table-debug td.debug-var-value {
   /******************************
   *        Navbar Styling       *
   ******************************/
-  .login-button {
-    color: white;
+  nav.desktop-nav a:hover {
     text-decoration: none;
-    font-size: 20px;
-  }
-
-  .home-button .fa-home {
-    padding-right: 8px;
-    padding-top: 8px;
-    font-size: 32px;
-  }
-  .home-button span {
-    display: inline;
   }
 
   /**********************************************************

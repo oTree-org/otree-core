@@ -126,6 +126,36 @@
   *        Navbar Styling       *
   ******************************/
 
+  nav.desktop-nav {
+    display: none;
+  }
+
+  nav.mobile-nav {
+    display: flex;
+
+    div.nav-container {
+      margin-top: 16px;
+      div.nav-home {
+
+        a {
+          font-size: 24px;
+          padding-left: 16px;
+        }
+      }
+
+      div.nav-logout {
+        display: flex;
+        width: 60%;
+        justify-content: flex-end;
+        a {
+          color: white;
+          font-size: 20px;
+          padding-right: 16px;
+        }
+      }
+    }
+  }
+
   .login-button {
     color: white;
     text-decoration: none;
