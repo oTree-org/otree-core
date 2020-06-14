@@ -55,8 +55,8 @@
 {% endblock %}
 {% block body_main %}
     {% if user.is_authenticated and user.is_staff or user.is_superuser %}
-           <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
- <div class="navbar-collapse collapse" id="navbarSupportedContent1">
+        <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
+            <div class="navbar-collapse collapse" id="navbarSupportedContent1">
                 <ul class="navbar-nav">
                     <li class="nav-item"><a class="nav-link" href="{% url 'games' %}">Forside</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'DemoIndex' %}">Demo</a></li>
@@ -77,52 +77,77 @@
         </nav>
 
 
-{% elif user.is_authenticated and user.is_active %}
-    <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
-        <div class="container-fluid">
-            <ul class="nav navbar-nav login-nav navbar-left">
-                <li>
-                    <a class="navbar-link login-button home-button" href="{% url 'games' %}" class="tilbage-button"><i class="fas fa-home"></i><span>Forside</span></a>
-                </li>
+    {% elif user.is_authenticated and user.is_active %}
+        <nav class="fixed-top position-absolute mobile-nav">
+            <div class="nav-container">
+                <div class="nav-home">
+                    <a href="{% url 'games' %}">
+                        <i class="fas fa-home"></i>
+                    </a>
+                    <a href="{% url 'Rooms' %}">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </a>
+                </div>
+                <div class="nav-logout">
+                    <a href="{% url 'logout' %}">Log out</a>
+                </div>
+            </div>
+        </nav>
 
-                <li>
-                    <a class="navbar-link login-button home-button" href="{% url 'Rooms' %}" class="tilbage-button"><i class="fas fa-chalkboard-teacher"></i></i><span>Mine klasserum</span></a>
-                </li>
-            </ul>
-            <ul class="nav navbar-nav ml-auto login-nav navbar-right">
-                <li>
-                {% if request.user.is_authenticated|default:False %}
-                    <a class="navbar-link login-button navbar-right" href="{% url 'logout' %}">{% trans 'Log out' %}</a>
-                {% else %}
-                    <a class="navbar-link login-button navbar-right" href="{% url 'login' %}">{% trans 'Log in' %}</a>
-                {% endif %}
-                </li>
-            </ul>
-        </div>
-    </nav>
-{% else %}
+        <nav class="fixed-top position-absolute desktop-nav">
+            <div class="nav-container">
+                <div class="nav-home">
+                    <a href="{% url 'games' %}">
+                        <i class="fas fa-home"></i>
+                        Hjem
+                    </a>
+                    <a href="{% url 'Rooms' %}">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        Mine Klasserum
+                    </a>
+                </div>
+                <div class="nav-logout">
+                    <a href="{% url 'logout' %}">Log out</a>
+                </div>
+            </div>
+        </nav>
+    {% else %}
+        <nav class="fixed-top position-absolute mobile-nav">
+            <div class="nav-container">
+                <ul class="nav">
+                    <li><a class="nav-link" href="{% url 'games' %}">
+                        <i class="fas fa-home"></i>
+                    </a></li>
+                    <li><a class="nav-link" href="{% url 'login' %}">Log in</a></li>
 
-  <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">
-  <div class="container-fluid">
-   <ul class="nav navbar-nav login-nav navbar-left">
-      <li>
-        <a class="navbar-link login-button home-button" href="{% url 'games' %}" class="tilbage-button"><i class="fas fa-home"></i><span>Forside</span></a>
-      </li>
-    </ul>
-    <ul class="nav navbar-nav ml-auto login-nav navbar-right">
-      <li>
-            {% if request.user.is_authenticated|default:False %}
-                <li><a class="nav-link" href="{% url 'change_password' %}">{% trans 'Skift kodeord' %}</a></li>
-                <a class="navbar-link login-button navbar-right" href="{% url 'logout' %}">{% trans 'Log out' %}</a>
-            {% else %}
-                <a class="navbar-link login-button navbar-right" href="{% url 'login' %}">{% trans 'Log in' %}</a>
-            {% endif %}
-      </li>
-    </ul>
-  </div>
-</nav>
+                </ul>
+            </div>
+        </nav>
+        {#        <nav class="navbar navbar-expand-lg fixed-top position-absolute" id="top_menu1">#}
+        {#            <div class="container-fluid">#}
+        {#                <ul class="nav navbar-nav login-nav navbar-left">#}
+        {#                    <li>#}
+        {#                        <a class="navbar-link login-button home-button" href="{% url 'games' %}" class="tilbage-button"><i#}
+        {#                                class="fas fa-home"></i><span>Forside</span></a>#}
+        {#                    </li>#}
+        {#                </ul>#}
+        {#                <ul class="nav navbar-nav ml-auto login-nav navbar-right">#}
+        {#                    <li>#}
+        {#                        {% if request.user.is_authenticated|default:False %}#}
+        {#                            <li><a class="nav-link" href="{% url 'change_password' %}">{% trans 'Skift kodeord' %}</a>#}
+        {#                            </li>#}
+        {#                            <a class="navbar-link login-button navbar-right"#}
+        {#                               href="{% url 'logout' %}">{% trans 'Log out' %}</a>#}
+        {#                        {% else %}#}
+        {#                            <a class="navbar-link login-button navbar-right"#}
+        {#                               href="{% url 'login' %}">{% trans 'Log in' %}</a>#}
+        {#                        {% endif %}#}
+        {#                    </li>#}
+        {#                </ul>#}
+        {#            </div>#}
+        {#        </nav>#}
 
-{% endif %}
+    {% endif %}
     <div>
         {% block menus %}{% endblock %}
         <div>
