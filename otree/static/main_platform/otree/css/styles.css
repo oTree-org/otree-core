@@ -1380,6 +1380,7 @@ table.table-debug td.debug-var-value {
     align-items: center;
     font-size: 20px;
     padding: 0 24px;
+    text-align: center;
   }
   nav.desktop-nav div.nav-container div.nav-logout {
     display: flex;
