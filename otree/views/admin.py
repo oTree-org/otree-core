@@ -2,8 +2,6 @@ import json
 import os
 from collections import OrderedDict
 
-from django.conf.urls import url
-from django.views.generic import CreateView
 from django.views.generic.edit import FormMixin
 
 import otree
@@ -17,8 +15,8 @@ import vanilla
 from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse
-from django.template.loader import select_template, render_to_string
-from django.http import JsonResponse, response, HttpResponseServerError
+from django.template.loader import select_template
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from otree import forms
 from otree.currency import RealWorldCurrency
@@ -34,7 +32,6 @@ from otree.models_concrete import BrowserBotsLauncherSessionCode, add_time_spent
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree.views.abstract import AdminSessionPageMixin
 from django.db.models import Case, Value, When
-from otree.models_concrete import User
 from django.http import HttpResponse
 
 
@@ -62,15 +59,16 @@ def pretty_name(name):
 
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
-    session_config_choices = ([
-        ('bad_influence', 'bad_influence'),
-        ('daytrader', 'daytrader')
-    ])
+    session_config_choices = (
+        # use '' instead of None. '' seems to immediately invalidate the choice,
+        # rather than None which seems to be coerced to 'None'.
+        [('', 'Vælg et spil')]
+        + [(s['name'], s['display_name']) for s in session_configs]
+    )
 
-    session_config = forms.ChoiceField(choices=session_config_choices, required=True, initial="daytrader")
+    session_config = forms.ChoiceField(choices=session_config_choices, required=True, label="Spil valg")
 
-    num_participants = forms.IntegerField(required=False,
-                                          widget=forms.NumberInput(attrs={'placeholder': 'Indtast antal spillere..'}))
+    num_participants = forms.IntegerField(required=False)
     is_mturk = forms.BooleanField(
         widget=widgets.HiddenInput, initial=False, required=False
     )
@@ -81,7 +79,6 @@ class CreateSessionForm(forms.Form):
     def __init__(self, *args, is_mturk=False, room_name=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['room_name'].initial = room_name
-
         if is_mturk:
             self.fields['is_mturk'].initial = True
             self.fields[
@@ -106,15 +103,12 @@ class CreateSessionForm(forms.Form):
         lcm = config.get_lcm()
         num_participants = self.cleaned_data.get('num_participants')
         if num_participants is None or num_participants % lcm:
-            raise forms.ValidationError('Please enter a valid number of participants.')
+            raise forms.ValidationError('Venligst indtast en valid antal af spillere.')
 
 
-
-
-
-class CreateSession(CreateView):
+class CreateSession(vanilla.TemplateView):
     template_name = 'otree/admin/CreateSession.html'
-    url_pattern = r"^opret_spil/$"
+    url_pattern = r"^create_session/$"
 
     def get_context_data(self, **kwargs):
         x = super().get_context_data(
@@ -201,11 +195,10 @@ def link_callback(uri, self):
 
 
 class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
-
     def vars_for_template(self):
         session = self.session
-        users = User.objects.filter(last_name=self.session.code)
         room = session.get_room()
+
         context = dict(use_browser_bots=session.use_browser_bots)
 
         session_start_urls = [
@@ -220,8 +213,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 session_start_urls=session_start_urls,
                 room=room,
                 collapse_links=True,
-                users=users,
-
             )
         else:
             anonymous_url = self.request.build_absolute_uri(
@@ -233,8 +224,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 anonymous_url=anonymous_url,
                 num_participants=len(session_start_urls),
                 splitscreen_mode_on=len(session_start_urls) <= 3,
-                users=users,
-
             )
 
         return context

@@ -325,26 +325,22 @@
     flex-direction: column;
     text-align: center;
     font-size: 26px;
-    padding-top: 3%;
     padding-bottom: 4%;
-    font-family: 'Roboto Slab', serif;
+
 
 
     .start-link {
-      margin-top: 20px;
       font-size: 30px;
-      background-color: white;
+      background-color: $ku-red;
       border-radius: 40px;
-      padding: 20px 0 20px 0;
-      width: 40%;
+      width: 80%;
       display: flex;
       justify-content: center;
       align-self: center;
 
-
       a {
         text-decoration: none;
-        color: $ku-red;
+        color: white;
 
         &:hover {
           color: $ku-dark-green;

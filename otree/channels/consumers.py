@@ -326,7 +326,7 @@ class CreateDemoSession(BaseCreateSession):
         session_config_name = form_data['session_config']
         config = SESSION_CONFIGS_DICT.get(session_config_name)
         if not config:
-            msg = f'Session config "{session_config_name}" does not exist.'
+            msg = f'Spil type "{session_config_name}" eksiterer ikke.'
             await self.send_json({'validation_errors': msg})
             return
 

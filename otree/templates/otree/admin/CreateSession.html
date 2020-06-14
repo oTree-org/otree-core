@@ -3,32 +3,14 @@
 {% block title %}
 {% endblock %}
 {% block content %}
-{% if user.is_authenticated and user.is_superuser %}
+{% if user.is_authenticated and user.is_superuser or user.is_staff or user.is_active %}
     <div class="create-session-container">
           {% include "otree/includes/CreateSessionForm.html" %}
     </div>
-
-
-
 {% else %}
-{% endif %}
-
-
-
-
-
-
-
-
-
-
-         <!-- Use Bad Influence Session form -->
-    {% if request.path == "/opret_spil/bad_influence/" %}
-            {% include "otree/includes/CreateSessionFormBadInfluence.html" %}
-         <!-- Use Day Trader Session form -->
-    {% elif request.path == "/opret_spil/day_trader/" %}
-        {% include "otree/includes/CreateSessionFormDayTrader.html" %}
+    <p>Noshow</p>
     {% endif %}
+
 
 
 {% endblock %}
