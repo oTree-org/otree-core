@@ -13,51 +13,21 @@ Admin Panel
 {% block menus %}
 
 <div id="admin-panel">
-
     <ul class="nav justify-content-center">
-
-        <li role="presentation" class="nav-item">
-             <a class="nav-link {% active_page request 'SessionStartLinks' session.code %}" href="{% url 'SessionStartLinks' session.code %}">
-           <button class="btn btn-default btn-circle">
-               Startside
-               <br>
-             <!--  <img src='{% static "main_platform/glyphicons/link.png" %}'>-->
-           </button>
-            </a>
-        </li>
-
         <li role="presentation" class="nav-item">
             <a class="nav-link {% active_page request 'SessionMonitor' session.code %}" href="{% url 'SessionMonitor' session.code %}">
                 <button class="btn btn-default btn-circle">
                     Fremgang
-                    <br>
-                  <!--  <img class="icon" alt="Monitor"src='{% static "main_platform/glyphicons/eye-open.png" %}'>-->
                 </button>
             </a>
         </li>
-    <!--
-        <li role="presentation" class="nav-item">
-            <a class="nav-link {% active_page request 'SessionData' session.code %}" href="{% url 'SessionData' session.code %}">
-                 <button class="btn btn-default btn-circle">
-                     Data
-                     <br>
-                   <img src='{% static "main_platform/glyphicons/list-alt.png" %}'>
-                 </button>
-            </a>
-        </li>
--->
         <li role="presentation" class="nav-item">
             <a class="nav-link {% active_page request 'AdminReport' session.code %}" href="{% url 'AdminReport' session.code %}">
                  <button class="btn btn-default btn-circle">
                       Rapport
-                     <br>
-                    <!--    <img src='{% static "main_platform/glyphicons/stats.png" %}'>-->
                  </button>
-
             </a>
     </ul>
-
-
 </div>
 
 <!--  Use jQuery change color depending on active menu item / HREF -->
