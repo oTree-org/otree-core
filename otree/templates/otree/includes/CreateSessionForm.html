@@ -1,6 +1,6 @@
 {% load otree static %}
 
-<form id="form">
+<form id="form" >
   {% csrf_token %}
 
     <div>
@@ -27,10 +27,10 @@
   {{ form.room_name }}
 
   <div>
-    <input class="btn btn-primary"
-           value="Opret nyt spil"
-           id="btn-create-session"
-           type="submit">
+      <button id="btn-create-session" class="btn btn-primary" type="submit">
+            Opret nyt spil
+      </button>
+
   </div>
   <br>
 <!-- Removed a big chunk of configs that was here, we might need to use some of it for error handling, see orig. code -->

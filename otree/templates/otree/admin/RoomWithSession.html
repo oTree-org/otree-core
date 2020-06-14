@@ -11,7 +11,7 @@
 {% block title %}
     {{ room.display_name }}
 {% endblock %}
-
+class
 {% block content %}
 
     <!-- Game/session view as active or admin with settings/config-->
@@ -26,12 +26,12 @@
     <h2 class="rapport-header ">Klasserum: <b>{{ room.name }}</b></h2>
     <p>Du har et aktivt spil for dette klasserum. Du har to valgmuligheder:</p>
     <h4>Gå til spille</h4>
-    <p>Du kan vælge og gå til det aktive spil ved at trykke på knappen <b>"Gå til spil"</b>.</p>
+    <p>Du kan vælge og gå til det aktive spil og følge med spillets fremgang.</p>
     <a class="btn btn-primary" href="{{ session_url }}">Gå til spil</a>
     <br>
     <br>
     <h4>Stop spilleet</h4>
-    <p>Du kan vælge at stoppe spillet, hvorefter du kan oprettet et nyt spil, ved at trykke på knappen<b>"Stop spillet"</b>.</p>
+    <p>Du kan vælge at stoppe spillet, hvorefter du kan oprettet et nyt spil fra samme klasserum.</p>
     <form method="post" action="{% url "CloseRoom" room.name %}">
         {% csrf_token %}
         <button class="btn btn-primary" id="close-room">
