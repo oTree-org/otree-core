@@ -64,11 +64,19 @@
         {{ block.super }}
     <div class="info">
         <div class="info-content">
+
+        <h1>Spillets fremgang</h1>
+        <p>Spillet er oprettet og klar til at blive startet. Spillet starter når alle spillerne er indlæst i spillet.</p>
+        <p>Dine spiller kan via. dette link spille spillet</p>
+          
+        <p>Du kan til enhver tid komme tilbage til denne side ved at vælge gå til <b>"Mine Klasserum"</b> og vælge dit rum igen.</p>
+        <p>Forneden kan du følge med i spillernes fremgang. </p>
+        <p>Når spillet er slut kan du gå hen til rapport siden hvor du kan gennemgå spillets resultater med klassen.</p>
         <h1>Spiller oversigt</h1>
-        <p>Dette er en oversigt over alle spillerne i spillet. Her kan du følge deres fremgang.</p>
+        <p>Dette er en oversigt over alle spillerne i spillet.</p>
 
         <div class="fremryk-spiller">
-            <p>Brug knappen til at fremrykke den langsomste spiller.</p>
+            <p>Hvis der er brug for det, kan du trykke på <b>"Fremryk spiller"</b>.</p>
          {% if not session.use_browser_bots %}
             <button id="advance_users" class="btn fremryk-spiller-knap" type="button" data-toggle="popover" data-trigger="hover" data-content="{{ advance_users_button_text }}">
                 Fremryk spiller

@@ -30,7 +30,7 @@ class
     <a class="btn btn-primary" href="{{ session_url }}">Gå til spil</a>
     <br>
     <br>
-    <h4>Stop spilleet</h4>
+    <h4>Stop spillet</h4>
     <p>Du kan vælge at stoppe spillet, hvorefter du kan oprettet et nyt spil fra samme klasserum.</p>
     <form method="post" action="{% url "CloseRoom" room.name %}">
         {% csrf_token %}
