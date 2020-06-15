@@ -9,7 +9,7 @@
     </style>
 {% endblock %}
 {% block title %}
-    Klasserum: {{ room.display_name }}
+    {{ room.display_name }}
 {% endblock %}
 
 {% block content %}
@@ -31,13 +31,9 @@
             </div>
 
     <p>Dine spillere vil alle komme ind i et venterum, hvor de venter på at du starter spillet. </p>
-    <p>Du starter spillet ved at udfylde hvilket spil og der skal spilles samt. antal spillere, hvorefter du trykker <b>"Start spil"</b></p>
-
-    <div>
-        <h4>Spil konfiguration</h4>
-        {% include "otree/includes/CreateSessionForm.html" %}
-    </div>
-
+    <h4>Spil konfiguration</h4>
+    <p>Du starter spillet ved at udfylde hvilket spil og der skal spilles samt. antal spillere.</p>
+    {% include "otree/includes/CreateSessionForm.html" %}
         <!-- Commented because I'm not sure if its relevant to have or not...
     <div>
         <h3><span id="present_count"></span> spillere er i venteværelset</h3>

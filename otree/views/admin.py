@@ -28,7 +28,7 @@ from otree.common import (
 )
 from otree.forms import widgets
 from otree.models import Participant, Session
-from otree.models_concrete import BrowserBotsLauncherSessionCode, add_time_spent_waiting, RoomsTest
+from otree.models_concrete import BrowserBotsLauncherSessionCode, add_time_spent_waiting, RoomsStorage
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree.views.abstract import AdminSessionPageMixin
 from django.db.models import Case, Value, When
@@ -43,7 +43,7 @@ class CreateRoomForm(forms.ModelForm):
     )
 
     class Meta:
-        model = RoomsTest
+        model = RoomsStorage
         fields = ["name"]
 
     def __str__(self):
@@ -394,7 +394,6 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
     def vars_for_template(self):
-
         field_names = otree.export.get_field_names_for_live_update(Participant)
         display_names = {
             '_id_in_session': 'Spiller ID',

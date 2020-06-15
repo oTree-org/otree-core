@@ -1,0 +1,27 @@
+{% extends "otree/BaseAdmin.html" %}
+{% load otree static %}
+
+{% block styles %}
+    <style>
+        body {
+            background-color: #901A1E;
+
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="room-container container">
+    <div class="rooms-table-container">
+        <form method="post">
+            {% csrf_token %}
+            Er du sikker på du vil slette klasserummet: <b> "{{ object }}"</b>?
+             <p><input class="btn btn-primary" type='submit' value='Yes' />  <a href='../'>Cancel</a></p>
+        </form>
+    </div>
+</div>
+
+
+
+{% endblock %}

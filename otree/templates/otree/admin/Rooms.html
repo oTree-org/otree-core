@@ -28,10 +28,15 @@
                         <td><a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a></td>
                         <td><a href="#"><i class="fas fa-plus"></i></a></td>
                         <td><a href="#"><i class="fas fa-pen"></i></a></td>
-                        <td><a href="#"><i class="fas fa-trash"></i></a></td>
+                        <td><a href="#"><i class="fas fa-trash"></i></a href="{% url 'delete_view_with_pk' room.id %}" data-toggle="tooltip"
+                            title="Slet Evaluering" data-placement="bottom"></td>
 
                     </tr>
-                {% endfor %}
+                    {% empty %}
+                    <p>Der er ikke oprettet nogle klasserum endnu - vil du oprette et klasserum?</p>
+                           <p>**TODO knap til opret klasserum</p>
+                          <!-- <button class="btn btn-primary" type="button" href="{% url 'create_room' %}">Ja tak</button> -->
+                   {% endfor %}
             </table>
         </div>
     </div>

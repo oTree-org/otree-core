@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import admin
 from django.conf.urls.static import static
 
-from otree.views.room import CreateRoom
+from otree.views.room import CreateRoom, DeleteRoom
 
 ALWAYS_UNRESTRICTED = {
     'AssignVisitorToRoom',
@@ -132,8 +132,6 @@ def extensions_export_urlpatterns():
     return view_urls
 
 
-class HomeView(vanilla.TemplateView):
-    template_name = 'otree/home.html'
 
 
 class GamesView(vanilla.TemplateView):
@@ -149,10 +147,8 @@ def get_urlpatterns():
             urls.url(r'^spil/', GamesView.as_view(), name='games'),
             urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
             urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
-            #urls.url(r'^create_room/$', CreateRoom.as_view(), name='create_room'),
+            urls.url(r'^delete/(?P<pk>\d+)/$', DeleteRoom.as_view(), name="delete_view_with_pk"),
             path('create_room/', CreateRoom.as_view(), name='create_room'),
-            #path('mit_klasserum/<slug:slug>/', RoomDetailView.as_view(), name='view_room_with_pk'),
-            urls.url(r'^home/$', HomeView.as_view(), name='home'),
 
     ]
 

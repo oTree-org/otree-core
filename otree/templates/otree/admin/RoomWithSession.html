@@ -1,9 +1,17 @@
 {% extends "otree/BaseAdmin.html" %}
+{% load otree static %}
+{% block styles %}
+    <style>
+        body {
+            background-color: #901A1E;
 
-{% block title %}
-    Room: {{ room.display_name }}
+        }
+    </style>
 {% endblock %}
-
+{% block title %}
+    {{ room.display_name }}
+{% endblock %}
+class
 {% block content %}
     <style>
         body {
@@ -13,20 +21,38 @@
 
     <div class="rooms-with-session-container container">
 
+    <!-- Game/session view as active or admin with settings/config-->
+{% if user.is_authenticated and user.is_staff or user.is_superuser %}
+<!-- Need orig. form here for admin panel, copy it from github, the form below is edited for teacher/is.staff view. -->
 
-        {% include "otree/includes/RoomParticipantLinks.html" %}
+{% elif user.is_authenticated and user.is_active %}
+<div class="room-container container">
+    <div class="rooms-table-container">
 
-        <form method="post" action="{% url "CloseRoom" room.name %}">
-            {% csrf_token %}
-            <button class="btn btn-primary" id="close-room">
-                Close this room
-            </button>
+<div class="game-admin">
+    <h2 class="rapport-header ">Klasserum: <b>{{ room.name }}</b></h2>
+    <p>Du har et aktivt spil for dette klasserum. Du har to valgmuligheder:</p>
+    <h4>Gå til spille</h4>
+    <p>Du kan vælge og gå til det aktive spil og følge med spillets fremgang.</p>
+    <a class="btn btn-primary" href="{{ session_url }}">Gå til spil</a>
+    <br>
+    <br>
+    <h4>Stop spillet</h4>
+    <p>Du kan vælge at stoppe spillet, hvorefter du kan oprettet et nyt spil fra samme klasserum.</p>
+    <form method="post" action="{% url "CloseRoom" room.name %}">
+        {% csrf_token %}
+        <button class="btn btn-primary" id="close-room">
+            Stop spillet
+        </button>
+    </form>
+    <br>
+    <br>
+</div>
 
-        </form>
 
-        <div class="alert alert-success">
-            <a href="{{ session_url }}">Go to active session.</a>
-        </div>
-    </div>
-
+</div>
+</div>
+{% else %}
+    <p>Unauthenticated</p>
+{% endif %}
 {% endblock %}
