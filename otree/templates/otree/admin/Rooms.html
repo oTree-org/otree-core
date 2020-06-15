@@ -56,6 +56,7 @@
         {% else %}
             <div class="create-room-container">
                 <div class="content-container">
+                      <h2 class="rapport-header ">Oversigt over dine klasserum</h2>
                     <p>Der er ikke oprettet nogle klasserum endnu - vil du oprette et klasserum?</p>
                     <form method="post" action="{% url 'create_room' %}">
                         {% csrf_token %}
