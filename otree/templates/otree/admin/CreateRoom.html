@@ -40,10 +40,12 @@
         <div class="card-footer">
              <form action="." method="post">
                 {% csrf_token %}
-                {{ form.name }}
+
+                {{ form.as_p }}
                 <div>
                     <button type="submit" class="btn btn-primary" value="Opret klasserum">Opret klasserum</button>
                 </div>
+
              </form>
         </div>
 </div>
