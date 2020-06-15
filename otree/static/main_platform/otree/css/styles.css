@@ -283,7 +283,6 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     flex-direction: column;
     align-items: center;
-    padding-top: 10%;
   }
   div.welcome-container .card {
     margin-bottom: 30px;
