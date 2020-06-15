@@ -21,35 +21,18 @@
   /******************************
   *  Front Page  - games.html  *
   ******************************/
-  .title-container {
-    margin-bottom: 5%;
-  }
+
 
   .games-title {
-    color: white;
-    font-weight: bold;
-    font-family: 'Catamaran', sans-serif;
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    font-size: 60px;
-    margin-top: 6%;
+    font-size: 70px;
     margin-bottom: 0;
   }
 
   .sub-games-title {
-    color: white;
-    display: flex;
-    justify-content: center;
-    text-align: center;
     font-size: 30px;
   }
 
   .align-games {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    align-items: center;
 
     .card {
       margin-bottom: 30px;
@@ -58,6 +41,7 @@
       border-style: solid;
       border-width: 3px;
     }
+
 
 
     .card-header,

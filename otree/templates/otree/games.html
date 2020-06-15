@@ -15,9 +15,9 @@
 {% endblock %}
 
 {% block content %}
-    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
 
-    {% elif user.is_authenticated and user.is_active %}
+
+    {% if user.is_authenticated and user.is_active or user.is_staff or user.is_superuser %}
         <div class="games-container">
             <div class="title-container">
                 <h1 class="games-title">Multiplayer Dude</h1>
@@ -94,7 +94,7 @@
                 <p>*Debrief: 10-15min</p>
                 <p>*10-50 spillere</p>
             </span>
-                            <form action="{% url 'CreateSessionDayTrader' %}">
+                            <form action="{% url 'create_room' %}">
                                 <button class="btn btn-primary">
                                     Opret klasserum
                                 </button>
