@@ -245,7 +245,7 @@ table.table-debug td.debug-var-value {
     display: flex;
   }
   .align-games .card-body .body-row span {
-    font-size: 12px;
+    font-size: 16px;
   }
   .align-games .sack-img {
     display: none;
@@ -272,9 +272,63 @@ table.table-debug td.debug-var-value {
   }
   .align-games .card-footer .game-info {
     padding-bottom: 20px;
-    font-size: 11px;
+    font-size: 16px;
   }
   .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  div.welcome-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10%;
+  }
+  div.welcome-container .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+    font-family: "Roboto Slab", serif;
+  }
+  div.welcome-container .card-header {
+    padding-bottom: 0;
+  }
+  div.welcome-container .card-header,
+div.welcome-container .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
+  }
+  div.welcome-container .card-body {
+    color: #901A1E;
+  }
+  div.welcome-container .card-body .body-row {
+    flex-direction: column;
+    display: flex;
+  }
+  div.welcome-container .card-body .body-row span {
+    font-size: 16px;
+  }
+  div.welcome-container .card-body .body-row .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+    margin-top: 5%;
+  }
+  div.welcome-container .card-body .body-row .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+  div.welcome-container .card-body .body-row .game-info {
+    padding-bottom: 20px;
+    font-size: 16px;
+  }
+  div.welcome-container .card-body .body-row .game-info p {
     margin-bottom: 0;
   }
 
@@ -833,6 +887,14 @@ table.table-debug td.debug-var-value {
     margin-bottom: 0;
   }
 
+  div.welcome-container .card-body .body-row form {
+    display: flex;
+    justify-content: center;
+  }
+  div.welcome-container .card-body .body-row form .btn-primary {
+    width: 80%;
+  }
+
   /******************************
   *        Navbar Styling       *
   ******************************/
@@ -1003,7 +1065,6 @@ table.table-debug td.debug-var-value {
     align-self: center;
   }
   .gamelink-content .start-link {
-    margin-top: 20px;
     background-color: white;
     border-radius: 40px;
     width: 70%;
@@ -1347,6 +1408,26 @@ table.table-debug td.debug-var-value {
     margin-bottom: 0;
   }
 
+  div.welcome-container .card-body .body-row div.form-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-top: 5%;
+  }
+  div.welcome-container .card-body .body-row div.form-container b {
+    width: 25%;
+  }
+  div.welcome-container .card-body .body-row div.form-container form {
+    width: 75%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  div.welcome-container .card-body .body-row div.form-container form button.btn-primary {
+    width: 30%;
+    margin-top: 0;
+  }
+
   /******************************
   *        Navbar Styling       *
   ******************************/
@@ -1366,11 +1447,14 @@ table.table-debug td.debug-var-value {
   nav.desktop-nav div.nav-container div.nav-home a {
     color: white;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     font-size: 20px;
     padding: 0 24px;
     text-align: center;
+  }
+  nav.desktop-nav div.nav-container div.nav-home a i {
+    padding-right: 10px;
   }
   nav.desktop-nav div.nav-container div.nav-logout {
     display: flex;
@@ -1513,10 +1597,30 @@ table.table-debug td.debug-var-value {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    width: 70%;
-    align-self: center;
+    font-family: "Roboto Slab", serif;
+    padding-top: 3%;
+    padding-bottom: 4%;
+    position: relative;
+    margin-top: 10px;
+    color: white;
+    text-align: center;
+    /*********************************************
+    *  Monitor game progress - SessionMonitor.html  *
+    **********************************************/
+    /*****************************************************
+    *  Game report page - BadInfluence/AdminReport.html  *
+    ******************************************************/
+    /*****************************************************
+    *  Authenticated demo page - DemoIndex.html  *
+    ******************************************************/
+    /*****************************************************
+    *  Authenticated create session - Sessions.html  *
+    ******************************************************/
+    /****************************
+    *  Rooms view - Rooms.html  *
+    ****************************/
   }
-  .gamelink-content .start-link {
+  .gamelink-content .game-link-info .start-link {
     background-color: white;
     border-radius: 40px;
     width: 70%;
@@ -1524,19 +1628,20 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     align-self: center;
   }
-  .gamelink-content .start-link a {
+  .gamelink-content .game-link-info .start-link a {
     text-decoration: none;
     color: #901A1E;
     font-size: 20px;
   }
-  .gamelink-content .start-link a:hover {
+  .gamelink-content .game-link-info .start-link a a {
+    text-decoration: none;
+    color: #901A1E;
+    font-size: 20px;
+  }
+  .gamelink-content .game-link-info .start-link a a:hover {
     color: #5f861e;
   }
-
-  /*********************************************
-  *  Monitor game progress - SessionMonitor.html  *
-  **********************************************/
-  .info {
+  .gamelink-content .game-link-info .info {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -1544,7 +1649,7 @@ table.table-debug td.debug-var-value {
     flex-direction: column;
     font-family: "Roboto Slab", serif;
   }
-  .info .info-content {
+  .gamelink-content .game-link-info .info .info-content {
     display: flex;
     justify-content: center;
     width: 90%;
@@ -1553,21 +1658,20 @@ table.table-debug td.debug-var-value {
     color: white;
     align-items: center;
   }
-  .info .info-content h1 {
+  .gamelink-content .game-link-info .info .info-content h1 {
     font-size: 18px;
   }
-  .info .info-content p {
+  .gamelink-content .game-link-info .info .info-content p {
     font-size: 16px;
   }
-  .info .player-table {
+  .gamelink-content .game-link-info .info .player-table {
     width: auto;
     background-color: white;
     border-collapse: collapse;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
     color: #901A1E;
   }
-
-  .results-table {
+  .gamelink-content .game-link-info .results-table {
     width: 100%;
     background-color: white;
     border-collapse: collapse;
@@ -1577,18 +1681,14 @@ table.table-debug td.debug-var-value {
     display: flex;
     justify-content: center;
   }
-
-  /*****************************************************
-  *  Game report page - BadInfluence/AdminReport.html  *
-  ******************************************************/
-  .report-container {
+  .gamelink-content .game-link-info .report-container {
     width: 100%;
     display: flex;
     justify-content: center;
     color: #901A1E;
     font-family: "Roboto Slab", serif;
   }
-  .report-container .report-info {
+  .gamelink-content .game-link-info .report-container .report-info {
     width: 90%;
     border-collapse: collapse;
     overflow: hidden;
@@ -1596,7 +1696,7 @@ table.table-debug td.debug-var-value {
     background-color: white;
     border-radius: 10px;
   }
-  .report-container .rapport-header {
+  .gamelink-content .game-link-info .report-container .rapport-header {
     padding-top: 20px;
     justify-content: center;
     display: flex;
@@ -1604,29 +1704,29 @@ table.table-debug td.debug-var-value {
     flex-direction: column;
     align-items: center;
   }
-  .report-container .rapport-header h2 {
+  .gamelink-content .game-link-info .report-container .rapport-header h2 {
     font-size: 20px;
   }
-  .report-container .rapport-header p {
+  .gamelink-content .game-link-info .report-container .rapport-header p {
     font-size: 18px;
     text-align: center;
   }
-  .report-container .dropdown-questions {
+  .gamelink-content .game-link-info .report-container .dropdown-questions {
     display: flex;
     justify-content: center;
     font-size: 16px;
     flex-direction: column;
   }
-  .report-container .dropdown-questions .question-title {
+  .gamelink-content .game-link-info .report-container .dropdown-questions .question-title {
     font-size: 20px;
     font-weight: bold;
     padding-bottom: 5px;
   }
-  .report-container .resultater {
+  .gamelink-content .game-link-info .report-container .resultater {
     display: flex;
     justify-content: center;
   }
-  .report-container .d3-row {
+  .gamelink-content .game-link-info .report-container .d3-row {
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -1634,97 +1734,83 @@ table.table-debug td.debug-var-value {
     font-size: 18px;
     font-family: "Roboto Slab", serif;
   }
-  .report-container .d3-row #d3consensus {
+  .gamelink-content .game-link-info .report-container .d3-row #d3consensus {
     display: flex;
     justify-content: center;
     width: 100%;
   }
-  .report-container .d3-row #d3playback {
+  .gamelink-content .game-link-info .report-container .d3-row #d3playback {
     display: none;
   }
-  .report-container .alert-info {
+  .gamelink-content .game-link-info .report-container .alert-info {
     color: #901A1E;
     justify-content: center;
     display: flex;
     flex-direction: column;
     align-self: center;
   }
-  .report-container .alert {
+  .gamelink-content .game-link-info .report-container .alert {
     width: 100%;
   }
-  .report-container .graf {
+  .gamelink-content .game-link-info .report-container .graf {
     height: 130px;
   }
-  .report-container .explanation {
+  .gamelink-content .game-link-info .report-container .explanation {
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
   }
-  .report-container .dropdown-toggle {
+  .gamelink-content .game-link-info .report-container .dropdown-toggle {
     background-color: #901A1E;
     color: white;
     font-size: 18px;
     width: auto !important;
   }
-  .report-container .dropdown-toggle:hover {
+  .gamelink-content .game-link-info .report-container .dropdown-toggle:hover {
     background-color: #5f861e;
   }
-  .report-container .play-button {
+  .gamelink-content .game-link-info .report-container .play-button {
     background-color: #901A1E;
     color: white;
     width: 100px;
     display: flex;
     justify-content: center;
   }
-  .report-container .play-button:hover {
+  .gamelink-content .game-link-info .report-container .play-button:hover {
     background-color: #5f861e;
   }
-
-  .d3-container {
+  .gamelink-content .game-link-info .d3-container {
     background-color: orange;
     width: 20%;
   }
-
-  /*****************************************************
-  *  Authenticated demo page - DemoIndex.html  *
-  ******************************************************/
-  .demo-container {
+  .gamelink-content .game-link-info .demo-container {
     margin-top: 10%;
     padding: 10px 50px 10px 50px;
   }
-
-  /*****************************************************
-  *  Authenticated create session - Sessions.html  *
-  ******************************************************/
-  .create-session-container {
+  .gamelink-content .game-link-info .create-session-container {
     margin-top: 10%;
     padding: 10px 50px 10px 50px;
   }
-
-  .game-admin {
+  .gamelink-content .game-link-info .game-admin {
     margin-top: 5%;
     padding: 10px 50px 10px 50px;
     background-color: white !important;
   }
-
-  /****************************
-  *  Rooms view - Rooms.html  *
-  ****************************/
-  .report-table-container-rooms {
+  .gamelink-content .game-link-info .report-table-container-rooms {
     display: flex;
     flex-direction: column;
     align-items: center;
     color: #901A1E;
     font-family: "Roboto Slab", serif;
   }
-  .report-table-container-rooms #roomsTable {
+  .gamelink-content .game-link-info .report-table-container-rooms #roomsTable {
     width: 100%;
     display: inline-table;
     border-collapse: separate;
     border-spacing: 0 0.5rem;
     border-radius: 0 10px 0 10px;
   }
-  .report-table-container-rooms #roomsTable .rooms-table-header {
+  .gamelink-content .game-link-info .report-table-container-rooms #roomsTable .rooms-table-header {
     background: #901A1E;
     color: white;
     font-weight: bold;
@@ -1733,13 +1819,13 @@ table.table-debug td.debug-var-value {
     text-align: center;
     box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
   }
-  .report-table-container-rooms #roomsTable .bad_influence-table-data {
+  .gamelink-content .game-link-info .report-table-container-rooms #roomsTable .bad_influence-table-data {
     font-size: 26px;
     border-top: none !important;
     text-align: center;
     vertical-align: middle;
   }
-  .report-table-container-rooms #roomsTable .bad_influence-table-row {
+  .gamelink-content .game-link-info .report-table-container-rooms #roomsTable .bad_influence-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
@@ -1858,6 +1944,20 @@ table.table-debug td.debug-var-value {
   }
   .home-button span {
     display: inline;
+  }
+
+  div.welcome-container .card {
+    width: 60%;
+  }
+  div.welcome-container .card header.card-header {
+    font-size: 24px;
+  }
+  div.welcome-container .card div.card-body div.body-row p, div.welcome-container .card div.card-body div.body-row b {
+    font-size: 18px;
+  }
+  div.welcome-container .card div.card-body div.body-row div.form-container form button.btn-primary {
+    font-size: 18px;
+    width: 35%;
   }
 
   /******************************

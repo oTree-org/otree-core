@@ -84,7 +84,7 @@
         display: flex;
 
         span {
-          font-size: 12px;
+          font-size: 16px;
         }
       }
     }
@@ -121,10 +121,74 @@
 
       .game-info {
         padding-bottom: 20px;
-        font-size: 11px;
+        font-size: 16px;
 
         p {
           margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  div.welcome-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10%;
+
+    .card {
+      margin-bottom: 30px;
+      width: 90%;
+      border-color: $ku-red;
+      border-style: solid;
+      border-width: 3px;
+      font-family: 'Roboto Slab', serif;
+    }
+
+    .card-header {
+      padding-bottom: 0;
+    }
+
+    .card-header,
+    .card-footer {
+      color: $ku-red;
+      border: none;
+      background-color: white;
+      font-size: 18px;
+      font-weight: bolder;
+    }
+
+    .card-body {
+      color: $ku-red;
+
+      .body-row {
+        flex-direction: column;
+        display: flex;
+
+        span {
+          font-size: 16px;
+        }
+
+        .btn-primary {
+          background-color: $ku-red;
+          border-color: $ku-red;
+          width: 100%;
+          margin-top: 5%;
+
+          &:hover {
+            background-color: #7C992B;
+            border-color: transparent;
+          }
+        }
+
+        .game-info {
+          padding-bottom: 20px;
+          font-size: 16px;
+
+          p {
+            margin-bottom: 0;
+          }
         }
       }
     }
