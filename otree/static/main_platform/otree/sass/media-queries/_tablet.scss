@@ -126,6 +126,36 @@
     }
   }
 
+  div.welcome-container {
+    .card-body {
+      .body-row {
+        div.form-container {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          margin-top: 5%;
+
+          b {
+            width: 25%;
+          }
+
+          form {
+            width: 75%;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+
+            button.btn-primary {
+              width: 30%;
+              margin-top: 0;
+            }
+
+          }
+        }
+      }
+    }
+  }
+
   /******************************
   *        Navbar Styling       *
   ******************************/
@@ -145,11 +175,15 @@
         a {
           color: white;
           display: flex;
-          flex-direction: column;
+          flex-direction: row;
           align-items: center;
           font-size: 20px;
           padding: 0 24px;
           text-align: center;
+
+          i {
+            padding-right: 10px;
+          }
         }
 
       }
@@ -314,52 +348,54 @@
   *  Start link / intro - SessionStartLinks.html  *
   **********************************************/
 
-.gamelink-content {
-  width: 100%;
+  .gamelink-content {
+    width: 100%;
 
-  padding-bottom: 4%;
-  position: relative;
-  color: white;
-  text-align: center;
-
-  .game-link-info {
-    font-size: 20px;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    font-family: 'Roboto Slab', serif;
-    padding-top: 3%;
     padding-bottom: 4%;
     position: relative;
-    margin-top: 10px;
     color: white;
     text-align: center;
 
-  .start-link {
-    background-color: white;
-    border-radius: 40px;
-    width: 70%;
-    display: flex;
-    justify-content: center;
-    align-self: center;
-
-    a {
-      text-decoration: none;
-      color: $ku-red;
+    .game-link-info {
       font-size: 20px;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+      font-family: 'Roboto Slab', serif;
+      padding-top: 3%;
+      padding-bottom: 4%;
+      position: relative;
+      margin-top: 10px;
+      color: white;
+      text-align: center;
 
-      a {
-        text-decoration: none;
-        color: $ku-red;
-        font-size: 20px;
+      .start-link {
+        background-color: white;
+        border-radius: 40px;
+        width: 70%;
+        display: flex;
+        justify-content: center;
+        align-self: center;
 
-        &:hover {
-          color: $ku-dark-green;
+        a {
+          text-decoration: none;
+          color: $ku-red;
+          font-size: 20px;
+
+          a {
+            text-decoration: none;
+            color: $ku-red;
+            font-size: 20px;
+
+            &:hover {
+              color: $ku-dark-green;
+            }
+          }
         }
+
+
       }
     }
-
-
   }
 
   /*********************************************
@@ -402,6 +438,7 @@
     }
 
   }
+
   .results-table {
     width: 100%;
     background-color: white;
@@ -412,6 +449,7 @@
     display: flex;
     justify-content: center;
   }
+
   /*****************************************************
   *  Game report page - BadInfluence/AdminReport.html  *
   ******************************************************/
@@ -568,6 +606,18 @@
   /****************************
   *  Rooms view - Rooms.html  *
   ****************************/
+  div.room-container {
+    div.rooms-table-container {
+      width: 90%;
+      h2.rapport-header {
+        font-size: 28px;
+      }
+      table#roomsTable {
+        width: 100%;
+      }
+    }
+  }
+
   .report-table-container-rooms {
     display: flex;
     flex-direction: column;
@@ -610,5 +660,6 @@
 }
 }
 }
+
 
 

@@ -54,6 +54,7 @@ class DeleteRoom(vanilla.DeleteView):
     template_name = 'otree/admin/DeleteRoom.html'
     success_url = reverse_lazy("Rooms")
 
+
 # This class UpdateRoom, updates a room record ("Mine klasserum")
 class UpdateRoom(vanilla.UpdateView):
     model = RoomsStorage

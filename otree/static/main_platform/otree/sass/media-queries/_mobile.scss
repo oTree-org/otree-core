@@ -122,6 +122,21 @@
     }
   }
 
+  div.welcome-container {
+    .card-body {
+      .body-row {
+        form {
+          display: flex;
+          justify-content: center;
+
+          .btn-primary {
+            width: 80%;
+          }
+        }
+      }
+    }
+  }
+
   /******************************
   *        Navbar Styling       *
   ******************************/
@@ -569,6 +584,30 @@
   /****************************
 *  Rooms view - Rooms.html  *
 ****************************/
+  .room-container {
+    .rooms-table-container {
+      .rapport-header {
+        font-size: 24px;
+        padding: 25px 0;
+      }
+      #roomsTable {
+        .rooms-table-row {
+          th {
+            font-size: 16px;
+          }
+        }
+
+        .rooms-table-row-data {
+          td {
+            a {
+              font-size: 18px;
+            }
+          }
+        }
+      }
+    }
+  }
+
   .report-table-container-rooms {
     display: flex;
     flex-direction: column;
