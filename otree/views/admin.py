@@ -50,6 +50,8 @@ class CreateRoomForm(forms.ModelForm):
         return self.name
 
 
+
+
 def pretty_name(name):
     """Converts 'first_name' to 'first name'"""
     if not name:

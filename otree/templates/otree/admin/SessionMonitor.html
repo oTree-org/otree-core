@@ -8,9 +8,7 @@
             margin:0;
             height: 100%;
             background-color: #901A1E !important;
-
         }
-
     </style>
     {% else %}
     <style>
@@ -19,22 +17,17 @@
             margin:0;
             height: 100%;
             background-color: #41739D !important;
-
         }
-
     </style>
     {% endif %}
 {% endblock %}
 {% block content %}
-
 
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
       <div class="game-admin">
 
 {% include "otree/admin/Session.html" %}
 {{ block.super }}
-
-
     <table id="monitor-table"
            class="table table-bordered table-hover table-condensed">
         <thead>
@@ -56,7 +49,6 @@
         Advance slowest user(s)
     </button>
     {% endif %}
-
 
     <br>
     <div id="refresh_server_error" class="alert alert-danger"

@@ -132,11 +132,8 @@ def extensions_export_urlpatterns():
     return view_urls
 
 
-
-
 class GamesView(vanilla.TemplateView):
     template_name = 'otree/games.html'
-
 
 
 def get_urlpatterns():

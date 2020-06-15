@@ -58,8 +58,17 @@ class DeleteRoom(vanilla.DeleteView):
 # This class UpdateRoom, updates a room record ("Mine klasserum")
 class UpdateRoom(vanilla.UpdateView):
     model = RoomsStorage
+    form_class = CreateRoomForm
     template_name = 'otree/admin/UpdateRoom.html'
     success_url = reverse_lazy("Rooms")
+
+    def form_valid(self, form):
+        form.instance.teacher = self.request.user
+        form.instance.display_name = form.cleaned_data['name']
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("Rooms")
 
 
 class RoomWithoutSession(vanilla.TemplateView):

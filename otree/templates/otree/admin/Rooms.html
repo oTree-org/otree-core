@@ -25,11 +25,18 @@
 
                 {% for room in all_rooms %}
                     <tr class="rooms-table-row-data">
-                        <td><a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a></td>
-                        <td><a href="#"><i class="fas fa-plus"></i></a></td>
-                        <td><a href="#"><i class="fas fa-pen"></i></a></td>
+                        <td>
+                            <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>
+                        </td>
+                        <td>
+                            <a href="{% url "RoomWithoutSession" room.name %}"><i class="fas fa-plus"></i></a>
+                        </td>
+                        <td>
+                            <a href="{% url 'update_view_with_pk' room.id %}" data-toggle="tooltip"
+                            title="Redigere klasserum" data-placement="bottom"><i class="fas fa-pen"></i></a>
+                        </td>
                         <td><a href="{% url 'delete_view_with_pk' room.id %}" data-toggle="tooltip"
-                            title="Slet Evaluering" data-placement="bottom"><i class="fas fa-trash"></i></a></td>
+                            title="Slet klasserum" data-placement="bottom"><i class="fas fa-trash"></i></a></td>
 
                     </tr>
                     {% empty %}
