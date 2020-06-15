@@ -13,13 +13,6 @@
 {% endblock %}
 class
 {% block content %}
-    <style>
-        body {
-            background: #901a1e;
-        }
-    </style>
-
-    <div class="rooms-with-session-container container">
 
     <!-- Game/session view as active or admin with settings/config-->
 {% if user.is_authenticated and user.is_staff or user.is_superuser %}
