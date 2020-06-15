@@ -5,20 +5,28 @@
 {% endblock %}
 
 {% block content %}
+    <style>
+        body {
+            background: #901a1e;
+        }
+    </style>
 
-    <div class="alert alert-success">
-        <a href="{{ session_url }}">Go to active session.</a>
+    <div class="rooms-with-session-container container">
+
+
+        {% include "otree/includes/RoomParticipantLinks.html" %}
+
+        <form method="post" action="{% url "CloseRoom" room.name %}">
+            {% csrf_token %}
+            <button class="btn btn-primary" id="close-room">
+                Close this room
+            </button>
+
+        </form>
+
+        <div class="alert alert-success">
+            <a href="{{ session_url }}">Go to active session.</a>
+        </div>
     </div>
-
-    <form method="post" action="{% url "CloseRoom" room.name %}">
-        {% csrf_token %}
-
-        <button class="btn btn-primary" id="close-room">
-            Close this room
-        </button>
-
-    </form>
-
-    {% include "otree/includes/RoomParticipantLinks.html" %}
 
 {% endblock %}
