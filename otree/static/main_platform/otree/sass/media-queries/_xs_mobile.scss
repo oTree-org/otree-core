@@ -756,6 +756,32 @@
         }
       }
     }
+
+
+  }
+
+  div.create-room-container {
+    div.content-container {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      p {
+        text-align: center;
+      }
+
+      form {
+        button.btn-primary {
+          background: $ku-red;
+          border: none;
+
+          &:hover {
+            background: $ku-dark-green;
+          }
+        }
+      }
+    }
   }
 
 
@@ -802,14 +828,84 @@
   /****************************
 *  Rooms with session - Rooms.html  *
 ****************************/
+  div.room-without-container {
+    width: 90%;
+    margin-top: 20%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    h4.rapport-header {
+      font-size: 20px;
+      padding-top: 20px;
+      color: white;
+      font-weight: bolder;
+    }
+
+    p, label {
+      color: white;
+    }
+
+    div.start-link {
+      background: white;
+      border-radius: 10px;
+      padding: 5px;
+      width: 100%;
+
+      p {
+        margin: 0;
+
+        a {
+          color: $ku-red;
+          font-size: 12px;
+        }
+      }
+    }
+
+    form {
+      input, select {
+        background: $ku-red;
+        border: 2px solid white;
+        border-radius: 20px;
+        width: 100%;
+        max-width: 100% !important;
+        color: white;
+      }
+
+      div.controls {
+        display: flex;
+        justify-content: center;
+      }
+
+      button.btn-primary {
+        background: white;
+        border: none;
+        width: 100%;
+        border-radius: 20px;
+        color: $ku-red;
+        font-weight: bold;
+
+        &:hover {
+          cursor: pointer;
+          background: $ku-dark-green;
+          color: white;
+        }
+      }
+    }
+  }
+
+  /****************************
+*  Rooms with session - Rooms.html  *
+****************************/
 
   div.rooms-with-session-container {
     margin-top: 20%;
-    background: white;
-    border-radius: 10px;
-    width: 90%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
-    padding: 20px;
+
+    p {
+      color: white;
+    }
+
 
     form {
       button#close-room {

@@ -13,162 +13,162 @@
 {% endblock %}
 
 {% block content %}
-<!-- Game/session view as active or admin with settings/config-->
-{% if user.is_authenticated and user.is_staff or user.is_superuser %}
-<!-- Need orig. form here for admin panel, copy it from github, the form below is edited for teacher/is.staff view. -->
+    <!-- Game/session view as active or admin with settings/config-->
+    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+        <!-- Need orig. form here for admin panel, copy it from github, the form below is edited for teacher/is.staff view. -->
 
-{% elif user.is_authenticated and user.is_active %}
-<div class="room-container container">
-    <div class="rooms-table-container">
-        <h2 class="rapport-header ">Klasserum: <b>{{ room.name }}</b></h2>
-        <p>Du er inde i klasserummet <b>{{ room.name }}</b></p>
-        <h4>Hvordan starter jeg et spil?</h4>
-        <p>Nu hvor du har oprettet et klasserum, kan du fordele linket forneden til dine spillere.</p>
-            <div class="gamelink-content">
-                 <div class="start-link">
-                    <p><a href="{{ room_wide_url }}" target="_blank">{{ room_wide_url }}</a></p>
+    {% elif user.is_authenticated and user.is_active %}
+        <div class="room-without-container container">
+            <div class="rooms-table-container">
+                <h4 class="rapport-header ">Klasserum: <b>{{ room.name }}</b></h4>
+                <p class="rapport-desc">Du er inde i klasserummet <b>{{ room.name }}</b></p>
+                <h4 class="rapport-header">Hvordan starter jeg et spil?</h4>
+                <p>Nu hvor du har oprettet et klasserum, kan du fordele linket forneden til dine spillere.</p>
+                <div class="gamelink-content">
+                    <div class="start-link">
+                        <p><a href="{{ room_wide_url }}" target="_blank">{{ room_wide_url }}</a></p>
+                    </div>
                 </div>
-            </div>
 
-    <p>Dine spillere vil alle komme ind i et venterum, hvor de venter på at du starter spillet. </p>
-    <h4>Spil konfiguration</h4>
-    <p>Du starter spillet ved at udfylde hvilket spil og der skal spilles samt. antal spillere.</p>
-    {% include "otree/includes/CreateSessionForm.html" %}
-        <!-- Commented because I'm not sure if its relevant to have or not...
-    <div>
-        <h3><span id="present_count"></span> spillere er i venteværelset</h3>
-    </div>
-    -->
-</div>
-</div>
-{% else %}
-    <p>Unauthenticated</p>
-{% endif %}
+                <p>Dine spillere vil alle komme ind i et venterum, hvor de venter på at du starter spillet. </p>
+                <h4 class="rapport-header">Spil konfiguration</h4>
+                <p>Du starter spillet ved at udfylde hvilket spil og der skal spilles samt. antal spillere.</p>
+                {% include "otree/includes/CreateSessionForm.html" %}
+                <!-- Commented because I'm not sure if its relevant to have or not...
+            <div>
+                <h3><span id="present_count"></span> spillere er i venteværelset</h3>
+            </div>
+            -->
+            </div>
+        </div>
+    {% else %}
+        <p>Unauthenticated</p>
+    {% endif %}
 {% endblock %}
 
 
 {% block internal_scripts %}
     {{ block.super }}
     <!-- this is an HTML file rather than JavaScript static file because context variables need to be passed to it -->
-<script type="text/javascript">
-$(document).ready(function () {
+    <script type="text/javascript">
+        $(document).ready(function () {
 
-    calcCountsFromDOM();
+            calcCountsFromDOM();
 
-    var has_participant_labels = {{ room.has_participant_labels|yesno:"true,false" }};
-    var no_labels_present_count = 0;
+            var has_participant_labels = {{ room.has_participant_labels|yesno:"true,false" }};
+            var no_labels_present_count = 0;
 
-    var socket;
-    initWebSocket();
+            var socket;
+            initWebSocket();
 
-    function getStaleParticipantVisits() {
-        var args = {
-            type: "GET",
-            url: '{% url "StaleRoomVisits" room.name %}',
-            cache: false, // for IE...not sure if required here though
-            success: function(data) {
-                participant_labels = data.participant_labels;
-                if (participant_labels.length > 0) {
-                    for (var i = 0; i < participant_labels.length; i++) {
-                        setParticipantPresence(participant_labels[i], false);
+            function getStaleParticipantVisits() {
+                var args = {
+                    type: "GET",
+                    url: '{% url "StaleRoomVisits" room.name %}',
+                    cache: false, // for IE...not sure if required here though
+                    success: function (data) {
+                        participant_labels = data.participant_labels;
+                        if (participant_labels.length > 0) {
+                            for (var i = 0; i < participant_labels.length; i++) {
+                                setParticipantPresence(participant_labels[i], false);
+                            }
+                            calcCountsFromDOM();
+                        }
                     }
-                    calcCountsFromDOM();
-                }
-            }
-        };
-        $.ajax(args);
-    }
-
-    function getActiveParticipantCount() {
-        var args = {
-            type: "GET",
-            url: '{% url "ActiveRoomParticipantsCount" room.name %}',
-            cache: false, // for IE...not sure if required here though
-            success: function(data) {
-                no_labels_present_count = data.count;
-                $('#present_count').text(no_labels_present_count);
-            }
-        };
-        $.ajax(args);
-    }
-
-    var SECOND = 1000;
-    if (has_participant_labels) {
-        window.setInterval(getStaleParticipantVisits, 4 * SECOND);
-    } else {
-        window.setInterval(getActiveParticipantCount, 4 * SECOND);
-    }
-
-
-    function setParticipantPresence(participant_label, is_present) {
-        var pres_el = $('#present-participant-label-' + participant_label);
-        var abs_el = $('#absent-participant-label-' + participant_label);
-
-        if (is_present) {
-            show_el = pres_el;
-            hide_el = abs_el;
-        } else {
-            show_el = abs_el;
-            hide_el = pres_el;
-        }
-
-        show_el.show();
-        show_el.addClass('count-this');
-
-        hide_el.hide();
-        hide_el.removeClass('count-this');
-
-    }
-
-    function calcCountsFromDOM() {
-        var present_count = $('.present-participant-label.count-this').length;
-        var absent_count = $('.absent-participant-label.count-this').length;
-        $('#present_count').text(present_count);
-        $('#absent_count').text(absent_count);
-    }
-
-    function initWebSocket() {
-        socket = makeReconnectingWebSocket({{ view.socket_url|json }});
-        socket.onmessage = function (e) {
-            var data = JSON.parse(e.data);
-
-            if (data.error) {
-                $("#_otree-server-error").show();
-                return;
+                };
+                $.ajax(args);
             }
 
-            var status = data["status"];
+            function getActiveParticipantCount() {
+                var args = {
+                    type: "GET",
+                    url: '{% url "ActiveRoomParticipantsCount" room.name %}',
+                    cache: false, // for IE...not sure if required here though
+                    success: function (data) {
+                        no_labels_present_count = data.count;
+                        $('#present_count').text(no_labels_present_count);
+                    }
+                };
+                $.ajax(args);
+            }
+
+            var SECOND = 1000;
             if (has_participant_labels) {
-                if (status == "load_participant_lists") {
-                    participant_labels = data["participants_present"];
-                    for (var i = 0; i < participant_labels.length; i++) {
-                        setParticipantPresence(participant_labels[i], true);
-                    }
-                }
-                if (status == "add_participant") {
-                    setParticipantPresence(data["participant"], true);
-
-                }
-                if (status == "remove_participant") {
-                    setParticipantPresence(data["participant"], false);
-                }
-                calcCountsFromDOM();
+                window.setInterval(getStaleParticipantVisits, 4 * SECOND);
             } else {
-                if (status == "load_participant_lists") {
-                    participant_labels = data["participants_present"];
-                    no_labels_present_count = participant_labels.length;
-                }
-                if (status == "add_participant") {
-                    no_labels_present_count++;
-                }
-                if (status == "remove_participant") {
-                    no_labels_present_count--;
-                }
-                $('#present_count').text(no_labels_present_count);
+                window.setInterval(getActiveParticipantCount, 4 * SECOND);
             }
-        };
-    }
 
-});
-</script>
+
+            function setParticipantPresence(participant_label, is_present) {
+                var pres_el = $('#present-participant-label-' + participant_label);
+                var abs_el = $('#absent-participant-label-' + participant_label);
+
+                if (is_present) {
+                    show_el = pres_el;
+                    hide_el = abs_el;
+                } else {
+                    show_el = abs_el;
+                    hide_el = pres_el;
+                }
+
+                show_el.show();
+                show_el.addClass('count-this');
+
+                hide_el.hide();
+                hide_el.removeClass('count-this');
+
+            }
+
+            function calcCountsFromDOM() {
+                var present_count = $('.present-participant-label.count-this').length;
+                var absent_count = $('.absent-participant-label.count-this').length;
+                $('#present_count').text(present_count);
+                $('#absent_count').text(absent_count);
+            }
+
+            function initWebSocket() {
+                socket = makeReconnectingWebSocket({{ view.socket_url|json }});
+                socket.onmessage = function (e) {
+                    var data = JSON.parse(e.data);
+
+                    if (data.error) {
+                        $("#_otree-server-error").show();
+                        return;
+                    }
+
+                    var status = data["status"];
+                    if (has_participant_labels) {
+                        if (status == "load_participant_lists") {
+                            participant_labels = data["participants_present"];
+                            for (var i = 0; i < participant_labels.length; i++) {
+                                setParticipantPresence(participant_labels[i], true);
+                            }
+                        }
+                        if (status == "add_participant") {
+                            setParticipantPresence(data["participant"], true);
+
+                        }
+                        if (status == "remove_participant") {
+                            setParticipantPresence(data["participant"], false);
+                        }
+                        calcCountsFromDOM();
+                    } else {
+                        if (status == "load_participant_lists") {
+                            participant_labels = data["participants_present"];
+                            no_labels_present_count = participant_labels.length;
+                        }
+                        if (status == "add_participant") {
+                            no_labels_present_count++;
+                        }
+                        if (status == "remove_participant") {
+                            no_labels_present_count--;
+                        }
+                        $('#present_count').text(no_labels_present_count);
+                    }
+                };
+            }
+
+        });
+    </script>
 {% endblock %}

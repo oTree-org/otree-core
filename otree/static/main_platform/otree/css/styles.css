@@ -806,6 +806,23 @@ div.welcome-container .card-footer {
     color: #901A1E;
   }
 
+  div.create-room-container div.content-container {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  div.create-room-container div.content-container p {
+    text-align: center;
+  }
+  div.create-room-container div.content-container form button.btn-primary {
+    background: #901A1E;
+    border: none;
+  }
+  div.create-room-container div.content-container form button.btn-primary:hover {
+    background: #5f861e;
+  }
+
   .report-table-container-rooms {
     display: flex;
     flex-direction: column;
@@ -843,13 +860,70 @@ div.welcome-container .card-footer {
   /****************************
   *  Rooms with session - Rooms.html  *
   ****************************/
-  div.rooms-with-session-container {
+  div.room-without-container {
+    width: 90%;
     margin-top: 20%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.room-without-container h4.rapport-header {
+    font-size: 20px;
+    padding-top: 20px;
+    color: white;
+    font-weight: bolder;
+  }
+  div.room-without-container p, div.room-without-container label {
+    color: white;
+  }
+  div.room-without-container div.start-link {
     background: white;
     border-radius: 10px;
-    width: 90%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
-    padding: 20px;
+    padding: 5px;
+    width: 100%;
+  }
+  div.room-without-container div.start-link p {
+    margin: 0;
+  }
+  div.room-without-container div.start-link p a {
+    color: #901A1E;
+    font-size: 12px;
+  }
+  div.room-without-container form input, div.room-without-container form select {
+    background: #901A1E;
+    border: 2px solid white;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 100% !important;
+    color: white;
+  }
+  div.room-without-container form div.controls {
+    display: flex;
+    justify-content: center;
+  }
+  div.room-without-container form button.btn-primary {
+    background: white;
+    border: none;
+    width: 100%;
+    border-radius: 20px;
+    color: #901A1E;
+    font-weight: bold;
+  }
+  div.room-without-container form button.btn-primary:hover {
+    cursor: pointer;
+    background: #5f861e;
+    color: white;
+  }
+
+  /****************************
+  *  Rooms with session - Rooms.html  *
+  ****************************/
+  div.rooms-with-session-container {
+    margin-top: 20%;
+  }
+  div.rooms-with-session-container p {
+    color: white;
   }
   div.rooms-with-session-container form button#close-room {
     background: #901A1E;
@@ -1370,6 +1444,16 @@ div.welcome-container .card-footer {
   .report-table-container-rooms #roomsTable .bad_influence-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
+  }
+
+  /****************************
+  *  Rooms with session - Rooms.html  *
+  ****************************/
+  div.room-without-container h4.rapport-header {
+    font-size: 24px;
+  }
+  div.room-without-container div.start-link p a {
+    font-size: 14px;
   }
 }
 @media (min-width: 768px) {
@@ -1900,6 +1984,30 @@ div.welcome-container .card-footer {
   .report-table-container-rooms #roomsTable .bad_influence-table-row {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
+  }
+
+  /****************************
+  *  Rooms with session - Rooms.html  *
+  ****************************/
+  div.room-without-container {
+    width: 60%;
+  }
+  div.room-without-container h4.rapport-header {
+    font-size: 24px;
+  }
+  div.room-without-container div.start-link p a {
+    font-size: 18px;
+  }
+  div.room-without-container form div.form-group {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+  div.room-without-container form div.form-group div.controls {
+    width: 60%;
+  }
+  div.room-without-container form button.btn-primary {
+    width: 60%;
   }
 }
 @media (min-width: 1025px) {

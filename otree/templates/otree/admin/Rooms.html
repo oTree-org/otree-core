@@ -11,44 +11,75 @@
 {% endblock %}
 
 {% block content %}
-
     <div class="room-container container">
-        <div class="rooms-table-container">
-            <h2 class="rapport-header ">Oversigt over dine klasserum</h2>
-            <p>Dette er en oversigt over dine klasserum. Her kan du rediger dit klasserum eller slette det.</p>
+        {% if all_rooms %}
+            <div class="rooms-table-container">
+                <h2 class="rapport-header ">Oversigt over dine klasserum</h2>
+                 <p>Dette er en oversigt over dine klasserum. Her kan du rediger dit klasserum eller slette det.</p>
             <p>Hvis du ønsker og starte et spil, kan du enten trykke på klasserummets navn eller <b>opret spil</b></p>
-            <table id="roomsTable">
-                <tr class="rooms-table-row">
-                    <th class="border-corner-left"> Klasserum</th>
-                    <th>Opret spil</th>
-                    <th>Rediger rum</th>
-                    <th class="border-corner-right">Slet rum</th>
-                </tr>
-
-                {% for room in all_rooms %}
-                    <tr class="rooms-table-row-data">
-                        <td>
-                            <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>
-                        </td>
-                        <td>
-                            <a href="{% url "RoomWithoutSession" room.name %}"><i class="fas fa-plus"></i></a>
-                        </td>
-                        <td>
-                            <a href="{% url 'update_view_with_pk' room.id %}" data-toggle="tooltip"
-                            title="Redigere klasserum" data-placement="bottom"><i class="fas fa-pen"></i></a>
-                        </td>
-                        <td><a href="{% url 'delete_view_with_pk' room.id %}" data-toggle="tooltip"
-                            title="Slet klasserum" data-placement="bottom"><i class="fas fa-trash"></i></a></td>
-
+                <table id="roomsTable">
+                    <tr class="rooms-table-row">
+                        <th class="border-corner-left"> Klasserum</th>
+                        <th>Opret spil</th>
+                        <th>Rediger rum</th>
+                        <th class="border-corner-right">Slet rum</th>
                     </tr>
-                    {% empty %}
+
+                    {% for room in all_rooms %}
+                        <tr class="rooms-table-row-data">
+                            <td>
+                                <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>
+                            </td>
+
+                            <td>
+                                <a href="{% url "RoomWithoutSession" room.name %}"><i class="fas fa-plus"></i></a>
+                            </td>
+
+                            <td>
+                                <a href="{% url 'update_view_with_pk' room.id %}" data-toggle="tooltip"
+                                title="Redigere klasserum" data-placement="bottom"><i class="fas fa-pen"></i></a>
+                            </td>
+
+                            <td>
+                                <a href="{% url 'delete_view_with_pk' room.id %}" data-toggle="tooltip"
+                                   title="Slet Evaluering" data-placement="bottom"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+
+                    
+    
+                    {% endfor %}
+                </table>
+            </div>
+            </div>
+
+        {% else %}
+            <div class="create-room-container">
+                <div class="content-container">
+                      <h2 class="rapport-header ">Oversigt over dine klasserum</h2>
                     <p>Der er ikke oprettet nogle klasserum endnu - vil du oprette et klasserum?</p>
-                           <p>**TODO knap til opret klasserum</p>
-                          <!-- <button class="btn btn-primary" type="button" href="{% url 'create_room' %}">Ja tak</button> -->
-                   {% endfor %}
-            </table>
-        </div>
-    </div>
+                    <form method="post" action="{% url 'create_room' %}">
+                        {% csrf_token %}
+                        <button class="btn btn-primary" id="create-room">Opret rum</button>
+                    </form>
+                </div>
+            </div>
+            {#            <div class="create-room-container">#}
+            {#                <div class="content-container">#}
+            {##}
+            {#                    <p>Der er ikke oprettet nogle klasserum endnu - vil du oprette et klasserum?</p>#}
+            {#                    <form method="post" action="{% url "create_room" %}">#}
+            {#                        {% csrf_token %}#}
+            {#                        <button class="btn btn-primary" id="create-room">#}
+            {#                            Opret rum#}
+            {#                        </button>#}
+            {#                    </form>#}
+            {#                </div>#}
+            {#            </div>#}
+
+
+        {% endif %}
+
 
 
 

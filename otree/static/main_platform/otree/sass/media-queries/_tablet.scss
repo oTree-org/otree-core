@@ -596,9 +596,11 @@
   div.room-container {
     div.rooms-table-container {
       width: 90%;
+
       h2.rapport-header {
         font-size: 28px;
       }
+
       table#roomsTable {
         width: 100%;
       }
@@ -641,6 +643,39 @@
       .bad_influence-table-row {
         box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
         border-radius: 10px;
+      }
+    }
+  }
+
+  /****************************
+*  Rooms with session - Rooms.html  *
+****************************/
+  div.room-without-container {
+    width: 60%;
+
+    h4.rapport-header {
+      font-size: 24px;
+    }
+
+    div.start-link {
+      p {
+        a {
+          font-size: 18px;
+        }
+      }
+    }
+
+    form {
+      div.form-group {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        div.controls {
+          width: 60%;
+        }
+      }
+      button.btn-primary {
+        width: 60%;
       }
     }
   }
