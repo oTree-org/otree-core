@@ -21,7 +21,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import admin
 from django.conf.urls.static import static
 
-from otree.views.room import CreateRoom, DeleteRoom
+from otree.views.room import CreateRoom, DeleteRoom, UpdateRoom
 
 ALWAYS_UNRESTRICTED = {
     'AssignVisitorToRoom',
@@ -148,6 +148,7 @@ def get_urlpatterns():
             urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
             urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
             urls.url(r'^delete/(?P<pk>\d+)/$', DeleteRoom.as_view(), name="delete_view_with_pk"),
+            urls.url(r'^edit/(?P<pk>\d+)/$', UpdateRoom.as_view(), name="update_view_with_pk"),
             path('create_room/', CreateRoom.as_view(), name='create_room'),
 
     ]
