@@ -117,18 +117,17 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = 'bad_influence/static/main_platform'
 DATABASES = {'default': dj_database_url.config(default='sqlite:///' + os.path.join(BASE_DIR, 'db.sqlite3'))}
 
-# TODO - Skal ændres til den rigtige mailserver
-EMAIL_HOST = 'send.one.com'
+EMAIL_HOST = 'asmtp.dandomain.dk'
 
 EMAIL_PORT = 587
 
-EMAIL_HOST_USER = 'frederikabruun@pmat.dk'
+EMAIL_HOST_USER = 'kontakt@digitaluddannelse.org'
 
-EMAIL_HOST_PASSWORD = 'Django123456'
+EMAIL_HOST_PASSWORD = 'mail-2-The-Dude'
 
 EMAIL_USE_TLS = True
 
-DEFAULT_FROM_EMAIL = 'Frederik Bruun <frederikabruun@pmat.dk>'
+DEFAULT_FROM_EMAIL = 'Digital Uddannelse <kontakt@digitaluddannelse.org>'
 
 # Defines the location of the new abstract user class
 AUTH_USER_MODEL = 'otree.User'

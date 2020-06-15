@@ -245,7 +245,7 @@ table.table-debug td.debug-var-value {
     display: flex;
   }
   .align-games .card-body .body-row span {
-    font-size: 12px;
+    font-size: 16px;
   }
   .align-games .sack-img {
     display: none;
@@ -272,9 +272,63 @@ table.table-debug td.debug-var-value {
   }
   .align-games .card-footer .game-info {
     padding-bottom: 20px;
-    font-size: 11px;
+    font-size: 16px;
   }
   .align-games .card-footer .game-info p {
+    margin-bottom: 0;
+  }
+
+  div.welcome-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10%;
+  }
+  div.welcome-container .card {
+    margin-bottom: 30px;
+    width: 90%;
+    border-color: #901A1E;
+    border-style: solid;
+    border-width: 3px;
+    font-family: "Roboto Slab", serif;
+  }
+  div.welcome-container .card-header {
+    padding-bottom: 0;
+  }
+  div.welcome-container .card-header,
+div.welcome-container .card-footer {
+    color: #901A1E;
+    border: none;
+    background-color: white;
+    font-size: 18px;
+    font-weight: bolder;
+  }
+  div.welcome-container .card-body {
+    color: #901A1E;
+  }
+  div.welcome-container .card-body .body-row {
+    flex-direction: column;
+    display: flex;
+  }
+  div.welcome-container .card-body .body-row span {
+    font-size: 16px;
+  }
+  div.welcome-container .card-body .body-row .btn-primary {
+    background-color: #901A1E;
+    border-color: #901A1E;
+    width: 100%;
+    margin-top: 5%;
+  }
+  div.welcome-container .card-body .body-row .btn-primary:hover {
+    background-color: #7C992B;
+    border-color: transparent;
+  }
+  div.welcome-container .card-body .body-row .game-info {
+    padding-bottom: 20px;
+    font-size: 16px;
+  }
+  div.welcome-container .card-body .body-row .game-info p {
     margin-bottom: 0;
   }
 
@@ -696,6 +750,63 @@ table.table-debug td.debug-var-value {
   /****************************
   *  Rooms view - Rooms.html  *
   ****************************/
+  .room-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    width: 90%;
+    background-color: white;
+    font-family: "Roboto Slab", serif;
+  }
+  .room-container .rooms-table-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: "Roboto Slab", serif;
+    padding-bottom: 20px;
+  }
+  .room-container .rooms-table-container .rapport-header {
+    font-size: 18px;
+    padding: 20px 0;
+    color: #901A1E;
+  }
+  .room-container .rooms-table-container #roomsTable {
+    border-collapse: separate;
+    display: inline-table;
+    border-spacing: 0 0.5rem;
+  }
+  .room-container .rooms-table-container #roomsTable .rooms-table-row {
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+  }
+  .room-container .rooms-table-container #roomsTable .rooms-table-row th {
+    background: #901A1E;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+  }
+  .room-container .rooms-table-container #roomsTable .rooms-table-row .border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  .room-container .rooms-table-container #roomsTable .rooms-table-row .border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  .room-container .rooms-table-container #roomsTable .rooms-table-row-data {
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+  }
+  .room-container .rooms-table-container #roomsTable .rooms-table-row-data td {
+    padding: 10px;
+    text-align: center;
+  }
+  .room-container .rooms-table-container #roomsTable .rooms-table-row-data td a i {
+    color: #901A1E;
+  }
+
   .report-table-container-rooms {
     display: flex;
     flex-direction: column;
@@ -728,6 +839,24 @@ table.table-debug td.debug-var-value {
   .report-table-container-rooms #roomsTable .bad_influence-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
+  }
+
+  /****************************
+  *  Rooms with session - Rooms.html  *
+  ****************************/
+  div.rooms-with-session-container {
+    margin-top: 20%;
+    background: white;
+    border-radius: 10px;
+    width: 90%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    padding: 20px;
+  }
+  div.rooms-with-session-container form button#close-room {
+    background: #901A1E;
+  }
+  div.rooms-with-session-container h3 {
+    color: #901A1E;
   }
 }
 @media (min-width: 375px) {
@@ -831,6 +960,14 @@ table.table-debug td.debug-var-value {
   }
   .align-games .card-footer .game-info p {
     margin-bottom: 0;
+  }
+
+  div.welcome-container .card-body .body-row form {
+    display: flex;
+    justify-content: center;
+  }
+  div.welcome-container .card-body .body-row form .btn-primary {
+    width: 80%;
   }
 
   /******************************
@@ -1003,7 +1140,6 @@ table.table-debug td.debug-var-value {
     align-self: center;
   }
   .gamelink-content .start-link {
-    margin-top: 20px;
     background-color: white;
     border-radius: 40px;
     width: 70%;
@@ -1207,6 +1343,17 @@ table.table-debug td.debug-var-value {
   /****************************
   *  Rooms view - Rooms.html  *
   ****************************/
+  .room-container .rooms-table-container .rapport-header {
+    font-size: 24px;
+    padding: 25px 0;
+  }
+  .room-container .rooms-table-container #roomsTable .rooms-table-row th {
+    font-size: 16px;
+  }
+  .room-container .rooms-table-container #roomsTable .rooms-table-row-data td a {
+    font-size: 18px;
+  }
+
   .report-table-container-rooms {
     display: flex;
     flex-direction: column;
@@ -1347,6 +1494,26 @@ table.table-debug td.debug-var-value {
     margin-bottom: 0;
   }
 
+  div.welcome-container .card-body .body-row div.form-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    margin-top: 5%;
+  }
+  div.welcome-container .card-body .body-row div.form-container b {
+    width: 25%;
+  }
+  div.welcome-container .card-body .body-row div.form-container form {
+    width: 75%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  div.welcome-container .card-body .body-row div.form-container form button.btn-primary {
+    width: 30%;
+    margin-top: 0;
+  }
+
   /******************************
   *        Navbar Styling       *
   ******************************/
@@ -1366,11 +1533,14 @@ table.table-debug td.debug-var-value {
   nav.desktop-nav div.nav-container div.nav-home a {
     color: white;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     font-size: 20px;
     padding: 0 24px;
     text-align: center;
+  }
+  nav.desktop-nav div.nav-container div.nav-home a i {
+    padding-right: 10px;
   }
   nav.desktop-nav div.nav-container div.nav-logout {
     display: flex;
@@ -1513,10 +1683,15 @@ table.table-debug td.debug-var-value {
     display: flex;
     justify-content: center;
     flex-direction: column;
-    width: 70%;
-    align-self: center;
+    font-family: "Roboto Slab", serif;
+    padding-top: 3%;
+    padding-bottom: 4%;
+    position: relative;
+    margin-top: 10px;
+    color: white;
+    text-align: center;
   }
-  .gamelink-content .start-link {
+  .gamelink-content .game-link-info .start-link {
     background-color: white;
     border-radius: 40px;
     width: 70%;
@@ -1524,12 +1699,17 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     align-self: center;
   }
-  .gamelink-content .start-link a {
+  .gamelink-content .game-link-info .start-link a {
     text-decoration: none;
     color: #901A1E;
     font-size: 20px;
   }
-  .gamelink-content .start-link a:hover {
+  .gamelink-content .game-link-info .start-link a a {
+    text-decoration: none;
+    color: #901A1E;
+    font-size: 20px;
+  }
+  .gamelink-content .game-link-info .start-link a a:hover {
     color: #5f861e;
   }
 
@@ -1710,6 +1890,16 @@ table.table-debug td.debug-var-value {
   /****************************
   *  Rooms view - Rooms.html  *
   ****************************/
+  div.room-container div.rooms-table-container {
+    width: 90%;
+  }
+  div.room-container div.rooms-table-container h2.rapport-header {
+    font-size: 28px;
+  }
+  div.room-container div.rooms-table-container table#roomsTable {
+    width: 100%;
+  }
+
   .report-table-container-rooms {
     display: flex;
     flex-direction: column;
@@ -1858,6 +2048,20 @@ table.table-debug td.debug-var-value {
   }
   .home-button span {
     display: inline;
+  }
+
+  div.welcome-container .card {
+    width: 60%;
+  }
+  div.welcome-container .card header.card-header {
+    font-size: 24px;
+  }
+  div.welcome-container .card div.card-body div.body-row p, div.welcome-container .card div.card-body div.body-row b {
+    font-size: 18px;
+  }
+  div.welcome-container .card div.card-body div.body-row div.form-container form button.btn-primary {
+    font-size: 18px;
+    width: 35%;
   }
 
   /******************************
@@ -2208,61 +2412,8 @@ table.table-debug td.debug-var-value {
   /****************************
   *  Rooms view - Rooms.html  *
   ****************************/
-  .room-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 7%;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-    border-radius: 10px;
-    width: 90%;
-    background-color: white;
-    padding-top: 40px;
-    font-family: "Roboto Slab", serif;
-  }
-  .room-container .border-corner-left {
-    border-radius: 10px 0 0 10px;
-  }
-  .room-container .border-corner-right {
-    border-radius: 0 10px 10px 0;
-  }
-  .room-container .table {
-    display: inline-table;
-    border-collapse: separate;
-    border-spacing: 0 0.5rem;
-  }
-  .room-container .rooms-table-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #901A1E;
-    font-family: "Roboto Slab", serif;
-  }
-  .room-container .rooms-table-container .rooms-table-row {
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
-    border-radius: 10px;
-    padding: 10px;
-    background: #901A1E;
-    color: white;
-  }
-  .room-container .rooms-table-container thead {
-    background: #901A1E;
-    color: white;
-    font-size: 20px;
-    border-top: none !important;
-    text-align: center;
-    box-shadow: 0 0 20px rgba(157, 52, 55, 0.5);
-    border-radius: 10px;
-  }
-  .room-container .rooms-table-container .rooms-table-data {
-    font-size: 26px;
-    border-top: none !important;
-    text-align: center;
-    vertical-align: middle;
-  }
-  .room-container .rooms-table-container .rooms-table-row-data {
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
-    border-radius: 10px;
+  div.room-container {
+    margin-top: 15%;
   }
 }
 

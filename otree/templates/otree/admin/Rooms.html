@@ -12,50 +12,34 @@
 
 {% block content %}
 
-<div class="room-container container">
-    <div class="rooms-table-container">
-    <h2 class="rapport-header ">Oversigt over dine klasserum</h2>
-        <table class="table" id="#roomsTable">
-            <thead>
+    <div class="room-container container">
+        <div class="rooms-table-container">
+            <h2 class="rapport-header ">Oversigt over dine klasserum</h2>
+            <table id="roomsTable">
                 <tr class="rooms-table-row">
                     <th class="border-corner-left"> Klasserum</th>
                     <th>Opret spil</th>
-                    <th>Redigere rum</th>
-                    <th class="border-corner-right" >Slet rum</th>
+                    <th>Rediger rum</th>
+                    <th class="border-corner-right">Slet rum</th>
                 </tr>
-            </thead>
 
-            {% for room in all_rooms %}
-                     <tbody class="rooms-table-data">
-                        <tr class="rooms-table-row-data">
-                            <td>
-                                <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>
-                            </td>
+                {% for room in all_rooms %}
+                    <tr class="rooms-table-row-data">
+                        <td><a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a></td>
+                        <td><a href="#"><i class="fas fa-plus"></i></a></td>
+                        <td><a href="#"><i class="fas fa-pen"></i></a></td>
+                        <td><a href="#"><i class="fas fa-trash"></i></a href="{% url 'delete_view_with_pk' room.id %}" data-toggle="tooltip"
+                            title="Slet Evaluering" data-placement="bottom"></td>
 
-                            <td>
-                                <i class="fas fa-home"></i>
-                            </td>
-
-                            <td>
-                                <i class="fas fa-home"></i>
-                                </td>
-
-                            <td>
-                                <a href="{% url 'delete_view_with_pk' room.id %}" data-toggle="tooltip"
-                                   title="Slet Evaluering" data-placement="bottom">
-                                    <span class="fas fa-times slet_eval" aria-hidden="true"></span>
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                {% empty %}
-             <p>Der er ikke oprettet nogle klasserum endnu - vil du oprette et klasserum?</p>
-                    <p>**TODO knap til opret klasserum</p>
-                   <!-- <button class="btn btn-primary" type="button" href="{% url 'create_room' %}">Ja tak</button> -->
-            {% endfor %}
-        </table>
-</div>
-</div>
+                    </tr>
+                    {% empty %}
+                    <p>Der er ikke oprettet nogle klasserum endnu - vil du oprette et klasserum?</p>
+                           <p>**TODO knap til opret klasserum</p>
+                          <!-- <button class="btn btn-primary" type="button" href="{% url 'create_room' %}">Ja tak</button> -->
+                   {% endfor %}
+            </table>
+        </div>
+    </div>
 
 
 

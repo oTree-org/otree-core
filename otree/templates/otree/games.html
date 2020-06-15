@@ -65,7 +65,8 @@
                         <div class="body-row">
                             <img src="/static/main_platform/otree/media/sack-images/sack-questionmark.svg"
                                  alt="firma-ansigter" class="sack-img">
-                            <span><b>Daytrader</b> er et spil om hvordan bobler kan opstå i finansverdenen. Spillerne er <b><i>’daytraders’</i></b> på en fiktiv børs, og handler
+                            <span><b>Daytrader</b> er et spil om hvordan bobler kan opstå i finansverdenen. Spillerne er
+                                <b><i>’daytraders’</i></b> på en fiktiv børs, og handler
                     med aktier i en række fiktive firmaer, samtidig med at de får indblik i firmaernes virkelig tilstand.
                     <br>
                     <br>
@@ -83,6 +84,7 @@
                     <i>Bobler</i>.
 
                 </span>
+
                         </div>
                     </div>
                     <div class="card-footer">
@@ -107,6 +109,39 @@
     {% else %}
         <div class="title-container">
             <h1 class="games-title">Multiplayer Dude</h1>
+        </div>
+
+        <div class="welcome-container">
+            <div class="card">
+                <header class="card-header">Velkommen til Multiplayer Dude</header>
+                <div class="card-body">
+                    <div class="body-row">
+                        <p>Multiplayer Dude er en platform hvor du kan oprette spil og spille dem med din gruppe.
+                            Længere nede på denne side kan du læse hvilke spil du har mulighed for at spille og hvad
+                            de
+                            omhandler.</p>
+                        <br>
+                        <br>
+                        <b>Hvordan kommer jeg igang?</b>
+                        <p>For at spille på platformen, skal du først og fremst oprette en bruger, ved at trykke på
+                            knappe, <b>“opret bruger”</b>. Når du har oprettet en bruger skal du blot logge ind, og
+                            derefter
+                            kan du oprette og spille lige præcis de spil du ønsker.</p>
+                        <br>
+                        <br>
+                        <div class="form-container">
+
+                            <b>God fornøjelse!</b>
+                            <form action="{% url 'register' %}">
+                                <button class="btn btn-primary">
+                                    Opret bruger
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="align-games">
