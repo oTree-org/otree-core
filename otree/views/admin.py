@@ -1,9 +1,7 @@
 import json
 import os
 from collections import OrderedDict
-
 from django.views.generic.edit import FormMixin
-
 import otree
 import re
 import otree.bots.browser
@@ -49,8 +47,6 @@ class CreateRoomForm(forms.ModelForm):
 
     def __str__(self):
         return self.name
-
-
 
 
 def pretty_name(name):

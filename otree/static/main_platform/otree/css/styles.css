@@ -186,10 +186,16 @@ table.table-debug td.debug-var-value {
   *  Front Page  - games.html  *
   ******************************/
   .title-container {
-    margin-bottom: 5%;
+    margin-bottom: 2%;
+    color: white;
+    margin-left: 20%;
+    margin-right: 20%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-weight: bold;
   }
-
-  .games-title {
+  .title-container .games-title {
     color: white;
     font-weight: bold;
     font-family: "Catamaran", sans-serif;
@@ -197,9 +203,29 @@ table.table-debug td.debug-var-value {
     justify-content: center;
     text-align: center;
     font-size: 22px;
-    margin-top: 6%;
+    margin-top: 2%;
     margin-bottom: 0;
-    padding-top: 4%;
+    padding-top: 2%;
+  }
+  .title-container p {
+    text-align: center;
+  }
+  .title-container form {
+    display: flex;
+    justify-content: center;
+  }
+  .title-container form button {
+    justify-content: center;
+    width: 30%;
+    background-color: white;
+    border-color: #901A1E;
+    border-width: revert;
+    color: #901A1E;
+    font-weight: bold;
+  }
+  .title-container form button:hover {
+    background-color: #5f861e;
+    border-color: transparent;
   }
 
   .sub-games-title {
@@ -2170,9 +2196,41 @@ div.welcome-container .card-footer {
   /******************************
   *  Front Page  - games.html  *
   ******************************/
-  .games-title {
-    font-size: 70px;
+  .title-container {
+    margin-bottom: 2%;
+    color: white;
+    margin-left: 20%;
+    margin-right: 20%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-weight: bold;
+  }
+  .title-container .games-title {
+    font-size: 60px;
     margin-bottom: 0;
+    margin-top: 2%;
+    padding-top: 2%;
+  }
+  .title-container p {
+    text-align: center;
+  }
+  .title-container form {
+    display: flex;
+    justify-content: center;
+  }
+  .title-container form button {
+    justify-content: center;
+    width: 30%;
+    background-color: white;
+    border-color: #901A1E;
+    border-width: revert;
+    color: #901A1E;
+    font-weight: bold;
+  }
+  .title-container form button:hover {
+    background-color: #5f861e;
+    border-color: transparent;
   }
 
   .sub-games-title {
