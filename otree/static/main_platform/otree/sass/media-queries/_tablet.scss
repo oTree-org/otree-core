@@ -648,7 +648,7 @@
   }
 
   /****************************
-*  Rooms with session - Rooms.html  *
+*  Rooms without session - Rooms.html  *
 ****************************/
   div.room-without-container {
     width: 60%;
@@ -670,12 +670,38 @@
         display: flex;
         align-items: center;
         flex-direction: column;
+
         div.controls {
           width: 60%;
         }
       }
+
       button.btn-primary {
         width: 60%;
+      }
+    }
+  }
+
+  /****************************
+*  Rooms with session - Rooms.html  *
+****************************/
+  div.room-with-container {
+    margin-top: 15%;
+    display: flex;
+    justify-content: center;
+
+    div.content-container {
+      width: 85%;
+      h2.rapport-header {
+        text-align: center;
+        margin-bottom: 5%;
+        font-size: 32px;
+      }
+      p {
+        font-size: 18px;
+      }
+      form {
+        width: 75%;
       }
     }
   }

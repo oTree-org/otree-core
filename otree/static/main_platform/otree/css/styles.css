@@ -919,17 +919,29 @@ div.welcome-container .card-footer {
   /****************************
   *  Rooms with session - Rooms.html  *
   ****************************/
-  div.rooms-with-session-container {
-    margin-top: 20%;
+  div.room-with-container {
+    margin-top: 25%;
+    width: 95%;
   }
-  div.rooms-with-session-container p {
+  div.room-with-container div.content-container h2.rapport-header {
+    color: white;
+    font-weight: bolder;
+    font-size: 24px;
+  }
+  div.room-with-container div.content-container h4.content-header {
+    color: white;
+    font-weight: bold;
+  }
+  div.room-with-container div.content-container p {
     color: white;
   }
-  div.rooms-with-session-container form button#close-room {
-    background: #901A1E;
-  }
-  div.rooms-with-session-container h3 {
+  div.room-with-container div.content-container form button#close-room, div.room-with-container div.content-container form button#go-to-game {
+    background: white;
+    border: none;
+    border-radius: 20px;
     color: #901A1E;
+    font-weight: bold;
+    width: 50%;
   }
 }
 @media (min-width: 375px) {
@@ -1454,6 +1466,13 @@ div.welcome-container .card-footer {
   }
   div.room-without-container div.start-link p a {
     font-size: 14px;
+  }
+
+  /****************************
+  *  Rooms with session - Rooms.html  *
+  ****************************/
+  div.room-with-container {
+    margin-top: 80px;
   }
 }
 @media (min-width: 768px) {
@@ -1987,7 +2006,7 @@ div.welcome-container .card-footer {
   }
 
   /****************************
-  *  Rooms with session - Rooms.html  *
+  *  Rooms without session - Rooms.html  *
   ****************************/
   div.room-without-container {
     width: 60%;
@@ -2008,6 +2027,29 @@ div.welcome-container .card-footer {
   }
   div.room-without-container form button.btn-primary {
     width: 60%;
+  }
+
+  /****************************
+  *  Rooms with session - Rooms.html  *
+  ****************************/
+  div.room-with-container {
+    margin-top: 15%;
+    display: flex;
+    justify-content: center;
+  }
+  div.room-with-container div.content-container {
+    width: 85%;
+  }
+  div.room-with-container div.content-container h2.rapport-header {
+    text-align: center;
+    margin-bottom: 5%;
+    font-size: 32px;
+  }
+  div.room-with-container div.content-container p {
+    font-size: 18px;
+  }
+  div.room-with-container div.content-container form {
+    width: 75%;
   }
 }
 @media (min-width: 1025px) {
@@ -2469,6 +2511,55 @@ div.welcome-container .card-footer {
   ****************************/
   div.room-container {
     margin-top: 15%;
+  }
+
+  /****************************
+  *  Rooms without session - Rooms.html  *
+  ****************************/
+  div.room-without-container {
+    margin-top: 10%;
+  }
+  div.room-without-container form div.form-group {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+  div.room-without-container form div.form-group div.controls {
+    width: 40%;
+  }
+  div.room-without-container form button.btn-primary {
+    width: 40%;
+  }
+
+  /****************************
+  *  Rooms with session - Rooms.html  *
+  ****************************/
+  div.room-with-container {
+    margin-top: 10%;
+    display: flex;
+    justify-content: center;
+  }
+  div.room-with-container div.content-container {
+    width: 50%;
+  }
+  div.room-with-container div.content-container h2.rapport-header {
+    font-size: 40px;
+    margin-bottom: 5%;
+    text-align: center;
+    font-weight: bolder;
+  }
+  div.room-with-container div.content-container p {
+    font-size: 22px;
+  }
+  div.room-with-container div.content-container h4.content-header {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  div.room-with-container #url-btn {
+    width: 75%;
+  }
+  div.room-with-container form {
+    width: 75%;
   }
 }
 
