@@ -43,7 +43,6 @@
     }
 
 
-
     .card-header,
     .card-footer {
       color: $ku-red;
@@ -568,8 +567,65 @@
   }
 
   /****************************
-  *  Errors   *
+  *  Rooms without session - Rooms.html  *
   ****************************/
+
+  div.room-without-container {
+    margin-top: 10%;
+
+    form {
+      div.form-group {
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+
+        div.controls {
+          width: 40%;
+        }
+      }
+
+      button.btn-primary {
+        width: 40%;
+      }
+    }
+  }
+
+  /****************************
+  *  Rooms with session - Rooms.html  *
+  ****************************/
+  div.room-with-container {
+    margin-top: 10%;
+    display: flex;
+    justify-content: center;
+
+    div.content-container {
+      width: 50%;
+
+      h2.rapport-header {
+        font-size: 40px;
+        margin-bottom: 5%;
+        text-align: center;
+        font-weight: bolder;
+      }
+
+      p {
+        font-size: 22px;
+      }
+
+      h4.content-header {
+        font-size: 24px;
+        font-weight: bold;
+      }
+    }
+
+    #url-btn {
+      width: 75%;
+    }
+
+    form {
+      width: 75%;
+    }
+  }
 
 }
 

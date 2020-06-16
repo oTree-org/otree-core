@@ -899,22 +899,36 @@
 *  Rooms with session - Rooms.html  *
 ****************************/
 
-  div.rooms-with-session-container {
-    margin-top: 20%;
+  div.room-with-container {
+    margin-top: 25%;
+    width: 95%;
 
-    p {
-      color: white;
-    }
-
-
-    form {
-      button#close-room {
-        background: $ku-red;
+    div.content-container {
+      h2.rapport-header {
+        color: white;
+        font-weight: bolder;
+        font-size: 24px;
       }
-    }
 
-    h3 {
-      color: $ku-red;
+      h4.content-header {
+        color: white;
+        font-weight: bold;
+      }
+
+      p {
+        color: white;
+      }
+
+      form {
+        button#close-room, button#go-to-game{
+          background: white;
+          border: none;
+          border-radius: 20px;
+          color: $ku-red;
+          font-weight: bold;
+          width: 50%;
+        }
+      }
     }
   }
 
