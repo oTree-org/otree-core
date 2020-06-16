@@ -36,7 +36,8 @@ from django.http import HttpResponse
 
 
 class CreateRoomForm(forms.ModelForm):
-    name = forms.CharField(required=True, widget=forms.TextInput(attrs={
+    name = forms.CharField(required=True, label="", error_messages={"unique": "Dette klassenavn findes allerede. Venligst benyt et andet."},
+                           widget=forms.TextInput(attrs={
         'spellcheck': "false",
         "class": "room_name_input",
         'placeholder': "Navngiv dit klasserum"}),
