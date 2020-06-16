@@ -692,22 +692,26 @@
 
     div.content-container {
       width: 85%;
+
       h2.rapport-header {
         text-align: center;
         margin-bottom: 5%;
         font-size: 32px;
       }
+
       p {
         font-size: 18px;
       }
+
       form {
         width: 75%;
       }
     }
-  /*************
-  *  Errors   *
-  *************/
-  .errorlist {
+
+    /*************
+    *  Errors   *
+    *************/
+    .errorlist {
       color: #bb0000;
       font-size: 12px;
       padding-top: 20px;
@@ -715,9 +719,9 @@
       justify-content: center;
       margin-left: 0;
       padding-left: 5px;
+    }
   }
 }
-
 
 
 
