@@ -23,14 +23,14 @@
   *  Front Page  - games.html  *
   ******************************/
   .title-container {
-        margin-bottom: 2%;
+    margin-bottom: 2%;
     color: white;
-    margin-left: 20%;
-    margin-right: 20%;
     display: flex;
     justify-content: center;
     flex-direction: column;
     font-weight: bold;
+    width: 100%;
+    padding: 0 20px 0 20px;
 
   .games-title {
     color: white;
@@ -39,14 +39,18 @@
     display: flex;
     justify-content: center;
     text-align: center;
-    font-size: 22px;
-    margin-top: 2%;
+    font-size: 25px;
+    margin-top: 4%;
     margin-bottom: 0;
     padding-top: 2%;
+
   }
 
     p {
+      display: flex;
+      justify-content: center;
       text-align: center;
+
     }
 
     form {
@@ -54,12 +58,13 @@
         justify-content: center;
       button {
         justify-content: center;
-        width: 30%;
+        width: 50%;
         background-color: white;
         border-color: $ku-red;
         border-width: revert;
         color: $ku-red;
         font-weight: bold;
+        margin-bottom: 20px;
 
         &:hover {
           background-color: $ku-dark-green;

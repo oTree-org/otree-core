@@ -3,14 +3,52 @@
 
 {% block styles %}
     <style>
+    @media (min-width: 0px) {
         body {
-            background-image: url("/static/main_platform/otree/media/ku-bgku-bg.svg");
+            background-color: #901A1E;
             background-repeat: no-repeat;
             background-size: 100%, 100%;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+    }
+
+   @media (min-width: 375px) {
+         body {
+            background-color: #901A1E;
+            background-repeat: no-repeat;
+            background-size: 100%, 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+     @media (min-width: 768px) {
+         body {
+            background-image: url("/static/main_platform/otree/media/ku-bgku-bg.svg");
+            background-color: transparent;
+            background-repeat: no-repeat;
+            background-size: 100%, 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    @media (min-width: 1025px) {
+         body {
+            background-image: url("/static/main_platform/otree/media/ku-bgku-bg.svg");
+            background-color: transparent;
+            background-repeat: no-repeat;
+            background-size: 100%, 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
     </style>
 {% endblock %}
 
@@ -109,7 +147,10 @@
     {% else %}
         <div class="title-container">
             <h1 class="games-title">Multiplayer Dude</h1>
-            <p>Velkommen til spilsektionen for digitaluddannelse.org</p>
+
+                 <p>Velkommen til spilsektionen for digitaluddannelse.org</p>
+
+
             <p>På denne platform kan du oprette klasserumsspil og bruge dem i din undervisning.</p>
             <p>Til hvert spil følger en vejledningsvideo, en debrief-video, og en afsluttende spil-rapport.</p>
             <p>Tryk først på “opret bruger” og når du har logget ind, kan du vælge et af spillene.</p>
