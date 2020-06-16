@@ -12,8 +12,8 @@
 
 {% block content %}
 
-<div class="room-container container">
-    <div class="rooms-table-container">
+<div class="update-room-container container">
+    <div class="content-container">
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
@@ -21,7 +21,7 @@
                 {% if object == None %}
                     Opret Klasserum
                 {% else %}
-                    Redigere klasserum
+                    Rediger klasserum
                 {% endif %}
             </button>
         </form>

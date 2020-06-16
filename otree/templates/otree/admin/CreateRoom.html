@@ -16,10 +16,7 @@
 {% block content %}
 <!-- Game/session view as active or admin with settings/config-->
 {% if user.is_authenticated and user.is_staff or user.is_superuser or user.is_active %}
-
-
-
-<div class="create-game">
+<div class="create-game-container container">
     <div class="card">
         <a href="{% url 'games' %}" class="back-button">Gå tilbage</a>
         <header class="card-header">

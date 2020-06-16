@@ -163,19 +163,7 @@
 *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
 ***********************************************************/
 
-  .create-game {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    overflow: auto;
-
-
+  .create-game-container {
     .card {
       margin-bottom: 30px;
       width: 90%;
@@ -658,16 +646,25 @@
   div.room-with-container {
     margin-top: 80px;
   }
-    /****************************
-  *  Errors   *
-  ****************************/
+
+  /****************************
+*  Update room - Rooms.html  *
+****************************/
+  div.update-room-container {
+    width: 330px;
+    margin-top: 80px;
+  }
+
+  /****************************
+*  Errors   *
+****************************/
   .errorlist {
-      color: #bb0000;
-      font-size: 10px;
-      padding-top: 20px;
-      display: flex;
-      justify-content: center;
-      margin-left: 0;
-      padding-left: 5px;
+    color: #bb0000;
+    font-size: 10px;
+    padding-top: 20px;
+    display: flex;
+    justify-content: center;
+    margin-left: 0;
+    padding-left: 5px;
   }
 }

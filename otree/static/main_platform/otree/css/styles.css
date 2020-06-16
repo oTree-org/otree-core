@@ -383,19 +383,12 @@ div.welcome-container .card-footer {
     color: #41739D;
   }
 
-  .create-game {
+  .create-game-container {
     display: flex;
-    align-items: center;
     justify-content: center;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    overflow: auto;
+    margin-top: 25%;
   }
-  .create-game .card {
+  .create-game-container .card {
     margin-bottom: 30px;
     width: 90%;
     border-color: #901A1E;
@@ -403,21 +396,21 @@ div.welcome-container .card-footer {
     border-width: 3px;
     font-family: "Roboto Slab", serif;
   }
-  .create-game .card-header {
+  .create-game-container .card-header {
     padding-bottom: 0;
     display: flex;
     justify-content: center;
     padding-top: 0;
   }
-  .create-game .card-header,
-.create-game .card-footer {
+  .create-game-container .card-header,
+.create-game-container .card-footer {
     color: #901A1E;
     border: none;
     background-color: white;
     font-size: 18px;
     font-weight: bolder;
   }
-  .create-game .card-body {
+  .create-game-container .card-body {
     color: #901A1E;
     display: flex;
     justify-content: center;
@@ -425,20 +418,20 @@ div.welcome-container .card-footer {
     font-size: 14px;
     padding-bottom: 0;
   }
-  .create-game .sack-img {
+  .create-game-container .sack-img {
     width: 80px;
     height: 80px;
     display: none;
   }
-  .create-game .network-img {
+  .create-game-container .network-img {
     width: 80px;
     height: 80px;
     display: none;
   }
-  .create-game .card-footer {
+  .create-game-container .card-footer {
     padding-top: 0;
   }
-  .create-game .card-footer .form-control {
+  .create-game-container .card-footer .form-control {
     max-width: 100%;
     margin-bottom: 20px;
     font-size: 14px;
@@ -446,18 +439,18 @@ div.welcome-container .card-footer {
     justify-content: center;
     flex-direction: column;
   }
-  .create-game .card-footer .footer-row {
+  .create-game-container .card-footer .footer-row {
     display: flex;
     justify-content: center;
     flex-direction: column;
     align-items: center;
   }
-  .create-game .card-footer .btn-primary {
+  .create-game-container .card-footer .btn-primary {
     background-color: #901A1E;
     border-color: #901A1E;
     width: 100%;
   }
-  .create-game .card-footer .btn-primary:hover {
+  .create-game-container .card-footer .btn-primary:hover {
     background-color: #7C992B;
     border-color: transparent;
   }
@@ -766,16 +759,19 @@ div.welcome-container .card-footer {
     align-items: center;
     font-family: "Roboto Slab", serif;
     padding-bottom: 20px;
+    width: 95%;
   }
   .room-container .rooms-table-container .rapport-header {
-    font-size: 18px;
+    font-size: 17px;
     padding: 20px 0;
     color: #901A1E;
+    text-align: center;
   }
   .room-container .rooms-table-container #roomsTable {
     border-collapse: separate;
     display: inline-table;
     border-spacing: 0 0.5rem;
+    width: 95%;
   }
   .room-container .rooms-table-container #roomsTable .rooms-table-row {
     color: white;
@@ -858,7 +854,7 @@ div.welcome-container .card-footer {
   }
 
   /****************************
-  *  Rooms with session - Rooms.html  *
+  *  Rooms without session - Rooms.html  *
   ****************************/
   div.room-without-container {
     width: 90%;
@@ -942,6 +938,70 @@ div.welcome-container .card-footer {
     color: #901A1E;
     font-weight: bold;
     width: 50%;
+  }
+  div.room-with-container div.content-container form button#close-room:hover, div.room-with-container div.content-container form button#go-to-game:hover {
+    background: #5f861e;
+    color: white;
+  }
+
+  /****************************
+  *  Rooms delete view - Rooms.html  *
+  ****************************/
+  div.delete-room-container {
+    margin-top: 25%;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    width: 95%;
+    padding: 30px 10px;
+  }
+  div.delete-room-container form {
+    color: #901A1E;
+    text-align: center;
+  }
+  div.delete-room-container form div.button-container {
+    display: flex;
+    justify-content: center;
+  }
+  div.delete-room-container form div.button-container .btn {
+    margin: 0 10px;
+  }
+  div.delete-room-container form div.button-container button.room-delete {
+    background: #5f861e;
+    border: none;
+  }
+  /****************************
+  *  Rooms delete view - Rooms.html  *
+  ****************************/
+  div.update-room-container {
+    margin-top: 25%;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    width: 95%;
+    padding: 30px 10px;
+  }
+  div.update-room-container form {
+    color: #901A1E;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.update-room-container form p {
+    display: flex;
+    justify-content: center;
+  }
+  div.update-room-container form p input {
+    background: white;
+    border-radius: 20px;
+    color: #901A1E;
+    border: 4px solid #901A1E;
+  }
+  div.update-room-container form button.btn-primary {
+    background: #901A1E;
+    border-radius: 20px;
+    border: none;
   }
 
   /*************
@@ -1084,39 +1144,27 @@ div.welcome-container .card-footer {
   /**********************************************************
   *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
   ***********************************************************/
-  .create-game {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    overflow: auto;
-  }
-  .create-game .card {
+  .create-game-container .card {
     margin-bottom: 30px;
     width: 90%;
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
   }
-  .create-game .card-header {
+  .create-game-container .card-header {
     padding-bottom: 0;
     display: flex;
     justify-content: center;
   }
-  .create-game .card-header,
-.create-game .card-footer {
+  .create-game-container .card-header,
+.create-game-container .card-footer {
     color: #901A1E;
     border: none;
     background-color: white;
     font-size: 18px;
     font-weight: bolder;
   }
-  .create-game .card-body {
+  .create-game-container .card-body {
     color: #901A1E;
     display: flex;
     justify-content: center;
@@ -1124,38 +1172,38 @@ div.welcome-container .card-footer {
     font-size: 14px;
     padding-bottom: 0;
   }
-  .create-game .sack-img {
+  .create-game-container .sack-img {
     width: 190px;
     height: 190px;
     display: none;
   }
-  .create-game .network-img {
+  .create-game-container .network-img {
     width: 150px;
     height: 150px;
     display: none;
   }
-  .create-game .card-footer {
+  .create-game-container .card-footer {
     padding-top: 0;
     display: flex;
     justify-content: center;
   }
-  .create-game .card-footer .form-control {
+  .create-game-container .card-footer .form-control {
     max-width: 100%;
     margin-bottom: 20px;
     font-size: 14px;
   }
-  .create-game .card-footer .footer-row {
+  .create-game-container .card-footer .footer-row {
     display: flex;
     justify-content: center;
     flex-direction: row;
     align-items: center;
   }
-  .create-game .card-footer .btn-primary {
+  .create-game-container .card-footer .btn-primary {
     background-color: #901A1E;
     border-color: #901A1E;
     width: 100%;
   }
-  .create-game .card-footer .btn-primary:hover {
+  .create-game-container .card-footer .btn-primary:hover {
     background-color: #7C992B;
     border-color: transparent;
   }
@@ -1489,6 +1537,14 @@ div.welcome-container .card-footer {
   }
 
   /****************************
+  *  Update room - Rooms.html  *
+  ****************************/
+  div.update-room-container {
+    width: 330px;
+    margin-top: 80px;
+  }
+
+  /****************************
   *  Errors   *
   ****************************/
   .errorlist {
@@ -1657,39 +1713,27 @@ div.welcome-container .card-footer {
   /**********************************************************
   *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
   ***********************************************************/
-  .create-game {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    overflow: auto;
-  }
-  .create-game .card {
+  .create-game-container .card {
     margin-bottom: 30px;
     width: 70%;
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
   }
-  .create-game .card-header {
+  .create-game-container .card-header {
     padding-bottom: 0;
     display: flex;
     justify-content: center;
   }
-  .create-game .card-header,
-.create-game .card-footer {
+  .create-game-container .card-header,
+.create-game-container .card-footer {
     color: #901A1E;
     border: none;
     background-color: white;
     font-size: 22px;
     font-weight: bolder;
   }
-  .create-game .card-body {
+  .create-game-container .card-body {
     color: #901A1E;
     display: flex;
     justify-content: center;
@@ -1697,29 +1741,29 @@ div.welcome-container .card-footer {
     font-size: 18px;
     padding-bottom: 0;
   }
-  .create-game .card-footer {
+  .create-game-container .card-footer {
     padding-top: 0;
     display: flex;
     justify-content: center;
   }
-  .create-game .card-footer .form-control {
+  .create-game-container .card-footer .form-control {
     max-width: 100%;
     margin-bottom: 20px;
     font-size: 18px;
   }
-  .create-game .card-footer .footer-row {
+  .create-game-container .card-footer .footer-row {
     display: flex;
     justify-content: center;
     flex-direction: row;
     align-items: center;
   }
-  .create-game .card-footer .btn-primary {
+  .create-game-container .card-footer .btn-primary {
     background-color: #901A1E;
     border-color: #901A1E;
     width: 100%;
     font-size: 18px;
   }
-  .create-game .card-footer .btn-primary:hover {
+  .create-game-container .card-footer .btn-primary:hover {
     background-color: #7C992B;
     border-color: transparent;
   }
@@ -2062,9 +2106,6 @@ div.welcome-container .card-footer {
     margin-top: 15%;
     display: flex;
     justify-content: center;
-    /*************
-    *  Errors   *
-    *************/
   }
   div.room-with-container div.content-container {
     width: 85%;
@@ -2080,7 +2121,37 @@ div.welcome-container .card-footer {
   div.room-with-container div.content-container form {
     width: 75%;
   }
-  div.room-with-container .errorlist {
+
+  /****************************
+  *  Rooms delete view - Rooms.html  *
+  ****************************/
+  div.delete-room-container {
+    margin-top: 15%;
+    width: 60%;
+  }
+
+  /****************************
+  *  Update room - Rooms.html  *
+  ****************************/
+  div.update-room-container {
+    width: 60%;
+    margin-top: 100px;
+    padding: 60px 0;
+  }
+  div.update-room-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  div.update-room-container form button.btn-primary {
+    width: 50%;
+    border: 4px solid #901A1E;
+  }
+
+  /*************
+  *  Errors   *
+  *************/
+  .errorlist {
     color: #bb0000;
     font-size: 12px;
     padding-top: 20px;
@@ -2209,7 +2280,8 @@ div.welcome-container .card-footer {
   /**********************************************************
   *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
   ***********************************************************/
-  .create-game {
+  .create-game-container {
+    margin-top: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2221,27 +2293,27 @@ div.welcome-container .card-footer {
     right: 0;
     overflow: auto;
   }
-  .create-game .card {
+  .create-game-container .card {
     margin-bottom: 30px;
     width: 55%;
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;
   }
-  .create-game .card-header {
+  .create-game-container .card-header {
     padding-bottom: 0;
     display: flex;
     justify-content: center;
   }
-  .create-game .card-header,
-.create-game .card-footer {
+  .create-game-container .card-header,
+.create-game-container .card-footer {
     color: #901A1E;
     border: none;
     background-color: white;
     font-size: 24px;
     font-weight: bolder;
   }
-  .create-game .card-body {
+  .create-game-container .card-body {
     color: #901A1E;
     display: flex;
     justify-content: center;
@@ -2249,39 +2321,39 @@ div.welcome-container .card-footer {
     font-size: 18px;
     padding-bottom: 0;
   }
-  .create-game .sack-img {
+  .create-game-container .sack-img {
     width: 190px;
     height: 190px;
     display: none;
   }
-  .create-game .network-img {
+  .create-game-container .network-img {
     width: 150px;
     height: 150px;
     display: none;
   }
-  .create-game .card-footer {
+  .create-game-container .card-footer {
     padding-top: 0;
     display: flex;
     justify-content: center;
   }
-  .create-game .card-footer .form-control {
+  .create-game-container .card-footer .form-control {
     max-width: 100%;
     margin-bottom: 20px;
     font-size: 18px;
   }
-  .create-game .card-footer .footer-row {
+  .create-game-container .card-footer .footer-row {
     display: flex;
     justify-content: center;
     flex-direction: row;
     align-items: center;
   }
-  .create-game .card-footer .btn-primary {
+  .create-game-container .card-footer .btn-primary {
     background-color: #901A1E;
     border-color: #901A1E;
     width: 100%;
     font-size: 18px;
   }
-  .create-game .card-footer .btn-primary:hover {
+  .create-game-container .card-footer .btn-primary:hover {
     background-color: #7C992B;
     border-color: transparent;
   }
@@ -2549,6 +2621,24 @@ div.welcome-container .card-footer {
   ****************************/
   div.room-container {
     margin-top: 15%;
+    padding: 50px 0;
+  }
+  div.room-container div.rooms-table-container h2.rapport-header {
+    font-size: 40px;
+  }
+  div.room-container div.rooms-table-container p {
+    font-size: 18px;
+  }
+  div.room-container div.content-container h2.rapport-header {
+    font-size: 40px;
+  }
+  div.room-container div.content-container p {
+    font-size: 18px;
+  }
+  div.room-container div.content-container form button#create-room {
+    width: 260px;
+    border-radius: 20px;
+    font-size: 24px;
   }
 
   /****************************
@@ -2578,7 +2668,8 @@ div.welcome-container .card-footer {
     justify-content: center;
   }
   div.room-with-container div.content-container {
-    width: 50%;
+    width: 60%;
+    text-align: center;
   }
   div.room-with-container div.content-container h2.rapport-header {
     font-size: 40px;
@@ -2593,11 +2684,47 @@ div.welcome-container .card-footer {
     font-size: 24px;
     font-weight: bold;
   }
-  div.room-with-container #url-btn {
+  div.room-with-container div.content-container #url-btn {
     width: 75%;
   }
-  div.room-with-container form {
+  div.room-with-container div.content-container form {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  div.room-with-container div.content-container form button#go-to-game, div.room-with-container div.content-container form button#close-room {
+    width: 30%;
+  }
+
+  /****************************
+  *  Rooms delete view - Rooms.html  *
+  ****************************/
+  div.delete-room-container {
+    margin-top: 10%;
+    width: 30%;
+  }
+
+  /****************************
+  *  Rooms delete view - Rooms.html  *
+  ****************************/
+  div.update-room-container {
+    width: 400px;
+  }
+  div.update-room-container div.content-container {
+    display: flex;
+    justify-content: center;
+  }
+  div.update-room-container div.content-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 75%;
+  }
+  div.update-room-container div.content-container form p {
+    width: 100%;
+  }
+  div.update-room-container div.content-container form button.btn-primary {
+    width: 100%;
   }
 }
 

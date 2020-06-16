@@ -161,7 +161,8 @@
   *  Create Game - e.g. CreateSessionFormBadInfluence.html  *
   ***********************************************************/
 
-  .create-game {
+  .create-game-container {
+    margin-top: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -564,6 +565,36 @@
   ****************************/
   div.room-container {
     margin-top: 15%;
+    padding: 50px 0;
+
+    div.rooms-table-container {
+      h2.rapport-header {
+        font-size: 40px;
+      }
+
+      p {
+        font-size: 18px;
+      }
+    }
+
+    div.content-container {
+      h2.rapport-header {
+        font-size: 40px;
+      }
+
+      p {
+        font-size: 18px;
+      }
+
+      form {
+        button#create-room {
+          width: 260px;
+          border-radius: 20px;
+          font-size: 24px;
+        }
+      }
+
+    }
   }
 
   /****************************
@@ -599,7 +630,8 @@
     justify-content: center;
 
     div.content-container {
-      width: 50%;
+      width: 60%;
+      text-align: center;
 
       h2.rapport-header {
         font-size: 40px;
@@ -616,14 +648,57 @@
         font-size: 24px;
         font-weight: bold;
       }
+
+      #url-btn {
+        width: 75%;
+      }
+
+      form {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+
+        button#go-to-game, button#close-room {
+          width: 30%;
+        }
+      }
     }
 
-    #url-btn {
-      width: 75%;
-    }
 
-    form {
-      width: 75%;
+  }
+
+  /****************************
+*  Rooms delete view - Rooms.html  *
+****************************/
+  div.delete-room-container {
+    margin-top: 10%;
+    width: 30%;
+  }
+
+  /****************************
+*  Rooms delete view - Rooms.html  *
+****************************/
+  div.update-room-container {
+    width: 400px;
+
+    div.content-container {
+      display: flex;
+      justify-content: center;
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 75%;
+
+        p {
+          width: 100%;
+        }
+
+        button.btn-primary {
+          width: 100%;
+        }
+      }
     }
   }
 
