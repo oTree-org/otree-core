@@ -12,8 +12,8 @@
 
 {% block content %}
 
-<div class="room-container container">
-    <div class="rooms-table-container">
+<div class="delete-room-container container">
+    <div class="content-container">
         <form method="post">
             {% csrf_token %}
             Er du sikker på du vil slette klasserummet: <b> "{{ object }}"</b>?
