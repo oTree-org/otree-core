@@ -1486,6 +1486,9 @@ div.welcome-container .card-footer {
   ****************************/
   div.room-with-container {
     margin-top: 80px;
+  }
+
+  /****************************
   *  Errors   *
   ****************************/
   .errorlist {
@@ -2059,6 +2062,9 @@ div.welcome-container .card-footer {
     margin-top: 15%;
     display: flex;
     justify-content: center;
+    /*************
+    *  Errors   *
+    *************/
   }
   div.room-with-container div.content-container {
     width: 85%;
@@ -2073,10 +2079,8 @@ div.welcome-container .card-footer {
   }
   div.room-with-container div.content-container form {
     width: 75%;
-  /*************
-  *  Errors   *
-  *************/
-  .errorlist {
+  }
+  div.room-with-container .errorlist {
     color: #bb0000;
     font-size: 12px;
     padding-top: 20px;
@@ -2548,8 +2552,53 @@ div.welcome-container .card-footer {
   }
 
   /****************************
-  *  Errors   *
+  *  Rooms without session - Rooms.html  *
   ****************************/
+  div.room-without-container {
+    margin-top: 10%;
+  }
+  div.room-without-container form div.form-group {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+  }
+  div.room-without-container form div.form-group div.controls {
+    width: 40%;
+  }
+  div.room-without-container form button.btn-primary {
+    width: 40%;
+  }
+
+  /****************************
+  *  Rooms with session - Rooms.html  *
+  ****************************/
+  div.room-with-container {
+    margin-top: 10%;
+    display: flex;
+    justify-content: center;
+  }
+  div.room-with-container div.content-container {
+    width: 50%;
+  }
+  div.room-with-container div.content-container h2.rapport-header {
+    font-size: 40px;
+    margin-bottom: 5%;
+    text-align: center;
+    font-weight: bolder;
+  }
+  div.room-with-container div.content-container p {
+    font-size: 22px;
+  }
+  div.room-with-container div.content-container h4.content-header {
+    font-size: 24px;
+    font-weight: bold;
+  }
+  div.room-with-container #url-btn {
+    width: 75%;
+  }
+  div.room-with-container form {
+    width: 75%;
+  }
 }
 
 /*# sourceMappingURL=styles.css.map */
