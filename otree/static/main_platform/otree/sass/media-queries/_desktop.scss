@@ -571,5 +571,36 @@
   *  Errors   *
   ****************************/
 
+
+  .same-line {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+
+    .header-left {
+      width: 80%;
+      text-align: center;
+
+    }
+
+    div.button-right {
+      width: 20%;
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      right: -4%;
+    }
+
+    div.button-right {
+      display: flex;
+      align-self: center;
+
+      button {
+      justify-content: flex-end;
+
+      }
+    }
+  }
 }
 

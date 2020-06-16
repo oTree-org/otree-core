@@ -2513,6 +2513,30 @@ div.welcome-container .card-footer {
   /****************************
   *  Errors   *
   ****************************/
+  .same-line {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+  }
+  .same-line .header-left {
+    width: 80%;
+    text-align: center;
+  }
+  .same-line div.button-right {
+    width: 20%;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    right: -4%;
+  }
+  .same-line div.button-right {
+    display: flex;
+    align-self: center;
+  }
+  .same-line div.button-right button {
+    justify-content: flex-end;
+  }
 }
 
 /*# sourceMappingURL=styles.css.map */
