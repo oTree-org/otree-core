@@ -566,22 +566,15 @@
     margin-top: 15%;
   }
 
-  /****************************
-  *  Rooms without session - Rooms.html  *
-  ****************************/
+
 
 
   /****************************
-  * Create_room   *
+  * Create_room inline header  *
   ****************************/
   .same-line {
-    display: flex;
-    justify-content: center;
-    position: relative;
-    width: 100%;
 
     .header-left {
-      width: 80%;
       text-align: center;
 
     }
@@ -591,19 +584,25 @@
       position: absolute;
       display: flex;
       justify-content: center;
-      right: -4%;
-    }
-
-    div.button-right {
-      display: flex;
-      align-self: center;
+      right: 5%;
 
       button {
       justify-content: flex-end;
+      background-color: $ku-red;
+        border: $ku-red;
+        padding: 10px 10px 10px 10px;
 
+        &:hover {
+          background-color: $ku-dark-green;
+        }
       }
     }
   }
+
+
+  /***************************************
+  *  Rooms without session - Rooms.html  *
+  ***************************************/
   div.room-without-container {
     margin-top: 10%;
 

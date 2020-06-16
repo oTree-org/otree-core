@@ -648,6 +648,40 @@
   }
 
   /****************************
+  * Create_room inline header  *
+  ****************************/
+  .same-line {
+
+
+    .header-left {
+      text-align: left;
+    }
+
+    div.button-right {
+      width: 10%;
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      right: 10%;
+      padding-right: 20px;
+      font-size: 10px;
+      align-self: center;
+
+      button {
+      justify-content: flex-end;
+      background-color: $ku-red;
+      border: $ku-red;
+      padding: 5px 5px 5px 5px;
+
+
+        &:hover {
+          background-color: $ku-dark-green;
+        }
+      }
+    }
+  }
+
+  /****************************
 *  Rooms without session - Rooms.html  *
 ****************************/
   div.room-without-container {
