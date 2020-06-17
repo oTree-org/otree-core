@@ -126,6 +126,8 @@ class Results(Page):
         handelsvaerdi = c(sum([p.price * p.choice_of_number_of_shares
                                for p in self.player.in_all_rounds()]))
 
+        print(choices)
+
         return {
             'handlet': handelsvaerdi,
             'kurtage_pct': int(Constants.kurtage * 100),

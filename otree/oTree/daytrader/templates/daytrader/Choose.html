@@ -24,114 +24,122 @@
 {% endblock %}
 {% block content %}
     <div class="daytrader-game-container">
-        <div class="content-container">
-            <div class="round-introduction">
-                <h2 class="daytrader-round-title">{{ player.company_name }}</h2>
-            </div>
-            <div class="daytrader-sack-button-container">
-                <div class="daytrader-sack-buttons">
-                    <table>
-                        <tr>
-                            <td></td>
-                            <td id="sack-container-1"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
-                                                           alt="unknown face"
-                                                           class="sack-btn"></td>
-                            <td></td>
-                        </tr>
-                        <tr>
-                            <td id="sack-container-2"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
-                                                           alt="unknown face" class="sack-btn"></td>
-                            <td></td>
-                            <td id="sack-container-3"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
-                                                           alt="unknown face" class="sack-btn"></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            {% if subsession.round_number > 1 %}
-                <div class="daytrader-round-info">
-                <small>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</small>
-                <p>
-                    Nu er du trader nummer {{ player.round_number }} og du skal nu handle aktier i firmaet
-                    <b>'{{ player.company_name }}'. </b></p>
-            {% else %}
-                 <div class="daytrader-round-info">
-                 <small>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</small>
-                <p>
-                    Du skal handle aktier i 10 runde i 10 forskellige firmaer.
-                    Det er første runde, og du er den første trader i dag.
-                    Du skal handle aktier i firmaet
-                    <b>'{{ player.company_name }}'.</b> </p>
-                  <div>
-            {% endif %}
-
-            {% if subsession.round_number > 1 %}
-
-                <table class="table daytrader-table">
-                    <tr class="table-corners">
-                        <th class="daytrader-table-header border-corner-left">trader</th>
-                        <th class="daytrader-table-header">pris</th>
-                        <th class="daytrader-table-header">private info</th>
-                        <th class="daytrader-table-header border-corner-right">handel</th>
-                    </tr>
-                    {% for r, price, choice, deals, states in data %}
-                        <tr class="daytrader-table-row">
-                            <td class="company-id daytrader-table-data"> {{ r }}.</td>
-                            <td class="daytrader-table-data"> {{ price|c }}</td>
-                            <td class="daytrader-table-data">
-                                <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
-                                     class="reveal-face">
-                            </td>
-                            <td class="daytrader-table-data"> {% if choice == True %} + {% else %} - {% endif %}
-                            {{ deals }} aktier.
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% endif %}
-
-            <div class="daytrader-info-choice">
-                <div class="daytrader-round-info">
-                    Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}.
-                    <br>
-                    <br>
-                    <b><u>Hvad vil du gøre?</u></b>
-                    <br>
-                    <b>Der er {{ runder }} runder, husk at vær sparsom med dine penge og handl fornuftigt</b>
-                </div>
-            </div>
-            <div id="timer-text" class="container justify-content-md-center">
-                Tid tilbage:
-                <strong><span id="timer" class="otree-timer__time-left"></span></strong>
-            </div>
-
-            <div class="daytrader-form-container">
-                {% formfield player.choice_of_trade label=None %}
-
-                <div class="daytrader-submit-value">
-                    <p class="daytrader-form-info"> Hvor mange aktier?
-                        <br>
-                        {% if subsession.round_number == 1 %}
-                          <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
-                          aktier, og husk at gemme nogle penge til de næste runder)</b></small></p>
-                        {% else %}
-                          <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
-                          aktier)</b></small></p>
-                        {% endif %}
-                    <div class="daytrader-formfield">
-                        {% formfield player.choice_of_number_of_shares label=None %}
-                    </div>
-                    <div class="daytrader-next-btn-container">
-                        <button class="daytrader-next-btn">
-                            Køb/Sælg
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            </div>
+    <div class="content-container">
+    <div class="round-introduction">
+        <h2 class="daytrader-round-title">{{ player.company_name }}</h2>
+    </div>
+    <div class="daytrader-sack-button-container">
+        <div class="daytrader-sack-buttons">
+            <table>
+                <tr>
+                    <td></td>
+                    <td id="sack-container-1"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                   alt="unknown face"
+                                                   class="sack-btn"></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td id="sack-container-2"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                   alt="unknown face" class="sack-btn"></td>
+                    <td></td>
+                    <td id="sack-container-3"><img src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                                   alt="unknown face" class="sack-btn"></td>
+                </tr>
+            </table>
         </div>
     </div>
+    {% if subsession.round_number > 1 %}
+        <div class="daytrader-round-info">
+        <small>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</small>
+        <p>
+            Nu er du trader nummer {{ player.round_number }} og du skal nu handle aktier i firmaet
+            <b>'{{ player.company_name }}'. </b></p>
+    {% else %}
+        <div class="daytrader-round-info">
+        <small>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</small>
+        <p>
+            Du skal handle aktier i 10 runde i 10 forskellige firmaer.
+            Det er første runde, og du er den første trader i dag.
+            Du skal handle aktier i firmaet
+            <b>'{{ player.company_name }}'.</b></p>
+        <div>
+    {% endif %}
+
+{% if subsession.round_number > 1 %}
+
+    <table class="table daytrader-table">
+        <tr class="table-corners">
+            <th class="daytrader-table-header border-corner-left">trader</th>
+            <th class="daytrader-table-header">pris</th>
+            <th class="daytrader-table-header">private info</th>
+            <th class="daytrader-table-header border-corner-right">handel</th>
+        </tr>
+        {% for r, price, choice, deals, states in data %}
+            <tr class="daytrader-table-row">
+                <td class="company-id daytrader-table-data"> {{ r }}.</td>
+                <td class="daytrader-table-data"> {{ price|c }}</td>
+                <td class="daytrader-table-data">
+                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
+                         class="reveal-face">
+                </td>
+                <td class="daytrader-table-data">
+                    {% if choice == True %}
+                        +
+                    {% else %}
+                        {% if deals > 0 %}
+                            -
+                        {% endif %}
+
+                    {% endif %}
+                    {{ deals }} aktier.
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endif %}
+
+<div class="daytrader-info-choice">
+    <div class="daytrader-round-info">
+        Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}.
+        <br>
+        <br>
+        <b><u>Hvad vil du gøre?</u></b>
+        <br>
+        <b>Der er {{ runder }} runder, husk at vær sparsom med dine penge og handl fornuftigt</b>
+    </div>
+</div>
+<div id="timer-text" class="container justify-content-md-center">
+    Tid tilbage:
+    <strong><span id="timer" class="otree-timer__time-left"></span></strong>
+</div>
+
+<div class="daytrader-form-container">
+    {% formfield player.choice_of_trade label=None %}
+
+    <div class="daytrader-submit-value">
+        <p class="daytrader-form-info"> Hvor mange aktier?
+            <br>
+            {% if subsession.round_number == 1 %}
+                <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
+                    aktier, og husk at gemme nogle penge til de næste runder)</b></small></p>
+            {% else %}
+                <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
+                    aktier)</b></small></p>
+            {% endif %}
+        <div class="daytrader-formfield">
+            {% formfield player.choice_of_number_of_shares label=None %}
+        </div>
+        <div class="daytrader-next-btn-container">
+            <button class="daytrader-next-btn">
+                Køb/Sælg
+            </button>
+        </div>
+    </div>
+</div>
+
+</div>
+</div>
+</div>
 
 
 
@@ -162,8 +170,6 @@
                 inputContainer.style.display = "block";
             }
         }
-
-
 
 
         function toggle(className, displayState) {

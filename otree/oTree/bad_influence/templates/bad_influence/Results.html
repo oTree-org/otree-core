@@ -3,8 +3,8 @@
 {% block styles %}
     <style>
         html, body {
-            padding:0;
-            margin:0;
+            padding: 0;
+            margin: 0;
             height: 100%;
             background-color: #901A1E !important;
             font-family: "Patrick Hand", cursive;
@@ -14,100 +14,162 @@
     </style>
 {% endblock %}
 {% block content %}
-<div class="report-container results-container">
-<div class="report-info">
-    <div class="results-title">
-        <p>Du fik {{ payoff_ialt }} point</p>
-    </div>
+    <div class="report-container results-container">
+        <div class="report-info">
+            <div class="results-title">
+                <p>Du fik {{ payoff_ialt }} point</p>
+                <p>Du er spiller nr {{ player.id_in_group }}</p>
+            </div>
 
-    <table class="table table-responsive game-results-table">
 
-            <tr>
-                <th><strong>Runde</strong></th>
-                <th>point</th>
-                <th>præference</th>
-                <th>valg</th>
-                <th>influencer</th>
-                <th># venner</th>
-                <th># skift</th>
-                <th>stædighed</th>
-            </tr>
-            {% for p in player_in_all_rounds %}
-            <tr>
-                <td><strong>{{ p.round_number }} ({{p.spg}})</strong></td>
-                <td>{{ p.points }} </td>
-                <td>{{ p.preference_str }}</td>
-                <td>{{ p.choice_str }} </td>
-                <td>{% if p.hub %}ja{% else%}nej{% endif %}</td>
-                <td>{{ p.number_of_friends }}</td>
-                <td>{{ p.opinion_change }}</td>
-                <td>{{ p.stubborn }}</td>
-            </tr>
-            {% endfor %}
-            <tr>
-                <td><strong> i alt </strong></td>
-                <td><strong>{{ payoff_ialt }}</strong></td>
-                <td> </td>
-                <td></td>
-                <td><strong>{{ fraction_hub }}</strong></td>
-                <td><strong>{{ total_friends }}</strong></td>
-                <td><strong>{{ total_opinion_changes }}</strong></td>
-                <td><strong>{{ total_stubborn }} sek</strong></td>
-        </table>
+            <table class="table table-responsive game-results-table">
 
-<!-- Rapport header -->
-<div class="rapport-header">
-    <h2>Vælg et spørgsmål for at se hvordan det gik</h2>
-</div>
+                <tr>
+                    <th><strong>Runde</strong></th>
+                    <th>point</th>
+                    <th>præference</th>
+                    <th>valg</th>
+                    <th>influencer</th>
+                    <th># venner</th>
+                    <th># skift</th>
+                    <th>stædighed</th>
+                </tr>
+                {% for p in player_in_all_rounds %}
+                    <tr>
+                        <td><strong>{{ p.round_number }} ({{ p.spg }})</strong></td>
+                        <td>{{ p.points }} </td>
+                        <td>{{ p.preference_str }}</td>
+                        <td>{{ p.choice_str }} </td>
+                        <td>{% if p.hub %}ja{% else %}nej{% endif %}</td>
+                        <td>{{ p.number_of_friends }}</td>
+                        <td>{{ p.opinion_change }}</td>
+                        <td>{{ p.stubborn }}</td>
+                    </tr>
+                {% endfor %}
+                <tr>
+                    <td><strong> i alt </strong></td>
+                    <td><strong>{{ payoff_ialt }}</strong></td>
+                    <td></td>
+                    <td></td>
+                    <td><strong>{{ fraction_hub }}</strong></td>
+                    <td><strong>{{ total_friends }}</strong></td>
+                    <td><strong>{{ total_opinion_changes }}</strong></td>
+                    <td><strong>{{ total_stubborn }} sek</strong></td>
+            </table>
 
-    <div class="dropdown-questions dropdown">
-        <div class="d3-row question-title">
-            Spørgsmål
+            <!-- Rapport header -->
+            <div class="rapport-header">
+                <h2>Vælg et spørgsmål for at se hvordan det gik</h2>
+            </div>
+
+            <div class="dropdown-questions dropdown">
+                <div class="d3-row question-title">
+                    Spørgsmål
+                </div>
+                <div class="d3-row">
+                    <p id="d3historyChoice"></p>
+                </div>
+
+
+                <div class="d3-row">
+                    <div id="d3container"></div>
+                    <div id="d3consensus"></div>
+                </div>
+
+                <div class="d3-row">
+                    <p id="d3playback"></p>
+                    <button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
+                </div>
+                <div class="alert alert-info">
+                    <!-- Explanation for questions -->
+                    <div class="d3-row question-title">
+                        Spørgsmål kontekst
+                    </div>
+                    <div class="d3-row">
+                        <div id="questionHolder1"></div>
+                    </div>
+                    <div class="d3-row">
+                        <div id="questionHolder2"></div>
+                    </div>
+                    <br>
+                    <!--  Explanation for network -->
+                    <div class="d3-row question-title">
+                        Venne-netværk forklaring
+                    </div>
+                    <div class="d3-row">
+                        <div id="faceExplanation"></div>
+                    </div>
+                    <br>
+                    <!--  Explanation for network -->
+                    <div class="d3-row question-title">
+                        Graf forklaring
+                    </div>
+                    <div class="d3-row">
+                        <div id="graphExplanation"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-table-container">
+                <h2 class="rapport-header ">Topscorerliste</h2>
+                <table class="table-responsive" id="badInfluenceTableReport">
+                    <tr class="report-header-row">
+                        <th class="bad_influence-table-header border-corner-left"></th>
+                        <th class="bad_influence-table-header"> spiller <br> nr.</th>
+                        <th class="bad_influence-table-header"> point <br> ialt</th>
+                        <th class="bad_influence-table-header"> fulgt <br> flertallet</th>
+                        <th class="bad_influence-table-header"> fulgt sin <br> præference</th>
+                        <th class="bad_influence-table-header"> stædighed <br> (sekunder)</th>
+                        <th class="bad_influence-table-header"> # venner</th>
+                        <th class="bad_influence-table-header border-corner-right"> # skift</th>
+                    </tr>
+                    {% for ranking in rankings %}
+                        <tr class="bad_influence-table-row">
+                            <td class="bad_influence-table-data">{{ forloop.counter }}</td>
+                            <td class="bad_influence-table-data"><strong class="player_number"> {{ ranking.0 }} </strong></td>
+                            <td class="bad_influence-table-data">{{ ranking.1 }}</td>
+                            <td class="bad_influence-table-data">{{ ranking.2 }}%</td>
+                            <td class="bad_influence-table-data">{{ ranking.3 }}%</td>
+                            <td class="bad_influence-table-data">{{ ranking.4 }}</td>
+                            <td class="bad_influence-table-data">{{ ranking.5 }}</td>
+                            <td class="bad_influence-table-data">{{ ranking.6 }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+                <div class="explanation">
+                    <div class="alert alert-info">
+                        <div class="d3-row question-title">
+                            Stædighed forklaring
+                        </div>
+                        <div class="d3-row">
+                            <div id="stubbornness"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="d3-row">
-              <p id="d3historyChoice"></p>
-        </div>
+    </div>
+    {% include 'bad_influence/d3/d3_graph_results.html' %}
+    <script>
+        /* **TO DO - Finish highlighting of row  */
+        let rankings = {{ json_rank }};
+        let playerNum = document.getElementsByClassName("player_number");
+        let rankingsSorted = [];
+        let player_id = "{{ player.id_in_group }}";
+
+        for (let i = 0; i < playerNum.length; i++) {
+            let rank = rankings[i];
+            for (let j = 0; j < rank.length; j++) {
+                if (j % rank.length === 0) {
+                    rankingsSorted.push(rank[j]);
+                }
+            }
+        }
 
 
-
-<div class="d3-row">
-    <div id="d3container"></div>
-    <div id="d3consensus"></div>
-</div>
-
-<div class="d3-row">
-    <p id="d3playback"></p>
-<button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
-</div>
-<div class="alert alert-info">
-    <!-- Explanation for questions -->
-    <div class="d3-row question-title">
-        Spørgsmål kontekst
-    </div>
-    <div class="d3-row">
-         <div id="questionHolder1"></div>
-    </div>
-     <div class="d3-row">
-        <div id="questionHolder2"></div>
-    </div>
-    <br>
-    <!--  Explanation for network -->
-    <div class="d3-row question-title">
-        Venne-netværk forklaring
-    </div>
-    <div class="d3-row">
-            <div id="faceExplanation"></div>
-    </div>
-    <br>
-   <!--  Explanation for network -->
-      <div class="d3-row question-title">
-            Graf forklaring
-        </div>
-        <div class="d3-row">
-            <div id="graphExplanation"></div>
-        </div>
-</div>
-</div>
-</div></div>
-     {% include 'bad_influence/d3/d3_graph_results.html' %}
+        for (let j = 0; j < playerNum.length; j++) {
+            if(playerNum[j].textContent !== player_id) {
+            }
+        }
+    </script>
 {% endblock %}
