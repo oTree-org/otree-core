@@ -1008,6 +1008,27 @@ div.welcome-container .card-footer {
   .same-line div.button-right button:hover {
     background-color: #5f861e;
   }
+
+  .start-link-white {
+    background-color: white;
+    border-radius: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    padding: 20px 5px 5px 5px;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+  .start-link-white a {
+    text-decoration: none;
+    color: #901A1E;
+    font-size: 13px;
+    font-weight: bold;
+  }
+  .start-link-white a:hover {
+    color: #5f861e;
+  }
 }
 @media (min-width: 375px) {
   /*************************
@@ -1561,6 +1582,15 @@ div.welcome-container .card-footer {
   }
   .same-line div.button-right button {
     font-size: 16px;
+  }
+  .start-link-white {
+    width: 100%;
+  }
+  .start-link-white a {
+    font-size: 14px;
+  }
+  .start-link-white a:hover {
+    color: #5f861e;
   }
 }
 @media (min-width: 768px) {
@@ -2177,6 +2207,16 @@ div.welcome-container .card-footer {
     margin-left: 0;
     padding-left: 5px;
   }
+
+  .start-link-white {
+    width: 90%;
+  }
+  .start-link-white a {
+    font-size: 15px;
+  }
+  .start-link-white a:hover {
+    color: #5f861e;
+  }
 }
 @media (min-width: 1025px) {
   /*************************
@@ -2736,6 +2776,16 @@ div.welcome-container .card-footer {
   }
   div.room-with-container form {
     width: 75%;
+  }
+
+  .start-link-white {
+    width: 60%;
+  }
+  .start-link-white a {
+    font-size: 16px;
+  }
+  .start-link-white a:hover {
+    color: #5f861e;
   }
 }
 

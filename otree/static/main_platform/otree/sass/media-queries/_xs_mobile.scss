@@ -1009,5 +1009,29 @@
       }
     }
   }
+
+  .start-link-white {
+      background-color: white;
+      border-radius: 40px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-self: center;
+      padding: 20px 5px 5px 5px;
+      margin: 0;
+      letter-spacing: 1px;
+
+
+      a {
+        text-decoration: none;
+        color: $ku-red;
+        font-size: 13px;
+        font-weight: bold;
+
+        &:hover {
+          color: $ku-dark-green;
+        }
+      }
+    }
 }
 
