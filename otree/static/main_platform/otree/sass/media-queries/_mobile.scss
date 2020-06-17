@@ -29,7 +29,7 @@
     font-size: 30px;
     margin-top: 3%;
     margin-bottom: 0;
-    padding-top: 8%;
+    padding-top: 4%;
   }
 
   .sub-games-title {
@@ -561,7 +561,7 @@
   .room-container {
     .rooms-table-container {
       .rapport-header {
-        font-size: 24px;
+        font-size: 22px;
         padding: 25px 0;
       }
 
@@ -623,6 +623,7 @@
     }
   }
 
+
   /****************************
 *  Rooms with session - Rooms.html  *
 ****************************/
@@ -667,4 +668,39 @@
     margin-left: 0;
     padding-left: 5px;
   }
+
+  /****************************
+  * Create_room inline header  *
+  ****************************/
+  .same-line {
+
+    .header-left {
+      text-align: center;
+    }
+
+    div.button-right {
+
+      button {
+      font-size: 16px;
+
+        &:hover {
+
+        }
+      }
+    }
+  }
+
+  .start-link-white {
+      width: 100%;
+
+      a {
+        font-size: 14px;
+
+        &:hover {
+          color: $ku-dark-green;
+        }
+      }
+    }
+
+
 }

@@ -21,12 +21,43 @@
   /******************************
   *  Front Page  - games.html  *
   ******************************/
+  .title-container {
+    margin-left: 0;
+    margin-right: 0;
 
+    .games-title {
+      font-size: 60px;
+      margin-bottom: 0;
+      margin-top: 12%;
+    }
 
-  .games-title {
-    font-size: 70px;
-    margin-bottom: 0;
+    p {
+    text-align: center;
+      font-size: 18px;
+    }
+
+    form {
+        display: flex;
+        justify-content: center;
+      button {
+        justify-content: center;
+        width: 30%;
+        background-color: white;
+        border-color: $ku-red;
+        border-width: revert;
+        color: $ku-red;
+        font-weight: bold;
+        margin-bottom: 4%;
+
+        &:hover {
+          background-color: $ku-dark-green;
+          border-color: transparent;
+        }
+      }
+    }
   }
+
+
 
   .sub-games-title {
     font-size: 30px;
@@ -597,10 +628,43 @@
     }
   }
 
-  /****************************
-  *  Rooms without session - Rooms.html  *
-  ****************************/
 
+
+
+  /****************************
+  * Create_room inline header  *
+  ****************************/
+  .same-line {
+
+    .header-left {
+      text-align: center;
+
+    }
+
+    div.button-right {
+      width: 20%;
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      right: 5%;
+
+      button {
+      justify-content: flex-end;
+      background-color: $ku-red;
+        border: $ku-red;
+        padding: 10px 10px 10px 10px;
+
+        &:hover {
+          background-color: $ku-dark-green;
+        }
+      }
+    }
+  }
+
+
+  /***************************************
+  *  Rooms without session - Rooms.html  *
+  ***************************************/
   div.room-without-container {
     margin-top: 10%;
 
@@ -701,6 +765,19 @@
       }
     }
   }
+
+  .start-link-white {
+      width: 60%;
+
+      a {
+        font-size: 16px;
+
+        &:hover {
+          color: $ku-dark-green;
+        }
+      }
+    }
+
 
 }
 
