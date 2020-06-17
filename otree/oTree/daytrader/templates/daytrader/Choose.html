@@ -126,46 +126,13 @@
                 <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
                     aktier)</b></small></p>
             {% endif %}
-
-            <div class="daytrader-info-choice">
-                <div class="daytrader-round-info">
-                    Du har {{ player.wallet|c }} og aktieprisen er lige nu {{ player.price|c }}.
-                    <br>
-                    <br>
-                    <b><u>Hvad vil du gøre?</u></b>
-                    <br>
-                </div>
-            </div>
-            <div id="timer-text" class="container justify-content-md-center">
-                Tid tilbage:
-                <strong><span id="timer" class="otree-timer__time-left"></span></strong>
-            </div>
-
-            <div class="daytrader-form-container">
-                {% formfield player.choice_of_trade label=None %}
-
-                <div class="daytrader-submit-value">
-                    <p class="daytrader-form-info"> Hvor mange aktier?
-                        <br>
-                        {% if subsession.round_number == 1 %}
-                          <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
-                          aktier, og husk at gemme nogle penge til de næste 9 runder)</b></small></p>
-                        {% else %}
-                          <small> (du kan handle med maksimalt <b>{{ player.can_buy }}
-                          aktier)</b></small></p>
-                        {% endif %}
-                    <div class="daytrader-formfield">
-                        {% formfield player.choice_of_number_of_shares label=None %}
-                    </div>
-                    <div class="daytrader-next-btn-container">
-                        <button class="daytrader-next-btn">
-                            Køb/Sælg
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            </div>
+        <div class="daytrader-formfield">
+            {% formfield player.choice_of_number_of_shares label=None %}
+        </div>
+        <div class="daytrader-next-btn-container">
+            <button class="daytrader-next-btn">
+                Køb/Sælg
+            </button>
         </div>
     </div>
 </div>
