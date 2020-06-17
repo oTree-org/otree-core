@@ -44,7 +44,6 @@ class Rooms(vanilla.TemplateView):
     def get_context_data(self, **kwargs):
         context = super(Rooms, self).get_context_data(**kwargs)
         context["all_rooms"] = RoomsStorage.objects.filter(teacher=self.request.user).values()
-        print(context)
         return context
 
 
