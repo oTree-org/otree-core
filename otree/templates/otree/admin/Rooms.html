@@ -33,7 +33,7 @@
                 <table id="roomsTable">
                     <tr class="rooms-table-row">
                         <th class="border-corner-left"> Klasserum</th>
-                        <th>Opret spil</th>
+
                         <th>Rediger rum</th>
                         <th class="border-corner-right">Slet rum</th>
                     </tr>
@@ -44,9 +44,6 @@
                                 <a href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>
                             </td>
 
-                            <td>
-                                <a href="{% url "RoomWithoutSession" room.name %}"><i class="fas fa-plus"></i></a>
-                            </td>
 
                             <td>
                                 <a href="{% url 'update_view_with_pk' room.id %}" data-toggle="tooltip"
