@@ -1,9 +1,7 @@
 import json
 import os
 from collections import OrderedDict
-
 from django.views.generic.edit import FormMixin
-
 import otree
 import re
 import otree.bots.browser
@@ -49,8 +47,6 @@ class CreateRoomForm(forms.ModelForm):
 
     def __str__(self):
         return self.name
-
-
 
 
 def pretty_name(name):
@@ -396,6 +392,8 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
+
+
     def vars_for_template(self):
         field_names = otree.export.get_field_names_for_live_update(Participant)
         display_names = {
@@ -435,10 +433,22 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
         page_url_active = {"next_page": "active"}
 
+        session = self.session
+        room = session.get_room()
+
+        session_start_urls = [
+            self.request.build_absolute_uri(participant._start_url())
+            for participant in session.get_participants()
+        ]
+
         return dict(
             column_names=column_names,
             advance_users_button_text=advance_users_button_text,
             page_url_active=page_url_active,
+            room_wide_url=room.get_room_wide_url(self.request),
+            num_participants=len(session_start_urls),
+
+
         )
 
     def get(self, request, *args, **kwargs):

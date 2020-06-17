@@ -186,20 +186,49 @@ table.table-debug td.debug-var-value {
   *  Front Page  - games.html  *
   ******************************/
   .title-container {
-    margin-bottom: 5%;
+    margin-bottom: 2%;
+    color: white;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    font-weight: bold;
+    width: 100%;
+    padding: 0 20px 0 20px;
   }
-
-  .games-title {
+  .title-container .games-title {
     color: white;
     font-weight: bold;
     font-family: "Catamaran", sans-serif;
     display: flex;
     justify-content: center;
     text-align: center;
-    font-size: 22px;
-    margin-top: 6%;
+    font-size: 25px;
+    margin-top: 4%;
     margin-bottom: 0;
-    padding-top: 4%;
+    padding-top: 2%;
+  }
+  .title-container p {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+  .title-container form {
+    display: flex;
+    justify-content: center;
+  }
+  .title-container form button {
+    justify-content: center;
+    width: 50%;
+    background-color: white;
+    border-color: #901A1E;
+    border-width: revert;
+    color: #901A1E;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  .title-container form button:hover {
+    background-color: #5f861e;
+    border-color: transparent;
   }
 
   .sub-games-title {
@@ -1016,6 +1045,50 @@ div.welcome-container .card-footer {
     margin-left: 0;
     padding-left: 5px;
   }
+
+  /****************************
+  * Create_room inline header  *
+  ****************************/
+  .same-line {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+  }
+  .same-line .header-left {
+    font-weight: bold;
+    text-align: left;
+  }
+  .same-line div.button-right button {
+    background-color: #901A1E;
+    border: #901A1E;
+    padding: 5px 5px 5px 5px;
+    margin-bottom: 15px;
+  }
+  .same-line div.button-right button:hover {
+    background-color: #5f861e;
+  }
+
+  .start-link-white {
+    background-color: white;
+    border-radius: 40px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-self: center;
+    padding: 20px 5px 5px 5px;
+    margin: 0;
+    letter-spacing: 1px;
+  }
+  .start-link-white a {
+    text-decoration: none;
+    color: #901A1E;
+    font-size: 13px;
+    font-weight: bold;
+  }
+  .start-link-white a:hover {
+    color: #5f861e;
+  }
 }
 @media (min-width: 375px) {
   /*************************
@@ -1046,7 +1119,7 @@ div.welcome-container .card-footer {
     font-size: 30px;
     margin-top: 3%;
     margin-bottom: 0;
-    padding-top: 8%;
+    padding-top: 4%;
   }
 
   .sub-games-title {
@@ -1475,7 +1548,7 @@ div.welcome-container .card-footer {
   *  Rooms view - Rooms.html  *
   ****************************/
   .room-container .rooms-table-container .rapport-header {
-    font-size: 24px;
+    font-size: 22px;
     padding: 25px 0;
   }
   .room-container .rooms-table-container #roomsTable .rooms-table-row th {
@@ -1555,6 +1628,25 @@ div.welcome-container .card-footer {
     justify-content: center;
     margin-left: 0;
     padding-left: 5px;
+  }
+
+  /****************************
+  * Create_room inline header  *
+  ****************************/
+  .same-line .header-left {
+    text-align: center;
+  }
+  .same-line div.button-right button {
+    font-size: 16px;
+  }
+  .start-link-white {
+    width: 100%;
+  }
+  .start-link-white a {
+    font-size: 14px;
+  }
+  .start-link-white a:hover {
+    color: #5f861e;
   }
 }
 @media (min-width: 768px) {
@@ -2076,6 +2168,32 @@ div.welcome-container .card-footer {
   }
 
   /****************************
+  * Create_room inline header  *
+  ****************************/
+  .same-line .header-left {
+    text-align: left;
+  }
+  .same-line div.button-right {
+    width: 10%;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    right: 10%;
+    padding-right: 20px;
+    font-size: 10px;
+    align-self: center;
+  }
+  .same-line div.button-right button {
+    justify-content: flex-end;
+    background-color: #901A1E;
+    border: #901A1E;
+    padding: 5px 5px 5px 5px;
+  }
+  .same-line div.button-right button:hover {
+    background-color: #5f861e;
+  }
+
+  /****************************
   *  Rooms without session - Rooms.html  *
   ****************************/
   div.room-without-container {
@@ -2160,6 +2278,16 @@ div.welcome-container .card-footer {
     margin-left: 0;
     padding-left: 5px;
   }
+
+  .start-link-white {
+    width: 90%;
+  }
+  .start-link-white a {
+    font-size: 15px;
+  }
+  .start-link-white a:hover {
+    color: #5f861e;
+  }
 }
 @media (min-width: 1025px) {
   /*************************
@@ -2182,9 +2310,36 @@ div.welcome-container .card-footer {
   /******************************
   *  Front Page  - games.html  *
   ******************************/
-  .games-title {
-    font-size: 70px;
+  .title-container {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .title-container .games-title {
+    font-size: 60px;
     margin-bottom: 0;
+    margin-top: 12%;
+  }
+  .title-container p {
+    text-align: center;
+    font-size: 18px;
+  }
+  .title-container form {
+    display: flex;
+    justify-content: center;
+  }
+  .title-container form button {
+    justify-content: center;
+    width: 30%;
+    background-color: white;
+    border-color: #901A1E;
+    border-width: revert;
+    color: #901A1E;
+    font-weight: bold;
+    margin-bottom: 4%;
+  }
+  .title-container form button:hover {
+    background-color: #5f861e;
+    border-color: transparent;
   }
 
   .sub-games-title {
@@ -2642,8 +2797,31 @@ div.welcome-container .card-footer {
   }
 
   /****************************
-  *  Rooms without session - Rooms.html  *
+  * Create_room inline header  *
   ****************************/
+  .same-line .header-left {
+    text-align: center;
+  }
+  .same-line div.button-right {
+    width: 20%;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    right: 5%;
+  }
+  .same-line div.button-right button {
+    justify-content: flex-end;
+    background-color: #901A1E;
+    border: #901A1E;
+    padding: 10px 10px 10px 10px;
+  }
+  .same-line div.button-right button:hover {
+    background-color: #5f861e;
+  }
+
+  /***************************************
+  *  Rooms without session - Rooms.html  *
+  ***************************************/
   div.room-without-container {
     margin-top: 10%;
   }
@@ -2725,6 +2903,16 @@ div.welcome-container .card-footer {
   }
   div.update-room-container div.content-container form button.btn-primary {
     width: 100%;
+  }
+
+  .start-link-white {
+    width: 60%;
+  }
+  .start-link-white a {
+    font-size: 16px;
+  }
+  .start-link-white a:hover {
+    color: #5f861e;
   }
 }
 

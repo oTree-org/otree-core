@@ -218,7 +218,7 @@
     justify-content: center;
   }
   .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
-    font-size: 18px;
+    font-size: 12px;
     background: #41739D;
     font-family: "Patrick Hand", sans-serif;
     width: 166px;
@@ -879,7 +879,7 @@
     justify-content: center;
   }
   .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
-    font-size: 22px;
+    font-size: 19px;
     background: #41739D;
     font-family: "Patrick Hand", sans-serif;
     width: 244px;
