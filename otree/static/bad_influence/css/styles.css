@@ -245,10 +245,9 @@
     display: flex;
     width: 100%;
   }
-
-  .choice-button {
-    width: 120px;
-    height: 110px;
+  .choice-button-holder .choice-button {
+    width: 45%;
+    height: 55px;
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -260,23 +259,23 @@
     border: 2px solid #901A1E;
     margin: 5px 5px 10% 5px;
   }
-  .choice-button:hover {
+  .choice-button-holder .choice-button:hover {
     background-color: #5f861e;
     color: white;
     border-color: transparent;
   }
-  .choice-button:active {
+  .choice-button-holder .choice-button:active {
     background-color: #5f861e;
     color: white;
   }
-  .choice-button:focus {
+  .choice-button-holder .choice-button:focus {
     border-color: #5f861e;
     background-color: #5f861e;
     color: white;
   }
-  .choice-button img {
-    width: 50px;
-    height: 50px;
+  .choice-button-holder .choice-button img {
+    width: 40px;
+    height: 40px;
     align-self: center;
   }
 
@@ -679,10 +678,9 @@
     display: flex;
     width: 100%;
   }
-
-  .choice-button {
-    width: 120px;
-    height: 110px;
+  .choice-button-holder .choice-button {
+    width: 45%;
+    height: 55px;
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -694,23 +692,23 @@
     border: 2px solid #901A1E;
     margin: 5px 5px 10% 5px;
   }
-  .choice-button:hover {
+  .choice-button-holder .choice-button:hover {
     background-color: #5f861e;
     color: white;
     border-color: transparent;
   }
-  .choice-button:active {
+  .choice-button-holder .choice-button:active {
     background-color: #5f861e;
     color: white;
   }
-  .choice-button:focus {
+  .choice-button-holder .choice-button:focus {
     border-color: #5f861e;
     background-color: #5f861e;
     color: white;
   }
-  .choice-button img {
-    width: 50px;
-    height: 50px;
+  .choice-button-holder .choice-button img {
+    width: 40px;
+    height: 40px;
     align-self: center;
   }
 

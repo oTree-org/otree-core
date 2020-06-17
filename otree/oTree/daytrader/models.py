@@ -138,8 +138,25 @@ class Subsession(BaseSubsession):
             for p in self.get_players():
                 rankings.append((p.id_in_group, 0))
 
+        profit = []
+        if 'profit' in self.session.vars:
+            for p in self.get_players():
+                profit.append(p.tjent_ialt)
+
+        else:
+            for p in self.get_players():
+                profit.append(0)
+
+        player_number = len(profit)
+        handler = []
+
+
+
+
         return {
             'company': list(zip(names, states, choices, drawn_faces)),
+            'profit': handler,
+            'player_number': player_number,
             'round_list': round_list,
             'faces': drawn_faces,
             'rankings': sorted(rankings, key=lambda x: x[1], reverse=True),
@@ -148,7 +165,7 @@ class Subsession(BaseSubsession):
                 'y': 'Priser',
                 'series': price_table,
                 'rounds': round_list
-            })
+            }),
         }
 
 

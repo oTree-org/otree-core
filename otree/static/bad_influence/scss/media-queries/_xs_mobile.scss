@@ -251,11 +251,10 @@
     justify-content: center;
     display: flex;
     width: 100%;
-  }
 
-  .choice-button {
-    width: 120px;
-    height: 110px;
+    .choice-button {
+    width: 45%;
+    height: 55px;
     font-size: 14px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -284,11 +283,14 @@
     }
 
     img {
-      width: 50px;
-      height: 50px;
+      width: 40px;
+      height: 40px;
       align-self: center;
     }
   }
+  }
+
+
 
   /*************************************
 *   Intro1.html table styling   *
