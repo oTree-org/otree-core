@@ -35,7 +35,6 @@ class Constants(BaseConstants):
     players_per_group = None
     num_rounds = 10
 
-
     # share attributes
     num_shares = 100000
     start_price = 50.0
