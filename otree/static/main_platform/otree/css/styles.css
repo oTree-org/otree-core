@@ -1807,7 +1807,7 @@ div.welcome-container .card-footer {
   ***********************************************************/
   .create-game-container .card {
     margin-bottom: 30px;
-    width: 70%;
+    width: 100%;
     border-color: #901A1E;
     border-style: solid;
     border-width: 3px;

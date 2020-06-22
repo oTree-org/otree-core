@@ -124,6 +124,7 @@
                 </button>
             </div>
         </div>
+
         <div id="infoCascadeModal" class="info-cascade-modal">
             <div class="info-cascade-modal-content">
                 <p class="daytrader-round-info">En informationskaskade opstår når du tager det samme valg som dem før
@@ -186,18 +187,12 @@
         // Information modules
         let infoCascadeModal = document.getElementById("infoCascadeModal");
         let infoCascadeLink = document.querySelector(".info-cascade-link");
-
         let lemmingModal = document.getElementById("lemmingModal");
         let lemmingeInfo = document.querySelector(".info-lemminge-link");
 
+
         infoCascadeLink.onclick = () => {
             infoCascadeModal.style.display = "block";
-        };
-
-        window.onclick = event => {
-            if (event.target === infoCascadeModal) {
-                infoCascadeModal.style.display = "none";
-            }
         };
 
         lemmingeInfo.onclick = () => {
@@ -205,9 +200,22 @@
         };
 
         window.onclick = event => {
-            if (event.target === lemmingModal) {
-                lemmingModal.style.display = "none";
+            try {
+                 if (event.target === infoCascadeModal) {
+                infoCascadeModal.style.display = "none";
+            } else {
+                 if (event.target === lemmingModal) {
+                    lemmingModal.style.display = "none";
+                }
             }
         }
+            catch(err) {
+                console.log("ERROR: Modal cannot be exited.")
+             }
+        };
+
+
+
+
     </script>
 {% endblock %}

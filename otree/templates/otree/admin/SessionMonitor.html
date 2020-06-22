@@ -1,7 +1,7 @@
  {% extends "otree/BaseAdmin.html" %}
 {% load otree_internal static %}
 {% block styles %}
-    {% if column_names == "Daytrader" %}
+    {% if game_name.display_name == "Bad Influence" %}
     <style>
         html, body {
             padding:0;
@@ -67,9 +67,11 @@
 {% else %}
         {% include "otree/admin/CustomSession.html" %}
         {{ block.super }}
+
+
     <div class="info">
         <div class="info-content">
-        <p>Spillet er oprettet med {{ num_participants }} spillere.</p>
+        <p>Spillet <b>{{ game_name.display_name }}</b>, er oprettet med <b>{{ num_participants }} spillere</b>.</p>
         <h1>Spillets link</h1>
          <div class="gamelink-content">
              <div class="start-link-white">

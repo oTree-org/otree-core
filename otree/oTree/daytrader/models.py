@@ -1,3 +1,5 @@
+from django import forms
+
 from otree.api import (
     models, widgets, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
     Currency as c, currency_range
@@ -30,7 +32,7 @@ its state with a fixed probability, a mix of strategies need to be employed.
 
 class Constants(BaseConstants):
     timeout90 = 90
-    timeout30 = 30
+    timeout30 = 60
     name_in_url = 'daytrader'
     players_per_group = None
     num_rounds = 10
@@ -184,11 +186,15 @@ class Player(BasePlayer):
             [1, 'køb (long)'],
             [0, 'lån og sælg (short)'],
         ],
-        widget=widgets.RadioSelectHorizontal()
+
+        widget=widgets.RadioSelectHorizontal(),
     )
     price = models.CurrencyField()
     price_change = models.CurrencyField()
-    choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000)
+    choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000, widget=forms.TextInput(attrs={
+        'autofocus': True,
+        'id': 'myInput'
+    }))
     can_buy = models.PositiveIntegerField()
     tjent_ialt = models.CurrencyField()
 

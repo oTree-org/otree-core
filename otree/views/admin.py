@@ -392,8 +392,6 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
 
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
-
-
     def vars_for_template(self):
         field_names = otree.export.get_field_names_for_live_update(Participant)
         display_names = {
@@ -441,14 +439,15 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
             for participant in session.get_participants()
         ]
 
+        app = dict(SessionConfig(self.session.config))
+
         return dict(
             column_names=column_names,
             advance_users_button_text=advance_users_button_text,
             page_url_active=page_url_active,
             room_wide_url=room.get_room_wide_url(self.request),
             num_participants=len(session_start_urls),
-
-
+            game_name=app
         )
 
     def get(self, request, *args, **kwargs):

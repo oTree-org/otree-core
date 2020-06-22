@@ -218,7 +218,7 @@
     justify-content: center;
   }
   .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
-    font-size: 12px;
+    font-size: 18px;
     background: #41739D;
     font-family: "Patrick Hand", sans-serif;
     width: 166px;
@@ -289,8 +289,20 @@
     justify-content: center;
   }
   .daytrader-game-container .daytrader-submit-value .form-group {
-    justify-content: center;
     display: flex;
+    justify-content: center;
+  }
+  .daytrader-game-container .daytrader-submit-value #myInput {
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+  .daytrader-game-container .daytrader-submit-value .form-control {
+    display: flex;
+    justify-content: center;
+    width: 90%;
+    border: solid 3px #41739D;
   }
   .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
     max-width: 166px;
@@ -854,10 +866,8 @@
     font-family: "Patrick Hand", sans-serif;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-submit-value {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  .daytrader-game-container .daytrader-submit-value #myInput {
+    font-size: 20px;
   }
   .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
     max-width: 244px;
@@ -1298,10 +1308,11 @@
     font-family: "Patrick Hand", sans-serif;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-submit-value {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  .daytrader-game-container .daytrader-submit-value #myInput {
+    font-size: 22px;
+  }
+  .daytrader-game-container .daytrader-submit-value .form-control {
+    width: 70%;
   }
   .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
     max-width: 344px !important;
@@ -1821,10 +1832,12 @@
     font-size: 25px;
     font-family: "Patrick Hand", sans-serif;
   }
-  .daytrader-game-container .daytrader-submit-value {
-    display: none;
-    flex-direction: column;
-    justify-content: center;
+  .daytrader-game-container .daytrader-submit-value #myInput {
+    font-size: 24px;
+  }
+  .daytrader-game-container .daytrader-submit-value .form-control {
+    width: 70%;
+    border: solid 3px #41739D;
   }
   .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
     max-width: 344px !important;

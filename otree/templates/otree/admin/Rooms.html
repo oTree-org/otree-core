@@ -55,14 +55,10 @@
                                    title="Slet Evaluering" data-placement="bottom"><i class="fas fa-trash"></i></a>
                             </td>
                         </tr>
-
-                    
-    
                     {% endfor %}
                 </table>
             </div>
             </div>
-
         {% else %}
             <div class="create-room-container">
                 <div class="content-container">
@@ -74,23 +70,5 @@
                     </form>
                 </div>
             </div>
-            {#            <div class="create-room-container">#}
-            {#                <div class="content-container">#}
-            {##}
-            {#                    <p>Der er ikke oprettet nogle klasserum endnu - vil du oprette et klasserum?</p>#}
-            {#                    <form method="post" action="{% url "create_room" %}">#}
-            {#                        {% csrf_token %}#}
-            {#                        <button class="btn btn-primary" id="create-room">#}
-            {#                            Opret rum#}
-            {#                        </button>#}
-            {#                    </form>#}
-            {#                </div>#}
-            {#            </div>#}
-
-
         {% endif %}
-
-
-
-
 {% endblock %}
