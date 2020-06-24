@@ -31,8 +31,8 @@ its state with a fixed probability, a mix of strategies need to be employed.
 
 
 class Constants(BaseConstants):
-    timeout90 = 90
-    timeout30 = 60
+    timeout90 = 900
+    timeout30 = 600
     name_in_url = 'daytrader'
     players_per_group = None
     num_rounds = 10
