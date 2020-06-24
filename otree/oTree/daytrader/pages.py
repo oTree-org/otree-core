@@ -85,11 +85,13 @@ class Choose(Page):
 
         data = zip(rounds, prices, choices, deals, states)
         game_rounds = Constants.num_rounds
+        current_round = self.player.round_number
 
         return {
             'data': data,
             'rounds': rounds,
-            'runder': game_rounds
+            'runder': game_rounds,
+            'current_round': current_round
         }
 
 
