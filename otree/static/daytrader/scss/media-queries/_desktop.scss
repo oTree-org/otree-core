@@ -35,14 +35,7 @@
         margin: 100px 0 0 4px;
       }
 
-      .company-face-in-sack {
-        width: 60px;
-        height: 60px;
 
-        &:hover {
-          cursor: pointer;
-        }
-      }
 
       .company-face {
         width: 35px;
@@ -62,7 +55,7 @@
       }
     }
 
-    .sack-btn {
+    .sack-button {
       margin: 0;
       padding: 0;
       width: 60px;
@@ -831,7 +824,7 @@
       }
     }
 
-    .sack-btn {
+    .sack-button {
       margin: 0;
       padding: 0;
       width: 60px;
@@ -912,7 +905,6 @@
             color: $ku-dark-blue;
             width: 50%;
             padding: 10px 0 10px 0;
-            font-weight: bold;
           }
 
           div.table-description {
@@ -922,6 +914,58 @@
             text-align: center;
           }
         }
+
+        div.game-block {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            margin-top: 2%;
+
+            div.left-game-block {
+              background-color: blue;
+              width: 50%;
+
+              div.sack-button-container {
+                width: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+                margin: 0 10px;
+                height: 290px;
+
+                div.sack-buttons {
+                    margin: 100px 0 0 4px;
+
+                    &:hover {
+                      cursor: pointer;
+                    }
+
+                    img.sack-button {
+                      margin: 0;
+                      padding: 0;
+                      width: 60px;
+                      height: 60px;
+
+                    }
+                   .company-face-in-sack {
+                      width: 60px;
+                      height: 60px;
+
+                      &:hover {
+                        cursor: pointer;
+                      }
+                   }
+                }
+              }
+            }
+
+            div.right-game-block {
+              background-color: purple;
+              width: 50%
+            }
+        }
+
       }
 
 }

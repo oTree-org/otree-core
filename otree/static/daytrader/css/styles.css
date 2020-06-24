@@ -103,13 +103,13 @@
   .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack:hover {
     cursor: pointer;
   }
-  .daytrader-game-container .sack-btn {
+  .daytrader-game-container .sack-button {
     margin: 0;
     padding: 0;
     width: 40px;
     height: 40px;
   }
-  .daytrader-game-container .sack-btn:hover {
+  .daytrader-game-container .sack-button:hover {
     cursor: pointer;
     filter: contrast(1.75);
   }
@@ -740,7 +740,7 @@
     width: 35px;
     height: 35px;
   }
-  .admin-table-data .sack-btn {
+  .admin-table-data .sack-button {
     margin: 0;
     padding: 0;
     width: 60px;
@@ -1687,13 +1687,6 @@
   .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons {
     margin: 100px 0 0 4px;
   }
-  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack {
-    width: 60px;
-    height: 60px;
-  }
-  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack:hover {
-    cursor: pointer;
-  }
   .daytrader-game-container .daytrader-sack-button-container .company-face {
     width: 35px;
     height: 35px;
@@ -1707,7 +1700,7 @@
   .daytrader-game-container .daytrader-sack-button-container .result-table-face-3 {
     margin: 77px 14px 0 0;
   }
-  .daytrader-game-container .sack-btn {
+  .daytrader-game-container .sack-button {
     margin: 0;
     padding: 0;
     width: 60px;
@@ -2327,7 +2320,7 @@
   .admin-table-data .admin-sack-button-container .admin-table-face-3 {
     margin: 77px 14px 0 0;
   }
-  .admin-table-data .sack-btn {
+  .admin-table-data .sack-button {
     margin: 0;
     padding: 0;
     width: 60px;
@@ -2402,13 +2395,54 @@
     color: #41739D;
     width: 50%;
     padding: 10px 0 10px 0;
-    font-weight: bold;
   }
   div.game-container div.header-block div.table-description {
     padding: 10px 0 10px 0;
     width: 50%;
     background-color: pink;
     text-align: center;
+  }
+  div.game-container div.game-block {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    margin-top: 2%;
+  }
+  div.game-container div.game-block div.left-game-block {
+    background-color: blue;
+    width: 50%;
+  }
+  div.game-container div.game-block div.left-game-block div.sack-button-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+    margin: 0 10px;
+    height: 290px;
+  }
+  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons {
+    margin: 100px 0 0 4px;
+  }
+  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons:hover {
+    cursor: pointer;
+  }
+  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons img.sack-button {
+    margin: 0;
+    padding: 0;
+    width: 60px;
+    height: 60px;
+  }
+  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons .company-face-in-sack {
+    width: 60px;
+    height: 60px;
+  }
+  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons .company-face-in-sack:hover {
+    cursor: pointer;
+  }
+  div.game-container div.game-block div.right-game-block {
+    background-color: purple;
+    width: 50%;
   }
 }
 
