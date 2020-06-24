@@ -15,11 +15,14 @@
   *******************************/
   .daytrader-game-container {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-top: 2%;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     border-radius: 10px;
     background-color: white;
     width: 98%;
+    padding: 10px 10px 30px 10px;
     /*******************
     *   intro1.html    *
     ********************/
@@ -187,6 +190,9 @@
     letter-spacing: 2px;
     font-size: 25px;
     display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
     text-transform: uppercase;
     color: #41739D;
     width: 100%;
@@ -206,7 +212,6 @@
     justify-content: center;
     flex-direction: column;
     width: 100%;
-    padding: 20px 20px 20px 20px;
   }
   .daytrader-game-container .daytrader-next-btn-container {
     display: flex;
@@ -759,11 +764,14 @@
   *******************************/
   .daytrader-game-container {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-top: 2%;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     border-radius: 10px;
     background-color: white;
     width: 95%;
+    padding: 10px 20px 30px 20px;
     /*******************
     *   intro1.html    *
     ********************/
@@ -1169,11 +1177,14 @@
   *******************************/
   .daytrader-game-container {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-top: 2%;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     border-radius: 10px;
     background-color: white;
     width: 90%;
+    padding: 20px;
     /*******************
     *   intro1.html    *
     ********************/
@@ -1641,15 +1652,18 @@
   }
 
   /******************************
-  *   Choose.html info styling    *
+  *   Play.html info styling    *
   *******************************/
   .daytrader-game-container {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-top: 2%;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     border-radius: 10px;
-    width: 100%;
+    width: 90%;
     background-color: white;
+    padding: 40px 7.5%;
     /**********************
     *    intro1.html      *
     ***********************/
@@ -1666,51 +1680,31 @@
       *  All day trader pages   *
     *****************************/
   }
-  .daytrader-game-container .content-container {
-    width: 100%;
-  }
-  .daytrader-game-container .content-container .round-introduction {
-    font-family: "Patrick Hand", cursive;
-    display: flex;
-    justify-content: left;
-    flex-direction: column;
-    width: 100%;
-    text-align: left;
-  }
-  .daytrader-game-container .content-container .round-introduction .daytrader-round-title {
-    font-size: 40px;
-    width: 100%;
-  }
-  .daytrader-game-container .daytrader-round-info-container {
-    display: flex;
-  }
-  .daytrader-game-container daytrader-sack-button-container {
-    width: 100%;
+  .daytrader-game-container .daytrader-sack-button-container {
     margin: 0 10px;
     height: 290px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: left;
-    background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat left;
   }
-  .daytrader-game-container daytrader-sack-button-container .daytrader-sack-buttons {
+  .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons {
     margin: 100px 0 0 4px;
   }
-  .daytrader-game-container daytrader-sack-button-container .daytrader-sack-buttons:hover {
+  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack {
     width: 60px;
     height: 60px;
   }
-  .daytrader-game-container daytrader-sack-button-container .company-face {
+  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack:hover {
+    cursor: pointer;
+  }
+  .daytrader-game-container .daytrader-sack-button-container .company-face {
     width: 35px;
     height: 35px;
   }
-  .daytrader-game-container daytrader-sack-button-container .result-table-face-1 {
+  .daytrader-game-container .daytrader-sack-button-container .result-table-face-1 {
     margin: 77px 0 0 14px;
   }
-  .daytrader-game-container daytrader-sack-button-container .result-table-face-2 {
+  .daytrader-game-container .daytrader-sack-button-container .result-table-face-2 {
     margin: 3px 0 0 0;
   }
-  .daytrader-game-container daytrader-sack-button-container .result-table-face-3 {
+  .daytrader-game-container .daytrader-sack-button-container .result-table-face-3 {
     margin: 77px 14px 0 0;
   }
   .daytrader-game-container .sack-btn {
@@ -1718,6 +1712,9 @@
     padding: 0;
     width: 60px;
     height: 60px;
+  }
+  .daytrader-game-container .content-container {
+    width: 70%;
   }
   .daytrader-game-container .future-modal-content, .daytrader-game-container .short-modal-content, .daytrader-game-container .long-modal-content, .daytrader-game-container .info-cascade-modal-content, .daytrader-game-container lemming-modal {
     width: 50%;
@@ -1775,6 +1772,10 @@
   }
   .daytrader-game-container #continue {
     display: none;
+  }
+  .daytrader-game-container .daytrader-round-title {
+    font-size: 50px;
+    width: 100%;
   }
   .daytrader-game-container .daytrader-round-info {
     font-size: 25px;
@@ -1938,6 +1939,18 @@
   }
   .daytrader-game-container #tableResults .results-sack-button-container .result-table-face-3 {
     margin: 77px 14px 0 0;
+  }
+
+  .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+  }
+  .round-introduction .daytrader-round-info-container {
+    display: flex;
   }
 
   /*****************************

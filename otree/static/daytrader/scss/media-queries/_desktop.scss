@@ -13,60 +13,36 @@
 
 
   /******************************
-  *   Choose.html info styling    *
+  *   Play.html info styling    *
   *******************************/
 
   .daytrader-game-container {
     display: flex;
+    flex-direction: column;
+    align-items: center;
     margin-top: 2%;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     border-radius: 10px;
-    width: 100%;
+    width: 90%;
     background-color: white;
+    padding: 40px 7.5%;
 
-    .content-container {
-      width: 100%;
-
-      .round-introduction {
-        font-family: "Patrick Hand", cursive;
-        display: flex;
-        justify-content: left;
-        flex-direction: column;
-        width: 100%;
-        text-align: left;
-
-        .daytrader-round-title {
-            font-size: 40px;
-            width: 100%;
-        }
-      }
-    }
-
-
-    .daytrader-round-info-container {
-        display: flex;
-    }
-
-
-    daytrader-sack-button-container {
-      width: 100%;
-       margin: 0 10px;
+    .daytrader-sack-button-container {
+      margin: 0 10px;
       height: 290px;
-      display: flex;
-      align-items: flex-start;
-      justify-content: left;
-      background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat left;
-
 
       .daytrader-sack-buttons {
-           margin: 100px 0 0 4px;
-
-        &:hover {
-            width: 60px;
-        height: 60px;
-        }
+        margin: 100px 0 0 4px;
       }
 
+      .company-face-in-sack {
+        width: 60px;
+        height: 60px;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
 
       .company-face {
         width: 35px;
@@ -91,9 +67,13 @@
       padding: 0;
       width: 60px;
       height: 60px;
+
+
     }
 
-
+    .content-container {
+      width: 70%;
+    }
 
     .future-modal-content, .short-modal-content, .long-modal-content, .info-cascade-modal-content, lemming-modal {
       width: 50%;
@@ -185,7 +165,10 @@
     /****************************
       *  All day trader pages   *
     *****************************/
-
+    .daytrader-round-title {
+      font-size: 50px;
+      width: 100%;
+    }
 
 
     .daytrader-round-info {
@@ -405,6 +388,18 @@
 
   }
 
+  .round-introduction {
+    font-family: "Patrick Hand", cursive;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+
+    .daytrader-round-info-container {
+      display: flex;
+    }
+  }
 
 
   /*****************************
