@@ -193,7 +193,8 @@ class Player(BasePlayer):
     price_change = models.CurrencyField()
     choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000, widget=forms.TextInput(attrs={
         'autofocus': True,
-        'id': 'myInput'
+        'id': 'myInput',
+        'onkeydown': 'return event.key != "Enter";'
     }))
     can_buy = models.PositiveIntegerField()
     tjent_ialt = models.CurrencyField()

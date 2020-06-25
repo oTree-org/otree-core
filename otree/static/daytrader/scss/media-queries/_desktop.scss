@@ -16,6 +16,51 @@
   *   Play.html info styling    *
   *******************************/
 
+  .field-choice_of_trade {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      flex-direction: row;
+
+      .form-check {
+        display: flex;
+        flex-direction: row;
+        margin-right: 0;
+
+        .form-check-label {
+          font-family: "Patrick Hand", sans-serif;
+          font-size: 20px;
+          text-transform: capitalize;
+          margin-left: 50px;
+        }
+
+        input.form-check-input[type="radio"] {
+          -webkit-appearance: none;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          outline: none;
+          border: 3px solid $ku-dark-blue;
+          position: absolute;
+
+          &:before {
+            content: '';
+            display: block;
+            width: 60%;
+            height: 60%;
+          }
+
+          &:checked:before {
+            background: $ku-dark-blue;
+          }
+
+          &:checked {
+            border-color: $ku-dark-blue;
+          }
+        }
+      }
+    }
+
   .daytrader-game-container {
     display: flex;
     flex-direction: column;
@@ -34,8 +79,6 @@
       .daytrader-sack-buttons {
         margin: 100px 0 0 4px;
       }
-
-
 
       .company-face {
         width: 35px;
@@ -60,7 +103,6 @@
       padding: 0;
       width: 60px;
       height: 60px;
-
 
     }
 
@@ -236,46 +278,8 @@
       }
     }
 
-    // Container til input af antal aktier og næste knap
-    .daytrader-submit-value {
 
-      #myInput {
-        font-size: 24px;
-      }
 
-     .form-control {
-        width: 70%;
-        border: solid 3px $ku-dark-blue;
-      }
-
-      #id_choice_of_number_of_shares {
-        max-width: 344px !important;
-        height: 50px;
-        left: 550px;
-        top: 1637px;
-        font-size: 23px;
-        color: black;
-        border: 5px solid #41739D;
-        box-sizing: border-box;
-        border-radius: 30px;
-      }
-
-      .otree-btn-next {
-        font-size: 30px;
-        background: $ku-dark-blue;
-        font-family: "Patrick Hand", sans-serif;
-        width: 344px;
-        height: 55px;
-
-        border: 5px solid $ku-dark-blue;
-        box-sizing: border-box;
-        border-radius: 30px;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-    }
 
     .field-choice_of_number_of_shares {
       width: 40%;
@@ -288,49 +292,7 @@
     }
 
 
-    .field-choice_of_trade {
-      margin: 0;
-      display: flex;
-      justify-content: center;
 
-      .form-check {
-        display: flex;
-        flex-direction: row;
-        margin-right: 0;
-
-        .form-check-label {
-          font-family: "Patrick Hand", sans-serif;
-          font-size: 24px;
-          text-transform: capitalize;
-          margin-left: 50px;
-        }
-
-        input.form-check-input[type="radio"] {
-          -webkit-appearance: none;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          outline: none;
-          border: 3px solid $ku-dark-blue;
-          position: absolute;
-
-          &:before {
-            content: '';
-            display: block;
-            width: 60%;
-            height: 60%;
-          }
-
-          &:checked:before {
-            background: $ku-dark-blue;
-          }
-
-          &:checked {
-            border-color: $ku-dark-blue;
-          }
-        }
-      }
-    }
 
     .daytrader-admin-company-list {
       font-size: 22px;
@@ -787,6 +749,21 @@
       }
     }
   }
+    .otree-btn-next {
+                    font-size: 30px;
+                    background: $ku-dark-blue;
+                    font-family: "Patrick Hand", sans-serif;
+                    width: 344px;
+                    height: 55px;
+
+                    border: 5px solid $ku-dark-blue;
+                    box-sizing: border-box;
+                    border-radius: 30px;
+
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                  }
 
   .admin-table-data {
     display: flex;
@@ -850,6 +827,9 @@
   ********************/
 
    div.game-container {
+      font-family: "Patrick Hand", sans-serif;
+      font-size: 20px;
+      letter-spacing: 0.5px;
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -862,7 +842,6 @@
 
       div.game-content {
         width: 100%;
-        background-color: orange;
 
         div.game-timer {
             width: 100%;
@@ -871,7 +850,6 @@
             justify-content: center;
             text-align: center;
             font-size: 25px;
-            font-family: "Patrick Hand", cursive;
             z-index: 1;
 
             div.game-timer-content {
@@ -879,7 +857,6 @@
               border: solid 6px $ku-dark-blue;
               margin-top: -4%;
               background-color: white;
-              font-family: "Patrick Hand", cursive;
               font-weight: bold;
               letter-spacing: 1px;
               padding: 5px 5px 5px 5px;
@@ -890,83 +867,212 @@
         div.header-block {
           display: flex;
           flex-direction: row;
+          justify-content: center;
           width: 100%;
           margin-top: 2%;
 
           h2.company-title {
             font-family: 'Noticia Text', serif;
-            font-weight: bold;
+            font-weight: bolder;
             letter-spacing: 2px;
-            font-size: 30px;
+            font-size: 35px;
             display: flex;
             flex-direction: column;
-            text-align: center;
+            text-align: left;
             text-transform: uppercase;
             color: $ku-dark-blue;
-            width: 50%;
+            width: 65%;
             padding: 10px 0 10px 0;
+            margin-top: -4%;
           }
 
-          div.table-description {
-            padding: 10px 0 10px 0;
-            width: 50%;
-            background-color: pink;
-            text-align: center;
-          }
+
         }
 
         div.game-block {
             width: 100%;
             display: flex;
             flex-direction: row;
-            margin-top: 2%;
 
-            div.left-game-block {
-              background-color: blue;
-              width: 50%;
+           div.right-game-block {
+              width: 100%;
+              display: flex;
+              justify-content: center;
 
-              div.sack-button-container {
-                width: 100%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
-                margin: 0 10px;
-                height: 290px;
+              table.company-table {
+                margin: 10px 0;
+                border-collapse: separate;
+                border-spacing: 0 0.5em;
+                width: 500px;
+                display: inline-table;
+                text-align: center;
 
-                div.sack-buttons {
-                    margin: 100px 0 0 4px;
+                td {
+                  vertical-align: middle;
+                }
+
+                tr.table-corners {
+
+                    th.border-corner-left {
+                      border-radius: 10px 0 0 10px;
+                    }
+
+                    th.border-corner-right {
+                      border-radius: 0 10px 10px 0;
+                    }
+
+                    th.table-header {
+                      background: $ku-dark-blue;
+                      color: white;
+                      font-weight: bold;
+                      font-family: "Patrick Hand", sans-serif;
+                      font-size: 20px;
+                      border-top: none !important;
+                      text-align: center;
+                      box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+                    }
+                }
+                tr.table-row {
+
+                  td.table-data {
+                    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+                    border-radius: 10px;
+                    font-size: 13px;
+                    font-family: "Patrick Hand", sans-serif;
+                    border-top: none !important;
+                    text-align: center;
+
+                    img.reveal-face {
+                       width: 40px;
+                       height: 40px;
+                    }
+                  }
+              }
+
+              .daytrader-table-row {
+                box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+                border-radius: 10px;
+                font-size: 13px;
+                font-family: "Patrick Hand", sans-serif;
+                border-top: none !important;
+                text-align: center;
+              }
+
+          }
+        }
+
+          div.left-game-block {
+            width: 50%;
+
+            div.sack-button-container {
+              width: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+              margin: 0 10px;
+              height: 290px;
+
+              div.sack-buttons {
+                  margin: 100px 0 0 4px;
+
+                  &:hover {
+                    cursor: pointer;
+                  }
+
+                  img.sack-button {
+                    margin: 0;
+                    padding: 0;
+                    width: 60px;
+                    height: 60px;
+
+                  }
+                 .company-face-in-sack {
+                    width: 60px;
+                    height: 60px;
 
                     &:hover {
                       cursor: pointer;
                     }
-
-                    img.sack-button {
-                      margin: 0;
-                      padding: 0;
-                      width: 60px;
-                      height: 60px;
-
-                    }
-                   .company-face-in-sack {
-                      width: 60px;
-                      height: 60px;
-
-                      &:hover {
-                        cursor: pointer;
-                      }
-                   }
-                }
+                 }
               }
             }
-
-            div.right-game-block {
-              background-color: purple;
-              width: 50%
+            div.help-text {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              font-size: 15px;
             }
-        }
 
+          div.table-description {
+            padding: 10px 0 10px 0;
+            text-align: center;
+          }
+
+            div.game-text {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              flex-direction: column;
+            }
+
+            div.game-choice {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              flex-direction: column;
+
+              div.choice-fields {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+              }
+
+              div.submit-value {
+                display: none;
+                flex-direction: column;
+                justify-content: center;
+
+                #myInput {
+                  font-size: 22px;
+                  display: flex;
+                  justify-content: center;
+                  text-align: center;
+                }
+
+                .form-group {
+                  display: flex;
+                  justify-content: center;
+                  margin-bottom: 0;
+                }
+
+
+               .form-control {
+                  display: flex;
+                  justify-content: center;
+                  width: 100%;
+                  border: solid 3px $ku-dark-blue;
+                }
+
+                #id_choice_of_number_of_shares {
+                  max-width: 166px;
+                  height: 40px;
+                  left: 550px;
+                  top: 1637px;
+                  font-size: 20px;
+                  color: black;
+                  border: 5px solid #41739D;
+                  box-sizing: border-box;
+                  border-radius: 30px;
+                  text-align: center;
+                  display: flex;
+                  justify-content: center;
+              }
+            }
+          }
+        }
       }
+   }
 
 }
 

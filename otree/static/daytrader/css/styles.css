@@ -13,6 +13,45 @@
   /******************************
   *   Play.html info styling    *
   *******************************/
+  .field-choice_of_trade {
+    margin: 10px 0 0 0;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .field-choice_of_trade .form-check {
+    display: flex;
+    flex-direction: row;
+    padding: 20px 30px 20px 60px;
+  }
+  .field-choice_of_trade .form-check .form-check-label {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 17px;
+    text-transform: capitalize;
+  }
+  .field-choice_of_trade .form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #41739D;
+  }
+  .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 20% auto;
+    border-radius: 50%;
+  }
+  .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
+    background: #41739D;
+  }
+  .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
+    border-color: #41739D;
+  }
+
   .daytrader-game-container {
     display: flex;
     flex-direction: column;
@@ -327,44 +366,6 @@
   .daytrader-game-container .reveal-face {
     width: 20px;
     height: 20px;
-  }
-  .daytrader-game-container .field-choice_of_trade {
-    margin: 10px 0 0 0;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check {
-    display: flex;
-    flex-direction: row;
-    padding: 20px 0 20px 60px;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check .form-check-label {
-    font-family: "Patrick Hand", sans-serif;
-    font-size: 17px;
-    text-transform: capitalize;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio] {
-    -webkit-appearance: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    outline: none;
-    border: 3px solid #41739D;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
-    content: "";
-    display: block;
-    width: 60%;
-    height: 60%;
-    margin: 20% auto;
-    border-radius: 50%;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
-    background: #41739D;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
-    border-color: #41739D;
   }
   .daytrader-game-container .daytrader-info-choice {
     width: 100%;
@@ -1654,6 +1655,45 @@
   /******************************
   *   Play.html info styling    *
   *******************************/
+  .field-choice_of_trade {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+  }
+  .field-choice_of_trade .form-check {
+    display: flex;
+    flex-direction: row;
+    margin-right: 0;
+  }
+  .field-choice_of_trade .form-check .form-check-label {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 20px;
+    text-transform: capitalize;
+    margin-left: 50px;
+  }
+  .field-choice_of_trade .form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #41739D;
+    position: absolute;
+  }
+  .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+  }
+  .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
+    background: #41739D;
+  }
+  .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
+    border-color: #41739D;
+  }
+
   .daytrader-game-container {
     display: flex;
     flex-direction: column;
@@ -1825,80 +1865,12 @@
     font-size: 25px;
     font-family: "Patrick Hand", sans-serif;
   }
-  .daytrader-game-container .daytrader-submit-value #myInput {
-    font-size: 24px;
-  }
-  .daytrader-game-container .daytrader-submit-value .form-control {
-    width: 70%;
-    border: solid 3px #41739D;
-  }
-  .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
-    max-width: 344px !important;
-    height: 50px;
-    left: 550px;
-    top: 1637px;
-    font-size: 23px;
-    color: black;
-    border: 5px solid #41739D;
-    box-sizing: border-box;
-    border-radius: 30px;
-  }
-  .daytrader-game-container .daytrader-submit-value .otree-btn-next {
-    font-size: 30px;
-    background: #41739D;
-    font-family: "Patrick Hand", sans-serif;
-    width: 344px;
-    height: 55px;
-    border: 5px solid #41739D;
-    box-sizing: border-box;
-    border-radius: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
   .daytrader-game-container .field-choice_of_number_of_shares {
     width: 40%;
   }
   .daytrader-game-container .reveal-face {
     width: 40px;
     height: 40px;
-  }
-  .daytrader-game-container .field-choice_of_trade {
-    margin: 0;
-    display: flex;
-    justify-content: center;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check {
-    display: flex;
-    flex-direction: row;
-    margin-right: 0;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check .form-check-label {
-    font-family: "Patrick Hand", sans-serif;
-    font-size: 24px;
-    text-transform: capitalize;
-    margin-left: 50px;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio] {
-    -webkit-appearance: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    outline: none;
-    border: 3px solid #41739D;
-    position: absolute;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
-    content: "";
-    display: block;
-    width: 60%;
-    height: 60%;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
-    background: #41739D;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
-    border-color: #41739D;
   }
   .daytrader-game-container .daytrader-admin-company-list {
     font-size: 22px;
@@ -2291,6 +2263,20 @@
     font-size: 20px;
   }
 
+  .otree-btn-next {
+    font-size: 30px;
+    background: #41739D;
+    font-family: "Patrick Hand", sans-serif;
+    width: 344px;
+    height: 55px;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
   .admin-table-data {
     display: flex;
     justify-content: center;
@@ -2343,6 +2329,9 @@
   * *  Choose.html * *
   ********************/
   div.game-container {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.5px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -2355,7 +2344,6 @@
   }
   div.game-container div.game-content {
     width: 100%;
-    background-color: orange;
   }
   div.game-container div.game-content div.game-timer {
     width: 100%;
@@ -2364,7 +2352,6 @@
     justify-content: center;
     text-align: center;
     font-size: 25px;
-    font-family: "Patrick Hand", cursive;
     z-index: 1;
   }
   div.game-container div.game-content div.game-timer div.game-timer-content {
@@ -2372,7 +2359,6 @@
     border: solid 6px #41739D;
     margin-top: -4%;
     background-color: white;
-    font-family: "Patrick Hand", cursive;
     font-weight: bold;
     letter-spacing: 1px;
     padding: 5px 5px 5px 5px;
@@ -2380,36 +2366,82 @@
   div.game-container div.header-block {
     display: flex;
     flex-direction: row;
+    justify-content: center;
     width: 100%;
     margin-top: 2%;
   }
   div.game-container div.header-block h2.company-title {
     font-family: "Noticia Text", serif;
-    font-weight: bold;
+    font-weight: bolder;
     letter-spacing: 2px;
-    font-size: 30px;
+    font-size: 35px;
     display: flex;
     flex-direction: column;
-    text-align: center;
+    text-align: left;
     text-transform: uppercase;
     color: #41739D;
-    width: 50%;
+    width: 65%;
     padding: 10px 0 10px 0;
-  }
-  div.game-container div.header-block div.table-description {
-    padding: 10px 0 10px 0;
-    width: 50%;
-    background-color: pink;
-    text-align: center;
+    margin-top: -4%;
   }
   div.game-container div.game-block {
     width: 100%;
     display: flex;
     flex-direction: row;
-    margin-top: 2%;
+  }
+  div.game-container div.game-block div.right-game-block {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  div.game-container div.game-block div.right-game-block table.company-table {
+    margin: 10px 0;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    width: 500px;
+    display: inline-table;
+    text-align: center;
+  }
+  div.game-container div.game-block div.right-game-block table.company-table td {
+    vertical-align: middle;
+  }
+  div.game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  div.game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  div.game-container div.game-block div.right-game-block table.company-table tr.table-corners th.table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 20px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  div.game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  div.game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data img.reveal-face {
+    width: 40px;
+    height: 40px;
+  }
+  div.game-container div.game-block div.right-game-block table.company-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
   }
   div.game-container div.game-block div.left-game-block {
-    background-color: blue;
     width: 50%;
   }
   div.game-container div.game-block div.left-game-block div.sack-button-container {
@@ -2440,9 +2472,68 @@
   div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons .company-face-in-sack:hover {
     cursor: pointer;
   }
-  div.game-container div.game-block div.right-game-block {
-    background-color: purple;
-    width: 50%;
+  div.game-container div.game-block div.left-game-block div.help-text {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 15px;
+  }
+  div.game-container div.game-block div.left-game-block div.table-description {
+    padding: 10px 0 10px 0;
+    text-align: center;
+  }
+  div.game-container div.game-block div.left-game-block div.game-text {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+  }
+  div.game-container div.game-block div.left-game-block div.game-choice {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+  }
+  div.game-container div.game-block div.left-game-block div.game-choice div.choice-fields {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value #myInput {
+    font-size: 22px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value .form-group {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value .form-control {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border: solid 3px #41739D;
+  }
+  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value #id_choice_of_number_of_shares {
+    max-width: 166px;
+    height: 40px;
+    left: 550px;
+    top: 1637px;
+    font-size: 20px;
+    color: black;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
   }
 }
 

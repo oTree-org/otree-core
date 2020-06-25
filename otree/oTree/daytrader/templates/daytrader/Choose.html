@@ -36,15 +36,16 @@
                 <h2 class="company-title">
                     {{ player.company_name }}
                 </h2>
-                <div class="table-description">
-                    <p>
-                        Du er trader nummer <b>{{ player.round_number }}</b> og du skal nu handle aktier i firmaet
-                        <br><b>'{{ player.company_name }}'</b>
-                    </p>
-                </div>
+
             </div>
             <div class="game-block">
                 <div class="left-game-block">
+                     <div class="table-description">
+                        <p>
+                            Du er trader nummer <b>{{ player.round_number }}</b> og du skal nu handle aktier i firmaet
+                            <b>'{{ player.company_name }}'</b>
+                        </p>
+                    </div>
                     <div class="sack-button-container">
                         <div class="sack-buttons">
                             <table>
@@ -76,15 +77,78 @@
                             </table>
                         </div>
                     </div>
-                </div>
+                    {% if subsession.round_number == 1 %}
+                    <div class="help-text">
+                         <p>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</p>
+                    </div>
+                    {% else %}
+                        <br>
+                    {% endif %}
+                    <div class="game-text">
+                        {% if subsession.round_number == 1 %}
+                        <p>Du skal handle aktier i 10 runde i 10 forskellige firmaer.</p>
+                        <p>Det er første runde, og du er den første trader i dag.</p>
+                        <p>Du skal handle aktier i firmaet <b>'{{ player.company_name }}'.</b></p>
+                        {% else %}
+                        {% endif %}
+
+                    </div>
+                    <div class="game-choice">
+                        <p>Du har <b>{{ player.wallet|c }}</b> og aktieprisen er lige nu <b>{{ player.price|c }}</b>.</p>
+                        <p><b><u>Hvad vil du gøre?</u></b></p>
+                        <p><b>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
+                        {% if subsession.round_number == 1 %}
+                        <p><b>Husk at gemme nogle penge til de næste runder.</b></p>
+                        {% else %}
+                        {% endif %}
+
+                        <div class="choice-container">
+                                 <div class="choice-fields">
+                                    {% formfield player.choice_of_trade label=None %}
+                                </div>
+                                <div class="submit-value">
+                                        <p>Hvor mange aktier?</p>
+
+                                        {% formfield player.choice_of_number_of_shares label=None %}
+                                        <small><b>Når tiden udløber vil værdien blive gemt.</b></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 <div class="right-game-block">
-                    <p>right</p>
+                    {% if subsession.round_number > 1 %}
+                    <table class="table company-table">
+                        <tr class="table-corners">
+                            <th class="table-header border-corner-left">Trader</th>
+                            <th class="table-header">Pris</th>
+                            <th class="table-header">Private info</th>
+                            <th class="table-header border-corner-right">Handel</th>
+                        </tr>
+                        {% for r, price, choice, deals, states in data %}
+                            <tr class="table-row">
+                                <td class="company-id table-data"> {{ r }}</td>
+                                <td class="table-data"> {{ price|c }}</td>
+                                <td class="table-data">
+                                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
+                                     class="reveal-face">
+                                </td>
+                                <td class="table-data">
+                                {% if choice == True %}
+                                    +
+                                {% else %}
+                                    {% if deals > 0 %}
+                                        -
+                                    {% endif %}
+                                {% endif %}
+                                {{ deals }} aktier.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    {% endif %}
                 </div>
             </div>
-
-
-
         </div>
     </div>
 
@@ -93,7 +157,6 @@
 {% endblock %}
 {% block scripts %}
        <script>
-
         let containers = document.getElementsByClassName("faceContainer");
         let drawn_face = {{ player.drawn_face|yesno:"true,false" }};
         let states = document.getElementsByClassName("state-container");
@@ -110,11 +173,20 @@
         let sackButtons = document.getElementsByClassName("sack-button");
 
         let radioButton = document.getElementsByClassName("form-check-input");
-        let inputContainer = document.querySelector(".daytrader-submit-value");
+        let inputContainer = document.querySelector(".submit-value");
 
+
+        // Show the InputField, focus the input and select the input
         for (let button = 0; button < radioButton.length; button++) {
-            radioButton[button].onclick = event => {
+            try {
+                radioButton[button].onclick = event => {
                 inputContainer.style.display = "block";
+                document.getElementById("myInput").focus();
+                document.getElementById("myInput").select();
+                }
+            }
+              catch(err) {
+                console.log("ERROR: Unable to focus")
             }
         }
 
