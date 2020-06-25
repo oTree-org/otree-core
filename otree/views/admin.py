@@ -1,11 +1,7 @@
 import json
 import os
 from collections import OrderedDict
-
-from django.conf.urls import url
-from django.views.generic import CreateView
 from django.views.generic.edit import FormMixin
-
 import otree
 import re
 import otree.bots.browser
@@ -17,8 +13,8 @@ import vanilla
 from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse
-from django.template.loader import select_template, render_to_string
-from django.http import JsonResponse, response, HttpResponseServerError
+from django.template.loader import select_template
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from otree import forms
 from otree.currency import RealWorldCurrency
@@ -30,13 +26,27 @@ from otree.common import (
 )
 from otree.forms import widgets
 from otree.models import Participant, Session
-from otree.models_concrete import BrowserBotsLauncherSessionCode, add_time_spent_waiting
+from otree.models_concrete import BrowserBotsLauncherSessionCode, add_time_spent_waiting, RoomsStorage
 from otree.session import SESSION_CONFIGS_DICT, create_session, SessionConfig
 from otree.views.abstract import AdminSessionPageMixin
 from django.db.models import Case, Value, When
-from django.contrib.auth.models import User
 from django.http import HttpResponse
-from xhtml2pdf import pisa
+
+
+class CreateRoomForm(forms.ModelForm):
+    name = forms.CharField(required=True, label="", error_messages={"unique": "Dette klassenavn findes allerede. Venligst benyt et andet."},
+                           widget=forms.TextInput(attrs={
+        'spellcheck': "false",
+        "class": "room_name_input",
+        'placeholder': "Navngiv dit klasserum"}),
+    )
+
+    class Meta:
+        model = RoomsStorage
+        fields = ["name"]
+
+    def __str__(self):
+        return self.name
 
 
 def pretty_name(name):
@@ -48,62 +58,16 @@ def pretty_name(name):
 
 class CreateSessionForm(forms.Form):
     session_configs = SESSION_CONFIGS_DICT.values()
-    session_config_choices = ([
-        ('bad_influence', 'bad_influence'),
-        ('daytrader', 'daytrader')
-    ])
-
-    session_config = forms.ChoiceField(choices=session_config_choices, required=True, initial="daytrader")
-
-    num_participants = forms.IntegerField(required=False,
-                                          widget=forms.NumberInput(attrs={'placeholder': 'Indtast antal spillere..'}))
-    is_mturk = forms.BooleanField(
-        widget=widgets.HiddenInput, initial=False, required=False
-    )
-    room_name = forms.CharField(
-        initial=None, widget=widgets.HiddenInput, required=False
-    )
-
-    def __init__(self, *args, is_mturk=False, room_name=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['room_name'].initial = room_name
-
-        if is_mturk:
-            self.fields['is_mturk'].initial = True
-            self.fields[
-                'num_participants'
-            ].label = "Number of MTurk workers (assignments)"
-            self.fields['num_participants'].help_text = (
-                'Since workers can return an assignment or drop out, '
-                'some "spare" participants will be created: '
-                f'the oTree session will have {settings.MTURK_NUM_PARTICIPANTS_MULTIPLE}'
-                '{} times more participant objects than the number you enter here.'
-            )
-        else:
-            self.fields['num_participants'].label = "Antal spillere"
-
-    def clean(self):
-        super().clean()
-        if self.errors:
-            return
-        session_config_name = self.cleaned_data['session_config']
-
-        config = SESSION_CONFIGS_DICT[session_config_name]
-        lcm = config.get_lcm()
-        num_participants = self.cleaned_data.get('num_participants')
-        if num_participants is None or num_participants % lcm:
-            raise forms.ValidationError('Please enter a valid number of participants.')
-
-
-"""
-class CreateSessionFormBadInfluence(forms.Form):
-    session_configs = SESSION_CONFIGS_DICT.values()
     session_config_choices = (
-        [('bad_influence', 'bad_influence')])
-    session_config = forms.ChoiceField(choices=session_config_choices, required=True)
+        # use '' instead of None. '' seems to immediately invalidate the choice,
+        # rather than None which seems to be coerced to 'None'.
+        [('', 'Vælg et spil')]
+        + [(s['name'], s['display_name']) for s in session_configs]
+    )
 
-    num_participants = forms.IntegerField(required=False,
-                                          widget=forms.NumberInput(attrs={'placeholder': 'Indtast antal spillere..'}))
+    session_config = forms.ChoiceField(choices=session_config_choices, required=True, label="Spil valg")
+
+    num_participants = forms.IntegerField(required=False)
     is_mturk = forms.BooleanField(
         widget=widgets.HiddenInput, initial=False, required=False
     )
@@ -138,62 +102,12 @@ class CreateSessionFormBadInfluence(forms.Form):
         lcm = config.get_lcm()
         num_participants = self.cleaned_data.get('num_participants')
         if num_participants is None or num_participants % lcm:
-            raise forms.ValidationError('Please enter a valid number of participants.')
+            raise forms.ValidationError('Venligst indtast en valid antal af spillere.')
 
 
-class CreateSessionFormDayTrader(forms.Form):
-    session_configs = SESSION_CONFIGS_DICT.values()
-    session_config_choices = (
-        [('daytrader', 'daytrader')])
-    session_config = forms.ChoiceField(choices=session_config_choices, required=True)
-
-    num_participants = forms.IntegerField(required=False,
-                                          widget=forms.NumberInput(attrs={'placeholder': 'Indtast antal spillere..'}))
-    is_mturk = forms.BooleanField(
-        widget=widgets.HiddenInput, initial=False, required=False
-    )
-    room_name = forms.CharField(
-        initial=None, widget=widgets.HiddenInput, required=False
-    )
-
-    def __init__(self, *args, is_mturk=False, room_name=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['room_name'].initial = room_name
-        if is_mturk:
-            self.fields['is_mturk'].initial = True
-            self.fields[
-                'num_participants'
-            ].label = "Number of MTurk workers (assignments)"
-            self.fields['num_participants'].help_text = (
-                'Since workers can return an assignment or drop out, '
-                'some "spare" participants will be created: '
-                f'the oTree session will have {settings.MTURK_NUM_PARTICIPANTS_MULTIPLE}'
-                '{} times more participant objects than the number you enter here.'
-            )
-        else:
-            self.fields['num_participants'].label = "Antal spillere"
-
-    def clean(self):
-        super().clean()
-        if self.errors:
-            return
-        session_config_name = self.cleaned_data['session_config']
-
-        config = SESSION_CONFIGS_DICT[session_config_name]
-        lcm = config.get_lcm()
-        num_participants = self.cleaned_data.get('num_participants')
-        if num_participants is None or num_participants % lcm:
-            raise forms.ValidationError('Please enter a valid number of participants.')
-
-
-
-
-"""
-
-
-class CreateSession(CreateView):
+class CreateSession(vanilla.TemplateView):
     template_name = 'otree/admin/CreateSession.html'
-    url_pattern = r"^opret_spil/$"
+    url_pattern = r"^create_session/$"
 
     def get_context_data(self, **kwargs):
         x = super().get_context_data(
@@ -280,11 +194,10 @@ def link_callback(uri, self):
 
 
 class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
-
     def vars_for_template(self):
         session = self.session
-        users = User.objects.filter(last_name=self.session.code)
         room = session.get_room()
+
         context = dict(use_browser_bots=session.use_browser_bots)
 
         session_start_urls = [
@@ -299,8 +212,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 session_start_urls=session_start_urls,
                 room=room,
                 collapse_links=True,
-                users=users,
-
             )
         else:
             anonymous_url = self.request.build_absolute_uri(
@@ -312,9 +223,6 @@ class SessionStartLinks(AdminSessionPageMixin, vanilla.TemplateView):
                 anonymous_url=anonymous_url,
                 num_participants=len(session_start_urls),
                 splitscreen_mode_on=len(session_start_urls) <= 3,
-                users=users,
-
-
             )
 
         return context
@@ -485,7 +393,6 @@ class SessionData(AdminSessionPageMixin, vanilla.TemplateView):
 
 class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
     def vars_for_template(self):
-
         field_names = otree.export.get_field_names_for_live_update(Participant)
         display_names = {
             '_id_in_session': 'Spiller ID',
@@ -524,10 +431,23 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
 
         page_url_active = {"next_page": "active"}
 
+        session = self.session
+        room = session.get_room()
+
+        session_start_urls = [
+            self.request.build_absolute_uri(participant._start_url())
+            for participant in session.get_participants()
+        ]
+
+        app = dict(SessionConfig(self.session.config))
+
         return dict(
             column_names=column_names,
             advance_users_button_text=advance_users_button_text,
             page_url_active=page_url_active,
+            room_wide_url=room.get_room_wide_url(self.request),
+            num_participants=len(session_start_urls),
+            game_name=app
         )
 
     def get(self, request, *args, **kwargs):
@@ -830,4 +750,98 @@ else:
         user = User.objects.create_user(username='Spiller' + str(session.id) + '_' + str(count),
                                         password="123456", first_name=participant_url, last_name=session.code)
         user.save()
+"""
+"""
+class CreateSessionFormBadInfluence(forms.Form):
+    session_configs = SESSION_CONFIGS_DICT.values()
+    session_config_choices = (
+        [('bad_influence', 'bad_influence')])
+    session_config = forms.ChoiceField(choices=session_config_choices, required=True)
+
+    num_participants = forms.IntegerField(required=False,
+                                          widget=forms.NumberInput(attrs={'placeholder': 'Indtast antal spillere..'}))
+    is_mturk = forms.BooleanField(
+        widget=widgets.HiddenInput, initial=False, required=False
+    )
+    room_name = forms.CharField(
+        initial=None, widget=widgets.HiddenInput, required=False
+    )
+
+    def __init__(self, *args, is_mturk=False, room_name=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['room_name'].initial = room_name
+        if is_mturk:
+            self.fields['is_mturk'].initial = True
+            self.fields[
+                'num_participants'
+            ].label = "Number of MTurk workers (assignments)"
+            self.fields['num_participants'].help_text = (
+                'Since workers can return an assignment or drop out, '
+                'some "spare" participants will be created: '
+                f'the oTree session will have {settings.MTURK_NUM_PARTICIPANTS_MULTIPLE}'
+                '{} times more participant objects than the number you enter here.'
+            )
+        else:
+            self.fields['num_participants'].label = "Antal spillere"
+
+    def clean(self):
+        super().clean()
+        if self.errors:
+            return
+        session_config_name = self.cleaned_data['session_config']
+
+        config = SESSION_CONFIGS_DICT[session_config_name]
+        lcm = config.get_lcm()
+        num_participants = self.cleaned_data.get('num_participants')
+        if num_participants is None or num_participants % lcm:
+            raise forms.ValidationError('Please enter a valid number of participants.')
+
+
+class CreateSessionFormDayTrader(forms.Form):
+    session_configs = SESSION_CONFIGS_DICT.values()
+    session_config_choices = (
+        [('daytrader', 'daytrader')])
+    session_config = forms.ChoiceField(choices=session_config_choices, required=True)
+
+    num_participants = forms.IntegerField(required=False,
+                                          widget=forms.NumberInput(attrs={'placeholder': 'Indtast antal spillere..'}))
+    is_mturk = forms.BooleanField(
+        widget=widgets.HiddenInput, initial=False, required=False
+    )
+    room_name = forms.CharField(
+        initial=None, widget=widgets.HiddenInput, required=False
+    )
+
+    def __init__(self, *args, is_mturk=False, room_name=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['room_name'].initial = room_name
+        if is_mturk:
+            self.fields['is_mturk'].initial = True
+            self.fields[
+                'num_participants'
+            ].label = "Number of MTurk workers (assignments)"
+            self.fields['num_participants'].help_text = (
+                'Since workers can return an assignment or drop out, '
+                'some "spare" participants will be created: '
+                f'the oTree session will have {settings.MTURK_NUM_PARTICIPANTS_MULTIPLE}'
+                '{} times more participant objects than the number you enter here.'
+            )
+        else:
+            self.fields['num_participants'].label = "Antal spillere"
+
+    def clean(self):
+        super().clean()
+        if self.errors:
+            return
+        session_config_name = self.cleaned_data['session_config']
+
+        config = SESSION_CONFIGS_DICT[session_config_name]
+        lcm = config.get_lcm()
+        num_participants = self.cleaned_data.get('num_participants')
+        if num_participants is None or num_participants % lcm:
+            raise forms.ValidationError('Please enter a valid number of participants.')
+
+
+
+
 """

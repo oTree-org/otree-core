@@ -245,9 +245,15 @@
 
     // Container til input af antal aktier og næste knap
     .daytrader-submit-value {
-      display: none;
-      flex-direction: column;
-      justify-content: center;
+
+      #myInput {
+        font-size: 24px;
+      }
+
+     .form-control {
+        width: 70%;
+        border: solid 3px $ku-dark-blue;
+      }
 
       #id_choice_of_number_of_shares {
         max-width: 344px !important;
@@ -845,5 +851,78 @@
       text-align: center;
     }
   }
+
+  /*******************
+  * *  Choose.html * *
+  ********************/
+
+   div.game-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-top: 2%;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+      border-radius: 10px;
+      width: 100%;
+      background-color: white;
+      padding: 20px;
+
+      div.game-content {
+        width: 100%;
+        background-color: orange;
+
+        div.game-timer {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            text-align: center;
+            font-size: 25px;
+            font-family: "Patrick Hand", cursive;
+            z-index: 1;
+
+            div.game-timer-content {
+              width: 20%;
+              border: solid 6px $ku-dark-blue;
+              margin-top: -4%;
+              background-color: white;
+              font-family: "Patrick Hand", cursive;
+              font-weight: bold;
+              letter-spacing: 1px;
+              padding: 5px 5px 5px 5px;
+            }
+          }
+         }
+
+        div.header-block {
+          display: flex;
+          flex-direction: row;
+          width: 100%;
+          margin-top: 2%;
+
+          h2.company-title {
+            font-family: 'Noticia Text', serif;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-size: 30px;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            text-transform: uppercase;
+            color: $ku-dark-blue;
+            width: 50%;
+            padding: 10px 0 10px 0;
+            font-weight: bold;
+          }
+
+          div.table-description {
+            padding: 10px 0 10px 0;
+            width: 50%;
+            background-color: pink;
+            text-align: center;
+          }
+        }
+      }
+
 }
 

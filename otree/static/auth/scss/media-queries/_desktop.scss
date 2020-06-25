@@ -1,0 +1,33 @@
+@media (min-width: 1024px) {
+  /***************************
+         LOGIN TEMPLATE
+  *****************************/
+  div.login-container {
+    .game-login {
+      width: 580px;
+      padding: 5%
+    }
+  }
+
+  /***************************
+     RESET PASSWORD TEMPLATE
+*****************************/
+
+  div.reset-password-container {
+    div.reset-password-form-container {
+      width: 580px;
+      div.content-container {
+        label {
+          font-size: 20px;
+        }
+
+        #btn-password-reset {
+          &:hover {
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
+
+}

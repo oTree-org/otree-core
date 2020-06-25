@@ -118,3 +118,4 @@ class BaseGroup(models.Model):
         ensure_field(cls, 'subsession', subsession_field)
 
         add_field_tracker(cls)
+

@@ -1,0 +1,79 @@
+{% extends "otree/BaseAdmin.html" %}
+{% load i18n otree otree_internal %}
+{% block title %}{% trans 'Log in' %}{% endblock %}
+
+{% block content %}
+    <style>
+        body {
+            background: #901a1e;
+        }
+    </style>
+    <div class="login-container">
+        <div class="game-login">
+            <h3 class="login-title">Log Ind</h3>
+            {% if form.errors and not form.non_field_errors %}
+
+                <p class="errornote">
+                    Please correct the error(s).
+                </p>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                    <p class="text-danger">
+                        {{ error }}
+                    </p>
+                {% endfor %}
+            {% endif %}
+
+            {% if form.errors %}
+                <p class="text-danger">
+                    If you already set a password but want to change it,
+                    first you may need to reset the database.
+                </p>
+            {% endif %}
+            <div id="content-main">
+                <form action="" method="post"
+                      id="login-form">{% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-label">
+                            <i class="fas fa-envelope"></i>
+                            <label for="id_username" class="col-form-label">Email:</label>
+                        </div>
+                        <div class="controls field-username form-input">
+                            <input id="id_username" type="email" class="form-control" name="username" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-label">
+                            <i class="fas fa-key"></i>
+                            <label for="id_password" class="col-form-label">Kodeord:</label>
+                        </div>
+                        <div class="controls field-password form-input">
+                            <input id="id_password" type="password" class="form-control" name="password" required>
+                            <input type="hidden" name="next" value="{{ next }}"/>
+
+                        </div>
+                    </div>
+
+                    {% url 'admin_password_reset' as password_reset_url %}
+                    {% if password_reset_url %}
+                        <div class="password-reset-link">
+                            <a href="{{ password_reset_url }}">{% trans 'Forgotten your password or username?' %}</a>
+                        </div>
+                    {% endif %}
+                    <div class="submit-row">
+                        <button type="submit" id="btn-login">{% trans 'Log in' %}</button>
+                    </div>
+                </form>
+                <div class="link-container">
+                    <a class="link" href="{% url 'reset_password' %}">*Glemt kodeord?</a>
+                </div>
+
+                <script type="text/javascript">
+                    document.getElementById('id_username').focus()
+                </script>
+            </div>
+        </div>
+    </div>
+{% endblock %}

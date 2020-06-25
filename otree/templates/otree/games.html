@@ -3,30 +3,71 @@
 
 {% block styles %}
     <style>
+    @media (min-width: 0px) {
         body {
-            background-image: url("../../static/main_platform/otree/media/frontpage-background.jpg");
+            background-color: #901A1E;
             background-repeat: no-repeat;
             background-size: 100%, 100%;
             display: flex;
             justify-content: center;
             align-items: center;
         }
+    }
+
+   @media (min-width: 375px) {
+         body {
+            background-color: #901A1E;
+            background-repeat: no-repeat;
+            background-size: 100%, 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+     @media (min-width: 768px) {
+         body {
+            background-image: url("/static/main_platform/otree/media/ku-bgku-bg.svg");
+            background-color: transparent;
+            background-repeat: no-repeat;
+            background-size: 100%, 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    @media (min-width: 1025px) {
+         body {
+            background-image: url("/static/main_platform/otree/media/ku-bgku-bg.svg");
+            background-color: transparent;
+            background-repeat: no-repeat;
+            background-size: 100%, 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
     </style>
 {% endblock %}
 
 {% block content %}
-<div class="title-container">
-    <h1 class="games-title">Multiplayer Dude</h1>
-</div>
 
 
-<div class="align-games">
-    <div class="card">
-      <header class="card-header">Bad Influence</header>
-        <div class="card-body">
-            <div class="body-row">
-                <img src="/static/main_platform/otree/media/bad-influence-network.gif" alt="venne-netværk" class="network-img">
-                <span><b>Bad Influence</b> er et multiplayer afstemningsspil for hele klassen. Spillerne stemmer om ti forskellige spørgsmål og dilemmaer, og skal forsøge at få andre til at vælge det de selv foretrækker.
+    {% if user.is_authenticated and user.is_active or user.is_staff or user.is_superuser %}
+        <div class="games-container">
+            <div class="title-container">
+                <h1 class="games-title">Multiplayer Dude</h1>
+            </div>
+            <div class="align-games">
+                <div class="card">
+                    <header class="card-header">Bad Influence</header>
+                    <div class="card-body">
+                        <div class="body-row">
+                            <img src="/static/main_platform/otree/media/bad-influence-network.gif" alt="venne-netværk"
+                                 class="network-img">
+                            <span><b>Bad Influence</b> er et multiplayer afstemningsspil for hele klassen. Spillerne stemmer om ti forskellige spørgsmål og dilemmaer, og skal forsøge at få andre til at vælge det de selv foretrækker.
                     <br>
                     <br>
                <b>Temaer:</b>
@@ -37,31 +78,33 @@
                     <i>Flertalsillusioner</i>,
                     <i>Sociale netværk</i>.
                 </span>
-            </div>
-        </div>
-        <div class="card-footer">
-        <div class="footer-row">
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="footer-row">
                 <span class="game-info">
                 <p>*Spillets varighed: 10-12min</p>
                 <p>*Debrief: 10-25min</p>
                 <p>*15-50 spillere</p>
             </span>
-            <form action="{% url 'CreateSessionBadInfluence' %}">
-                <button class="btn btn-primary" >
-                Opret spil
-                </button>
-            </form>
-        </div>
-    </div>
-</div>
+                            <form action="{% url 'create_room' %}">
+                                <button class="btn btn-primary">
+                                    Opret klasserum
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
 
 
-    <div class="card">
-      <header class="card-header">Daytrader</header>
-        <div class="card-body">
-            <div class="body-row">
-                <img src="/static/main_platform/otree/media/sack-images/sack-questionmark.svg" alt="firma-ansigter" class="sack-img">
-                <span><b>Daytrader</b> er et spil om hvordan bobler kan opstå i finansverdenen. Spillerne er <b><i>’daytraders’</i></b> på en fiktiv børs, og handler
+                <div class="card">
+                    <header class="card-header">Daytrader</header>
+                    <div class="card-body">
+                        <div class="body-row">
+                            <img src="/static/main_platform/otree/media/sack-images/sack-questionmark.svg"
+                                 alt="firma-ansigter" class="sack-img">
+                            <span><b>Daytrader</b> er et spil om hvordan bobler kan opstå i finansverdenen. Spillerne er
+                                <b><i>’daytraders’</i></b> på en fiktiv børs, og handler
                     med aktier i en række fiktive firmaer, samtidig med at de får indblik i firmaernes virkelig tilstand.
                     <br>
                     <br>
@@ -79,27 +122,118 @@
                     <i>Bobler</i>.
 
                 </span>
-            </div>
-        </div>
-        <div class="card-footer">
-        <div class="footer-row">
+
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="footer-row">
                 <span class="game-info">
                 <p>*Spillets varighed: 10-15min</p>
                 <p>*Debrief: 10-15min</p>
                 <p>*10-50 spillere</p>
             </span>
-            <form action="{% url 'CreateSessionDayTrader' %}">
-                <button class="btn btn-primary" >
-                Opret spil
+                            <form action="{% url 'create_room' %}">
+                                <button class="btn btn-primary">
+                                    Opret klasserum
+                                </button>
+                            </form>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <div class="title-container">
+            <h1 class="games-title">Multiplayer Dude</h1>
+
+                 <p>Velkommen til spilsektionen for digitaluddannelse.org</p>
+
+
+            <p>På denne platform kan du oprette klasserumsspil og bruge dem i din undervisning.</p>
+            <p>Til hvert spil følger en vejledningsvideo, en debrief-video, og en afsluttende spil-rapport.</p>
+            <p>Tryk først på “opret bruger” og når du har logget ind, kan du vælge et af spillene.</p>
+            <form action="{% url 'register' %}">
+                <button class="btn btn-primary">
+                        Opret bruger
                 </button>
             </form>
-
         </div>
-    </div>
-</div>
-</div>
 
 
 
-{% include "otree/includes/messages.html" %}
+        <div class="align-games">
+            <div class="card">
+                <header class="card-header">Bad Influence</header>
+                <div class="card-body">
+                    <div class="body-row">
+                        <img src="/static/main_platform/otree/media/bad-influence-network.gif" alt="venne-netværk"
+                             class="network-img">
+                        <span><b>Bad Influence</b> er et multiplayer afstemningsspil for hele klassen. Spillerne stemmer om ti forskellige spørgsmål og dilemmaer, og skal forsøge at få andre til at vælge det de selv foretrækker.
+                    <br>
+                    <br>
+               <b>Temaer:</b>
+                    <br>
+                    <i>Sociale normer</i>,
+                    <i>Venskabsparadokset</i>,
+                    <i>Influencer-kultur</i>,
+                    <i>Flertalsillusioner</i>,
+                    <i>Sociale netværk</i>.
+                </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="footer-row">
+                <span class="game-info">
+                <p>*Spillets varighed: 10-12min</p>
+                <p>*Debrief: 10-25min</p>
+                <p>*15-50 spillere</p>
+            </span>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <header class="card-header">Daytrader</header>
+                <div class="card-body">
+                    <div class="body-row">
+                        <img src="/static/main_platform/otree/media/sack-images/sack-questionmark.svg"
+                             alt="firma-ansigter" class="sack-img">
+                        <span><b>Daytrader</b> er et spil om hvordan bobler kan opstå i finansverdenen. Spillerne er <b><i>’daytraders’</i></b> på en fiktiv børs, og handler
+                    med aktier i en række fiktive firmaer, samtidig med at de får indblik i firmaernes virkelig tilstand.
+                    <br>
+                    <br>
+                    <i>Spørgsmålet er dog:</i>
+                    <br>
+                    Vil spillerne lytte til deres private information, eller vil de hellere gøre hvad de andre daytradere gør?
+                    <br>
+                    <br>
+                     <b>Temaer:</b>
+                    <br>
+                    <i>Informationskaskader</i>,
+                    <i>Ekkokamre</i>,
+                    <i>Børshandel</i>,
+                    <i>Lemminge-effekter</i>,
+                    <i>Bobler</i>.
+
+                </span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="footer-row">
+                <span class="game-info">
+                <p>*Spillets varighed: 10-15min</p>
+                <p>*Debrief: 10-15min</p>
+                <p>*10-50 spillere</p>
+            </span>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% include "otree/includes/messages.html" %}
 {% endblock %}

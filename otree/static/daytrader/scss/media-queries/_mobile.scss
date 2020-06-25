@@ -152,9 +152,10 @@
 
     // Container til input af antal aktier og næste knap
     .daytrader-submit-value {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+
+      #myInput {
+        font-size: 20px;
+      }
 
       #id_choice_of_number_of_shares {
         max-width: 244px;
@@ -185,7 +186,7 @@
       justify-content: center;
 
       .daytrader-next-btn {
-        font-size: 22px;
+        font-size: 19px;
         background: $ku-dark-blue;
         font-family: "Patrick Hand", sans-serif;
         width: 244px;

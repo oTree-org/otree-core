@@ -1,0 +1,34 @@
+{% extends "otree/BaseAdmin.html" %}
+{% load otree static %}
+
+{% block styles %}
+    <style>
+        body {
+            background-color: #901A1E;
+
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <div class="delete-room-container container">
+        <div class="content-container">
+            <form action='.' method='POST' class="delete_room">{% csrf_token %}
+                <h4 class="delete-title">Vil du slette det følgende klasserum? </h4>
+                <hr>
+                <h5 class="room-title"><strong>Klasserum: </strong>{{ object }}</h5>
+                <div class="button-container">
+                    <button type="submit" value="Ja" class="btn btn-primary room-delete">
+                        <i class="fas fa-check fa-2x"></i>
+                    </button>
+                    <a class="btn btn-danger delete-cancel" href="{% url 'Rooms' %}">
+                        <i class="fas fa-times fa-2x"></i>
+                    </a>
+                </div>
+
+
+            </form>
+        </div>
+    </div>
+{% endblock %}

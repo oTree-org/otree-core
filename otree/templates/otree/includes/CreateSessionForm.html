@@ -1,57 +1,40 @@
 {% load otree static %}
-{% load i18n %}
 
-<!-- Game/session view as active or admin with settings/config-->
-{% if user.is_authenticated and user.is_staff or user.is_superuser %}
-<form id="form">
+<form id="form" >
   {% csrf_token %}
-  <h1>Create Session / Opret Spil</h1>
 
-  <p>Vælg spil og antal spillere, derefter tryk <b>"Opret nyt spil"</b></p>
+    <div>
+          {% formfield form.session_config %}
+    </div>
 
-  <!-- Default is bad_influence atm. -->
-  <div>{% formfield form.session_config %}</div>
 
   <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
-    <label class="col-form-label" for="num_participants" >
+
+    <label class="col-form-label" for="id_num_participants">
       {{ form.num_participants.label }}
     </label>
-    <div class=" controls field-num_participants">
-      <div style="flex-direction: row" class="row">
-      {{ form.num_participants }}
 
-      <div>
-        <input class="btn btn-primary"
-               value='Opret nyt spil'
-               id="btn-create-session"
-               type="submit">
-      </div>
-      </div>
-<!-- Error handling for the form -->
+    <div class="controls field-num_participants">
+      {{ form.num_participants }}
       {% if form.num_participants.errors %}
-      {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
+        {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
       {% endif %}
-      {% for config in configs %}
-      <div id="lcm-{{ config.name }}" class="lcm"
-           style="display:none">
-        <p>Must be a multiple of {{ config.get_lcm }}</p></div>
-      {% endfor %}
-      <p class="help-block">{{ form.num_participants.help_text }}</p>
+
     </div>
   </div>
 
+  {{ form.is_mturk }}
+  {{ form.room_name }}
+
+  <div>
+      <button id="btn-create-session" class="btn btn-primary" type="submit">
+            Opret nyt spil
+      </button>
+
+  </div>
+  <br>
+<!-- Removed a big chunk of configs that was here, we might need to use some of it for error handling, see orig. code -->
 </form>
-
-<!-- Game/session creation without login -->
-{% else %}
-
-
-{% endif %}
-
-{% comment %}
-
-
-{% endcomment %}
 
 <script>
 
@@ -79,8 +62,7 @@
 
         let $createSessionError = $("#create-session-error");
         let $createSessionWait = $("#create-session-wait");
-        //let socket = makeReconnectingWebSocket("/create_session/");
-        let socket = makeReconnectingWebSocket("/opret_spil/");
+        let socket = makeReconnectingWebSocket("/create_session/");
         let $btnCreateSession = $('#btn-create-session');
         $btnCreateSession.click(function (e) {
             $btnCreateSession.prop('disabled', true);

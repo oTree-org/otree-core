@@ -1,8 +1,13 @@
 from django.conf.urls.static import static
+from django.contrib.auth.views import LogoutView, LoginView
 from django.http import HttpResponseRedirect
 # from django.http.response import HttpResponseRedirect
+from django.urls import path
+from django.views.generic.edit import FormMixin
+
+
 from otree.extensions import get_extensions_modules, get_extensions_data_export_views
-from otree import common
+from otree import common, views
 
 import inspect
 import vanilla
@@ -15,6 +20,8 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib import admin
 from django.conf.urls.static import static
+
+from otree.views.room import CreateRoom, DeleteRoom, UpdateRoom
 
 ALWAYS_UNRESTRICTED = {
     'AssignVisitorToRoom',
@@ -91,7 +98,7 @@ def url_patterns_from_builtin_module(module_name: str):
             # staff_member_required decorator
             # but then .test_auth_level fails on client.get():
             # NoReverseMatch: 'admin' is not a registered namespace
-           #
+        #
 
         url_pattern = ViewCls.url_pattern
         if callable(url_pattern):
@@ -125,34 +132,23 @@ def extensions_export_urlpatterns():
     return view_urls
 
 
-import django.contrib.auth.views as auth_views
-
-
-class LoginView(auth_views.LoginView):
-    template_name = 'otree/login.html'
-
-
-class LogoutView(auth_views.LogoutView):
-    next_page = 'games'
-
-
-class HomeView(vanilla.TemplateView):
-    template_name = 'otree/home.html'
-
-
 class GamesView(vanilla.TemplateView):
     template_name = 'otree/games.html'
 
 
 def get_urlpatterns():
     urlpatterns = [
-                      urls.url(r'^$', RedirectView.as_view(url='spil/', permanent=True)),
-                      urls.url(r'^spil/', GamesView.as_view(), name='games'),
-                      urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
-                      urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
-                      urls.url(r'^home/$', HomeView.as_view(), name='home'),
-                      urls.url(r'^admin/', admin.site.urls),
-                  ]
+            urls.url(r'^admin/', admin.site.urls),
+            urls.url(r'^accounts/', urls.include('otree.accounts.urls')),
+            urls.url(r'^$', RedirectView.as_view(url='spil/', permanent=True)),
+            urls.url(r'^spil/', GamesView.as_view(), name='games'),
+            urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
+            urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
+            urls.url(r'^delete/(?P<pk>\d+)/$', DeleteRoom.as_view(), name="delete_view_with_pk"),
+            urls.url(r'^edit/(?P<pk>\d+)/$', UpdateRoom.as_view(), name="update_view_with_pk"),
+            path('create_room/', CreateRoom.as_view(), name='create_room'),
+
+    ]
 
     urlpatterns += staticfiles_urlpatterns()
 

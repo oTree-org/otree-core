@@ -28,7 +28,7 @@ from otree.models_concrete import (
     WaitPagePassage,
 )
 from otree.models_concrete import ParticipantRoomVisit, BrowserBotsLauncherSessionCode
-from otree.room import ROOM_DICT
+from otree.room import get_room_dict
 from otree.session import SESSION_CONFIGS_DICT
 from otree.views.admin import CreateSessionForm
 
@@ -307,7 +307,7 @@ class BaseCreateSession(_OTreeAsyncJsonWebsocketConsumer):
             raise
 
         session_home_view = (
-            'MTurkCreateHIT' if session.is_mturk() else 'SessionStartLinks'
+            'MTurkCreateHIT' if session.is_mturk() else 'SessionMonitor'
         )
 
         await self.send_response_to_browser(
@@ -326,7 +326,7 @@ class CreateDemoSession(BaseCreateSession):
         session_config_name = form_data['session_config']
         config = SESSION_CONFIGS_DICT.get(session_config_name)
         if not config:
-            msg = f'Session config "{session_config_name}" does not exist.'
+            msg = f'Spil type "{session_config_name}" eksiterer ikke.'
             await self.send_json({'validation_errors': msg})
             return
 
@@ -453,8 +453,7 @@ class RoomAdmin(_OTreeAsyncJsonWebsocketConsumer):
         )
 
     async def post_connect(self, room):
-        room_object = ROOM_DICT[room]
-
+        room_object = get_room_dict()[room]
         now = time.time()
         stale_threshold = now - 15
         present_list = await database_sync_to_async(self.get_list)(
@@ -496,8 +495,8 @@ class RoomParticipant(_OTreeAsyncJsonWebsocketConsumer):
         ParticipantRoomVisit.objects.create(**kwargs)
 
     async def post_connect(self, room_name, participant_label, tab_unique_id):
-        if room_name in ROOM_DICT:
-            room = ROOM_DICT[room_name]
+        if room_name in get_room_dict():
+            room = get_room_dict()[room_name]
         else:
             # doesn't get shown because not yet localized
             await self.send_json({'error': 'Invalid room name "{}".'.format(room_name)})
@@ -535,8 +534,8 @@ class RoomParticipant(_OTreeAsyncJsonWebsocketConsumer):
 
     async def pre_disconnect(self, room_name, participant_label, tab_unique_id):
 
-        if room_name in ROOM_DICT:
-            room = ROOM_DICT[room_name]
+        if room_name in get_room_dict():
+            room = get_room_dict()[room_name]
         else:
             # doesn't get shown because not yet localized
             await self.send_json({'error': 'Invalid room name "{}".'.format(room_name)})

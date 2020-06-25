@@ -327,8 +327,6 @@
         font-family: "Patrick Hand", sans-serif;
         border-top: none !important;
         text-align: center;
-
-
       }
 
       .daytrader-table-row {
@@ -359,12 +357,22 @@
       justify-content: center;
 
       .form-group {
-        justify-content: center;
         display: flex;
+        justify-content: center;
       }
 
-      .controls {
+      #myInput {
+        font-size: 18px;
+        display: flex;
+        justify-content: center;
+        text-align: center;
+      }
 
+     .form-control {
+        display: flex;
+        justify-content: center;
+        width: 90%;
+        border: solid 3px $ku-dark-blue;
       }
 
       #id_choice_of_number_of_shares {

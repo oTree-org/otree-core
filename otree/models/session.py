@@ -1,11 +1,9 @@
 import logging
 import time
-from django.contrib.auth.models import User
 from django.template import TemplateDoesNotExist
 from django.template.loader import select_template
 import otree.common
 import otree.constants
-from otree.oTree import settings
 from otree.channels.utils import auto_advance_group
 from otree.common import (
     random_chars_8,
@@ -15,7 +13,7 @@ from otree.common import (
     FieldTrackerWithVarsSupport,
 )
 from otree.db import models
-from otree.models_concrete import RoomToSession
+from otree.models_concrete import RoomToSession, User
 
 
 
@@ -245,11 +243,11 @@ class Session(models.Model):
             )
 
     def get_room(self):
-        from otree.room import ROOM_DICT
+        from otree.room import get_room_dict
 
         try:
             room_name = RoomToSession.objects.get(session=self).room_name
-            return ROOM_DICT[room_name]
+            return get_room_dict()[room_name]
         except RoomToSession.DoesNotExist:
             return None
 

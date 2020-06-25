@@ -1,0 +1,558 @@
+@media (min-width: 1024px) {
+  /***************************
+         LOGIN TEMPLATE
+  *****************************/
+  div.login-container .game-login {
+    width: 580px;
+    padding: 5%;
+  }
+
+  /***************************
+       RESET PASSWORD TEMPLATE
+  *****************************/
+  div.reset-password-container div.reset-password-form-container {
+    width: 580px;
+  }
+  div.reset-password-container div.reset-password-form-container div.content-container label {
+    font-size: 20px;
+  }
+  div.reset-password-container div.reset-password-form-container div.content-container #btn-password-reset:hover {
+    cursor: pointer;
+  }
+}
+@media (min-width: 768px) {
+  /***************************
+       LOGIN TEMPLATE
+  *****************************/
+  div.login-container div.game-login {
+    width: 580px;
+  }
+  div.login-container div.game-login .login-title {
+    font-size: 32px;
+  }
+  div.login-container div.game-login form input {
+    height: 40px;
+  }
+  div.login-container div.game-login form #btn-login {
+    height: 40px;
+    font-size: 20px;
+  }
+
+  /***************************
+     RESET PASSWORD TEMPLATE
+  *****************************/
+  div.reset-password-container div.reset-password-form-container {
+    width: 580px;
+  }
+  div.reset-password-container div.reset-password-form-container div.content-container h4.reset-password-title {
+    font-size: 32px;
+  }
+  div.reset-password-container div.reset-password-form-container div.content-container p.reset-password-desc {
+    font-size: 16px;
+  }
+  div.reset-password-container div.reset-password-form-container div.content-container form input {
+    height: 40px;
+  }
+  div.reset-password-container div.reset-password-form-container div.content-container form #btn-password-reset {
+    height: 40px;
+    font-size: 20px;
+  }
+
+  /***************************
+     RESET PASSWORD DONE TEMPLATE
+  *****************************/
+  .reset-password-done-container div.content-container {
+    width: 580px;
+  }
+  .reset-password-done-container div.content-container h4.reset-password-done-title {
+    font-size: 32px;
+  }
+  .reset-password-done-container div.content-container p.reset-password-done-desc {
+    font-size: 16px;
+  }
+
+  /***************************
+     RESET PASSWORD CONFIRM TEMPLATE
+  *****************************/
+  div.reset-password-confirm-container div.reset-password-confirm-form-container {
+    width: 580px;
+  }
+  div.reset-password-confirm-container div.reset-password-confirm-form-container .content-container h4.reset-password-confirm-title {
+    font-size: 32px;
+  }
+  div.reset-password-confirm-container div.reset-password-confirm-form-container .content-container form #btn-password-reset-confirm {
+    height: 40px;
+    font-size: 20px;
+  }
+
+  /***************************
+      REGISTER TEMPLATE
+  *****************************/
+  div.register-container div.register-form-container {
+    width: 580px;
+    padding: 5%;
+  }
+  div.register-container div.register-form-container div.content-container h4.register-title {
+    font-size: 32px;
+  }
+  div.register-container div.register-form-container div.content-container form #btn-register {
+    height: 40px;
+    font-size: 20px;
+  }
+
+  /***************************
+      CHANGE PASSWORD TEMPLATE
+  *****************************/
+  div.change-password-container div.change-password-form-container {
+    width: 580px;
+    padding: 5%;
+  }
+  div.change-password-container div.change-password-form-container div.content-container h4.change-password-title {
+    font-size: 32px;
+  }
+  div.change-password-container div.change-password-form-container div.content-container form button#btn-change-password {
+    height: 40px;
+  }
+}
+@media (min-width: 375px) {
+  /***************************
+       LOGIN TEMPLATE
+  *****************************/
+  div.login-container .game-login {
+    width: 90%;
+  }
+  div.login-container .game-login form .form-row {
+    margin-bottom: 5%;
+  }
+  div.login-container .game-login .link-container .link {
+    font-size: 16px;
+  }
+
+  /***************************
+       RESET PASSWORD TEMPLATE
+  *****************************/
+  div.reset-password-container .reset-password-form-container {
+    width: 90%;
+  }
+  div.reset-password-container .reset-password-form-container div.content-container {
+    width: 275px;
+  }
+  div.reset-password-container .reset-password-form-container div.content-container .reset-password-title {
+    font-size: 22px;
+  }
+  div.reset-password-container .reset-password-form-container div.content-container .reset-password-desc {
+    font-size: 13px;
+  }
+  div.reset-password-container .reset-password-form-container div.content-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 275px;
+  }
+  div.reset-password-container .reset-password-form-container div.content-container form .form-row label {
+    padding-left: 5px;
+  }
+  div.reset-password-container .reset-password-form-container div.content-container form .form-row input {
+    width: 275px;
+    max-width: 275px;
+  }
+  div.reset-password-container .reset-password-form-container div.content-container form #btn-password-reset {
+    width: 275px;
+    max-width: 275px;
+  }
+
+  /***************************
+     RESET PASSWORD DONE TEMPLATE
+  *****************************/
+  .reset-password-done-container .content-container h4.reset-password-done-title {
+    font-size: 26px;
+  }
+  .reset-password-done-container .content-container p.reset-password-done-desc {
+    color: #901A1E;
+    font-size: 16px;
+  }
+
+  /***************************
+   RESET PASSWORD CONFIRM TEMPLATE
+  *****************************/
+  .reset-password-confirm-container .content-container {
+    width: 90%;
+  }
+  .reset-password-confirm-container .content-container form .form-row .form-input input {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /***************************
+     CHANGE PASSWORD TEMPLATE
+  *****************************/
+  .change-password-container .change-password-form-container {
+    width: 580px;
+  }
+  .change-password-container .change-password-form-container .content-container form .form-row .form-input input {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+@media (min-width: 0px) {
+  /***************************
+       LOGIN TEMPLATE
+  *****************************/
+  .login-container {
+    font-family: "Roboto Slab", sans-serif;
+    display: flex;
+    margin-top: 50px;
+    justify-content: center;
+  }
+  .login-container .game-login {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 5%;
+    align-items: center;
+    background: white;
+    width: 90%;
+    border-radius: 20px;
+    box-shadow: 0 8px 8px rgba(0, 0, 0, 0.25);
+    padding: 10%;
+  }
+  .login-container .game-login .login-title {
+    color: #901A1E;
+    font-size: 22px;
+  }
+  .login-container .game-login .form-row .form-label {
+    padding-left: 20px;
+  }
+  .login-container .game-login .form-row .form-label i {
+    color: #901A1E;
+    font-size: 20px;
+  }
+  .login-container .game-login .form-row .form-label label {
+    padding-left: 5px;
+    color: #901A1E;
+  }
+  .login-container .game-login .form-row div.form-input {
+    width: 100%;
+  }
+  .login-container .game-login .form-row div.form-input input {
+    border: 3px solid #901A1E;
+    border-radius: 20px;
+    height: 40px;
+  }
+  .login-container .game-login #btn-login {
+    margin: 5% 0;
+    background: #901A1E;
+    width: 100%;
+    border-radius: 20px;
+    color: white;
+    height: 35px;
+    border: 3px solid #901A1E;
+  }
+  .login-container .game-login #btn-login:hover {
+    cursor: pointer;
+  }
+  .login-container .game-login .link-container {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .login-container .game-login .link-container .link {
+    color: #901A1E;
+    margin: 5% 0;
+    font-size: 14px;
+  }
+  .login-container .game-login .link-container .link:hover {
+    color: #901A1E;
+    text-decoration: underline;
+  }
+
+  /***************************
+       RESET PASSWORD TEMPLATE
+  *****************************/
+  .reset-password-container {
+    font-family: "Roboto Slab", sans-serif;
+    display: flex;
+    margin-top: 50px;
+    justify-content: center;
+  }
+  .reset-password-container .reset-password-form-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 5%;
+    padding: 5%;
+    align-items: center;
+    background: white;
+    width: 90%;
+    border-radius: 20px;
+    box-shadow: 0 8px 8px rgba(0, 0, 0, 0.25);
+  }
+  .reset-password-container .reset-password-form-container .content-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 95%;
+  }
+  .reset-password-container .reset-password-form-container .content-container .reset-password-title {
+    color: #901A1E;
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 10%;
+    font-weight: bold;
+  }
+  .reset-password-container .reset-password-form-container .content-container .reset-password-desc {
+    color: #901A1E;
+    font-size: 12px;
+    margin-bottom: 10%;
+  }
+  .reset-password-container .reset-password-form-container .content-container form .form-row .form-label i {
+    color: #901A1E;
+    padding-left: 20px;
+  }
+  .reset-password-container .reset-password-form-container .content-container form .form-row .form-label label {
+    color: #901A1E;
+    padding-left: 5px;
+  }
+  .reset-password-container .reset-password-form-container .content-container form .form-row input {
+    border: 3px solid #901A1E;
+    border-radius: 20px;
+    height: 35px;
+  }
+  .reset-password-container .reset-password-form-container .content-container form #btn-password-reset {
+    margin: 5% 0;
+    background: #901A1E;
+    border: none;
+    width: 100%;
+    border-radius: 20px;
+    color: white;
+    height: 35px;
+  }
+  .reset-password-container .reset-password-form-container .content-container form #btn-password-reset:hover {
+    cursor: pointer;
+  }
+
+  /***************************
+     RESET PASSWORD DONE TEMPLATE
+  *****************************/
+  .reset-password-done-container {
+    font-family: "Roboto Slab", sans-serif;
+    display: flex;
+    margin-top: 50px;
+    justify-content: center;
+  }
+  .reset-password-done-container .content-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 5%;
+    padding: 7.5% 5%;
+    align-items: center;
+    background: white;
+    width: 90%;
+    border-radius: 20px;
+    box-shadow: 0 8px 8px rgba(0, 0, 0, 0.25);
+  }
+  .reset-password-done-container .content-container .reset-password-done-title {
+    color: #901A1E;
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 10%;
+    font-weight: bold;
+  }
+  .reset-password-done-container .content-container .reset-password-done-desc {
+    color: #901A1E;
+    font-size: 14px;
+  }
+
+  /***************************
+       RESET PASSWORD CONFIRM TEMPLATE
+  *****************************/
+  .reset-password-confirm-container {
+    font-family: "Roboto Slab", sans-serif;
+    display: flex;
+    margin-top: 50px;
+    justify-content: center;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 5%;
+    align-items: center;
+    background: white;
+    width: 90%;
+    border-radius: 20px;
+    box-shadow: 0 8px 8px rgba(0, 0, 0, 0.25);
+    padding: 5%;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container {
+    width: 95%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container .reset-password-confirm-title {
+    color: #901A1E;
+    font-size: 22px;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container .form-row {
+    margin-bottom: 5%;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container .form-row .form-label {
+    padding-left: 20px;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container .form-row .form-label i {
+    color: #901A1E;
+    font-size: 20px;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container .form-row .form-label label {
+    padding-left: 5px;
+    color: #901A1E;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container .form-row div.form-input {
+    width: 100%;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container .form-row div.form-input input {
+    border: 3px solid #901A1E;
+    border-radius: 20px;
+    height: 40px;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container #btn-password-reset-confirm {
+    margin: 5% 0;
+    background: #901A1E;
+    border: none;
+    width: 100%;
+    border-radius: 20px;
+    color: white;
+    height: 35px;
+  }
+  .reset-password-confirm-container .reset-password-confirm-form-container .content-container #btn-password-reset-confirm:hover {
+    cursor: pointer;
+  }
+
+  /***************************
+       REGISTER TEMPLATE
+  *****************************/
+  .register-container {
+    font-family: "Roboto Slab", sans-serif;
+    display: flex;
+    margin-top: 50px;
+    justify-content: center;
+  }
+  .register-container .register-form-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 5%;
+    align-items: center;
+    background: white;
+    width: 90%;
+    border-radius: 20px;
+    box-shadow: 0 8px 8px rgba(0, 0, 0, 0.25);
+    padding: 10%;
+  }
+  .register-container .register-form-container .content-container .register-title {
+    color: #901A1E;
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 5%;
+  }
+  .register-container .register-form-container .content-container form .form-row {
+    margin-bottom: 5%;
+  }
+  .register-container .register-form-container .content-container form .form-row .form-label {
+    padding-left: 20px;
+  }
+  .register-container .register-form-container .content-container form .form-row .form-label i {
+    color: #901A1E;
+    font-size: 20px;
+  }
+  .register-container .register-form-container .content-container form .form-row .form-label label {
+    padding-left: 5px;
+    color: #901A1E;
+  }
+  .register-container .register-form-container .content-container form .form-row div.form-input {
+    width: 100%;
+  }
+  .register-container .register-form-container .content-container form .form-row div.form-input input {
+    border: 3px solid #901A1E;
+    border-radius: 20px;
+    height: 40px;
+  }
+  .register-container .register-form-container .content-container form #btn-register {
+    margin: 5% 0;
+    background: #901A1E;
+    width: 100%;
+    border-radius: 20px;
+    color: white;
+    height: 35px;
+    border: 3px solid #901A1E;
+  }
+  .register-container .register-form-container .content-container form #btn-register:hover {
+    cursor: pointer;
+  }
+
+  /***************************
+       CHANGE PASSWORD TEMPLATE
+  *****************************/
+  .change-password-container {
+    font-family: "Roboto Slab", sans-serif;
+    display: flex;
+    margin-top: 50px;
+    justify-content: center;
+  }
+  .change-password-container .change-password-form-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    margin-top: 5%;
+    align-items: center;
+    background: white;
+    width: 90%;
+    border-radius: 20px;
+    box-shadow: 0 8px 8px rgba(0, 0, 0, 0.25);
+    padding: 10%;
+  }
+  .change-password-container .change-password-form-container .content-container .change-password-title {
+    color: #901A1E;
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 5%;
+  }
+  .change-password-container .change-password-form-container .content-container form .form-row {
+    margin-bottom: 5%;
+  }
+  .change-password-container .change-password-form-container .content-container form .form-row .form-label {
+    padding-left: 20px;
+  }
+  .change-password-container .change-password-form-container .content-container form .form-row .form-label i {
+    color: #901A1E;
+    font-size: 20px;
+  }
+  .change-password-container .change-password-form-container .content-container form .form-row .form-label label {
+    padding-left: 5px;
+    color: #901A1E;
+  }
+  .change-password-container .change-password-form-container .content-container form .form-row div.form-input {
+    width: 100%;
+  }
+  .change-password-container .change-password-form-container .content-container form .form-row div.form-input input {
+    border: 3px solid #901A1E;
+    border-radius: 20px;
+    height: 40px;
+  }
+  .change-password-container .change-password-form-container .content-container form #btn-change-password {
+    margin: 5% 0;
+    background: #901A1E;
+    width: 100%;
+    border-radius: 20px;
+    color: white;
+    height: 35px;
+    border: 3px solid #901A1E;
+  }
+  .change-password-container .change-password-form-container .content-container form #btn-change-password:hover {
+    cursor: pointer;
+  }
+}
+
+/*# sourceMappingURL=styles.css.map */

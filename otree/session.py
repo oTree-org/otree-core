@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from collections import defaultdict
 from decimal import Decimal
 from functools import reduce
@@ -74,7 +73,7 @@ class SessionConfig(dict):
 
         for k in ['name', 'app_sequence', 'num_demo_participants']:
             if k not in self:
-                msg = f'Session config is missing "{k}"'
+                msg = f'Spille type mangler "{k}"'
                 raise SessionConfigError(msg)
 
         validate_alphanumeric(
@@ -94,7 +93,7 @@ class SessionConfig(dict):
 
         if len(app_sequence) == 0:
             raise SessionConfigError(
-                'settings.SESSION_CONFIGS: app_sequence cannot be empty.'
+                'settings.SESSION_CONFIGS: Husk og vælge et spil.'
             )
 
         self.setdefault('display_name', self['name'])
@@ -243,7 +242,7 @@ def create_session(
     try:
         session_config = SESSION_CONFIGS_DICT[session_config_name]
     except KeyError:
-        msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
+        msg = 'Spil type "{}" not found in settings.SESSION_CONFIGS.'
         raise KeyError(msg.format(session_config_name)) from None
     else:
         # copy so that we don't mutate the original
@@ -270,7 +269,7 @@ def create_session(
         else:
             if num_participants % session_lcm:
                 msg = (
-                    'Session Config {}: Antal spillere ({}) is not a multiple '
+                    'Spil type {}: Antal spillere ({}) is not a multiple '
                     'of group size ({})'
                 ).format(session_config['name'], num_participants, session_lcm)
                 raise ValueError(msg)
@@ -451,9 +450,9 @@ def create_session(
 
     # this should happen after session.ready = True
     if room_name is not None:
-        from otree.room import ROOM_DICT
+        from otree.room import get_room_dict
 
-        room = ROOM_DICT[room_name]
+        room = get_room_dict()[room_name]
         room.set_session(session)
 
     return session

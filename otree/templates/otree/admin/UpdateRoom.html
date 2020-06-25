@@ -1,0 +1,33 @@
+{% extends "otree/BaseAdmin.html" %}
+{% load otree static %}
+
+{% block styles %}
+    <style>
+        body {
+            background-color: #901A1E;
+
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="update-room-container container">
+    <div class="content-container">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">
+                {% if object == None %}
+                    Opret Klasserum
+                {% else %}
+                    Rediger klasserum
+                {% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+
+
+
+{% endblock %}

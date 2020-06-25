@@ -93,6 +93,20 @@ class Results(Page):
             "end_time": group.round_end_time,
         } for group in self.group.in_all_rounds()]
 
+        rankings = []
+        for p in self.subsession.get_players():
+            p.stubborn_total = sum([player.stubborn for player in p.in_all_rounds()])
+            p.opinion_change_total = sum([player.opinion_change for player in p.in_all_rounds()])
+            p.number_of_friends_total = sum([player.number_of_friends for player in p.in_all_rounds()])
+            p.points_total = sum([player.points for player in p.in_all_rounds()])
+            p.fulgt_flertallet_pct = 100 * sum(
+                [1 for player in p.in_all_rounds() if player.points != 0]) / Constants.num_rounds
+            p.fulgt_preference_pct = 100 * sum(
+                [1 for player in p.in_all_rounds() if player.hub == player.choice]) / Constants.num_rounds
+            rankings.append((p.id_in_group, p.points_total, p.fulgt_flertallet_pct,
+                             p.fulgt_preference_pct, np.around(p.stubborn_total, 1),
+                             p.number_of_friends_total, p.opinion_change_total))
+
         return {
             "data": json.dumps(data),
             "payoff_ialt": np.sum([p.points for p in self.player.in_all_rounds()]),
@@ -102,7 +116,9 @@ class Results(Page):
             'total_friends': np.sum([p.number_of_friends for p in self.player.in_all_rounds()]),
             'total_opinion_changes': np.sum([p.opinion_change for p in self.player.in_all_rounds()]),
             'total_stubborn': np.around(np.sum([p.stubborn for p in self.player.in_all_rounds()]), 1),
-            "id_in_group": self.player.id_in_group
+            "id_in_group": self.player.id_in_group,
+            "rankings": sorted(rankings, key=lambda x: x[1], reverse=True),
+            "json_rank": json.dumps(rankings)
         }
 
 

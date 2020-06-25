@@ -2,6 +2,12 @@ from django.http import HttpResponseServerError
 import time
 from otree.common import missing_db_tables
 import logging
+import re
+from .oTree import settings
+from django.urls import reverse
+from django.shortcuts import redirect
+from django.contrib.auth import logout
+
 
 logger = logging.getLogger('otree.perf')
 

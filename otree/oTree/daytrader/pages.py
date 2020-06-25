@@ -5,49 +5,49 @@ from .models import Constants, Player
 
 
 class Intro1(Page):
-    timeout_seconds = Constants.timeouts
+    timeout_seconds = Constants.timeout90
 
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro2(Page):
-    timeout_seconds = Constants.timeouts
+    timeout_seconds = Constants.timeout90
 
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro3(Page):
-    timeout_seconds = Constants.timeouts
+    timeout_seconds = Constants.timeout90
 
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro4(Page):
-    timeout_seconds = Constants.timeouts
+    timeout_seconds = Constants.timeout90
 
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro4b(Page):
-    timeout_seconds = Constants.timeouts
+    timeout_seconds = Constants.timeout90
 
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro5(Page):
-    timeout_seconds = Constants.timeouts
+    timeout_seconds = Constants.timeout90
 
     def is_displayed(self):
         return self.round_number == 1
 
 
 class Intro6(Page):
-    timeout_seconds = Constants.timeouts
+    timeout_seconds = Constants.timeout90
 
     def is_displayed(self):
         return self.round_number == 1
@@ -68,7 +68,7 @@ class Choose(Page):
     form_model = 'player'  # setting a form model for current player
     form_fields = ['choice_of_trade', 'choice_of_number_of_shares']  # setting a form field to fill out
 
-    timeout_seconds = Constants.timeouts
+    timeout_seconds = Constants.timeout30
 
     # retrieving variables for a trade history table
     def vars_for_template(self):
@@ -85,11 +85,13 @@ class Choose(Page):
 
         data = zip(rounds, prices, choices, deals, states)
         game_rounds = Constants.num_rounds
+        current_round = self.player.round_number
 
         return {
             'data': data,
             'rounds': rounds,
-            'runder': game_rounds
+            'runder': game_rounds,
+            'current_round': current_round
         }
 
 
@@ -125,6 +127,8 @@ class Results(Page):
         data = zip(firma, tilstand, choices, handler, price, closing, tjent)
         handelsvaerdi = c(sum([p.price * p.choice_of_number_of_shares
                                for p in self.player.in_all_rounds()]))
+
+        print(choices)
 
         return {
             'handlet': handelsvaerdi,

@@ -1,3 +1,5 @@
+from django import forms
+
 from otree.api import (
     models, widgets, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
     Currency as c, currency_range
@@ -29,10 +31,11 @@ its state with a fixed probability, a mix of strategies need to be employed.
 
 
 class Constants(BaseConstants):
+    timeout90 = 900
+    timeout30 = 600
     name_in_url = 'daytrader'
     players_per_group = None
     num_rounds = 10
-    timeouts = 90
 
     # share attributes
     num_shares = 100000
@@ -137,8 +140,25 @@ class Subsession(BaseSubsession):
             for p in self.get_players():
                 rankings.append((p.id_in_group, 0))
 
+        profit = []
+        if 'profit' in self.session.vars:
+            for p in self.get_players():
+                profit.append(p.tjent_ialt)
+
+        else:
+            for p in self.get_players():
+                profit.append(0)
+
+        player_number = len(profit)
+        handler = []
+
+
+
+
         return {
             'company': list(zip(names, states, choices, drawn_faces)),
+            'profit': handler,
+            'player_number': player_number,
             'round_list': round_list,
             'faces': drawn_faces,
             'rankings': sorted(rankings, key=lambda x: x[1], reverse=True),
@@ -147,7 +167,7 @@ class Subsession(BaseSubsession):
                 'y': 'Priser',
                 'series': price_table,
                 'rounds': round_list
-            })
+            }),
         }
 
 
@@ -166,11 +186,15 @@ class Player(BasePlayer):
             [1, 'køb (long)'],
             [0, 'lån og sælg (short)'],
         ],
-        widget=widgets.RadioSelectHorizontal()
+
+        widget=widgets.RadioSelectHorizontal(),
     )
     price = models.CurrencyField()
     price_change = models.CurrencyField()
-    choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000)
+    choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000, widget=forms.TextInput(attrs={
+        'autofocus': True,
+        'id': 'myInput'
+    }))
     can_buy = models.PositiveIntegerField()
     tjent_ialt = models.CurrencyField()
 

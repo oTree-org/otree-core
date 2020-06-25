@@ -33,3 +33,4 @@ class Group(BaseGroup):
 
 class Player(BasePlayer):
     pass
+

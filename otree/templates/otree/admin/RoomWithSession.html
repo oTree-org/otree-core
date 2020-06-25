@@ -1,24 +1,50 @@
 {% extends "otree/BaseAdmin.html" %}
+{% load otree static %}
+{% block styles %}
+    <style>
+        body {
+            background-color: #901A1E;
 
-{% block title %}
-    Room: {{ room.display_name }}
+        }
+    </style>
 {% endblock %}
-
+{% block title %}
+    {{ room.display_name }}
+{% endblock %}
+class
 {% block content %}
 
-    <div class="alert alert-success">
-        <a href="{{ session_url }}">Go to active session.</a>
-    </div>
+    <!-- Game/session view as active or admin with settings/config-->
+    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+        <!-- Need orig. form here for admin panel, copy it from github, the form below is edited for teacher/is.staff view. -->
 
-    <form method="post" action="{% url "CloseRoom" room.name %}">
-        {% csrf_token %}
-
-        <button class="btn btn-primary" id="close-room">
-            Close this room
-        </button>
-
-    </form>
-
-    {% include "otree/includes/RoomParticipantLinks.html" %}
-
+    {% elif user.is_authenticated and user.is_active %}
+        <div class="room-with-container container">
+            <div class="content-container">
+                <h2 class="rapport-header ">Klasserum: <b>{{ room.name }}</b></h2>
+                <p>Du har et aktivt spil for dette klasserum. Du har to valgmuligheder:</p>
+                <h4 class="content-header">Gå til spillet</h4>
+                <p>Du kan vælge og gå til det aktive spil og følge med spillets fremgang.</p>
+                <form action="{{ session_url }}">
+                    {% csrf_token %}
+                    <button class="btn btn-primary" id="go-to-game">Gå til spil</button>
+                </form>
+                <br>
+                <br>
+                <br>
+                <h4 class="content-header">Stop spillet</h4>
+                <p>Du kan vælge at stoppe spillet, hvorefter du kan oprettet et nyt spil fra samme klasserum.</p>
+                <form method="post" action="{% url "CloseRoom" room.name %}">
+                    {% csrf_token %}
+                    <button class="btn btn-primary" id="close-room">
+                        Stop spillet
+                    </button>
+                </form>
+                <br>
+                <br>
+            </div>
+        </div>
+    {% else %}
+        <p>Unauthenticated</p>
+    {% endif %}
 {% endblock %}
