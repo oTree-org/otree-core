@@ -878,14 +878,13 @@
             font-size: 35px;
             display: flex;
             flex-direction: column;
-            text-align: left;
+            text-align: center;
             text-transform: uppercase;
             color: $ku-dark-blue;
-            width: 65%;
+            width: 50%;
             padding: 10px 0 10px 0;
-            margin-top: -4%;
+            margin-top: -2%;
           }
-
 
         }
 
@@ -895,11 +894,13 @@
             flex-direction: row;
 
            div.right-game-block {
-              width: 100%;
+              width: 50%;
               display: flex;
               justify-content: center;
 
               table.company-table {
+                display: flex;
+                justify-content: center;
                 margin: 10px 0;
                 border-collapse: separate;
                 border-spacing: 0 0.5em;
@@ -933,11 +934,11 @@
                     }
                 }
                 tr.table-row {
+                  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+                  border-radius: 10px;
 
                   td.table-data {
-                    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
-                    border-radius: 10px;
-                    font-size: 13px;
+                    font-size: 20px;
                     font-family: "Patrick Hand", sans-serif;
                     border-top: none !important;
                     text-align: center;
@@ -971,7 +972,7 @@
               justify-content: center;
               background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
               margin: 0 10px;
-              height: 290px;
+              height: 250px;
 
               div.sack-buttons {
                   margin: 100px 0 0 4px;
@@ -983,13 +984,13 @@
                   img.sack-button {
                     margin: 0;
                     padding: 0;
-                    width: 60px;
-                    height: 60px;
+                    width: 55px;
+                    height: 55px;
 
                   }
                  .company-face-in-sack {
-                    width: 60px;
-                    height: 60px;
+                    width: 55px;
+                    height: 55px;
 
                     &:hover {
                       cursor: pointer;

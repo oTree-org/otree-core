@@ -16,17 +16,21 @@
             justify-content: center;
         }
 
-        #timer {
-            display: flex;
-            justify-content: center;
+        #countdown {
+            width: 100px;
+            border: 1px solid #000;
+            margin: 10px auto 0;
+            font-size: 60px;
+            text-align: center;
         }
+
     </style>
 {% endblock %}
 {% block content %}
     <div class="game-container">
         <div class="game-content">
             <div class="game-timer">
-                <div class="game-timer-content">
+                <div class="game-timer-content" id="game-timer-container">
                     <span>RUNDE {{ current_round }}: </span>
                     <br>
                     <span class="otree-timer__time-left"></span>
@@ -36,7 +40,10 @@
                 <h2 class="company-title">
                     {{ player.company_name }}
                 </h2>
+                <div class="table-description">
 
+
+                </div>
             </div>
             <div class="game-block">
                 <div class="left-game-block">
@@ -84,19 +91,19 @@
                     {% else %}
                         <br>
                     {% endif %}
-                    <div class="game-text">
+
+                    <div class="game-choice">
+                         <div class="game-text">
                         {% if subsession.round_number == 1 %}
                         <p>Du skal handle aktier i 10 runde i 10 forskellige firmaer.</p>
                         <p>Det er første runde, og du er den første trader i dag.</p>
-                        <p>Du skal handle aktier i firmaet <b>'{{ player.company_name }}'.</b></p>
                         {% else %}
                         {% endif %}
 
                     </div>
-                    <div class="game-choice">
                         <p>Du har <b>{{ player.wallet|c }}</b> og aktieprisen er lige nu <b>{{ player.price|c }}</b>.</p>
                         <p><b><u>Hvad vil du gøre?</u></b></p>
-                        <p><b>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
+                        <p>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
                         {% if subsession.round_number == 1 %}
                         <p><b>Husk at gemme nogle penge til de næste runder.</b></p>
                         {% else %}
@@ -106,7 +113,7 @@
                                  <div class="choice-fields">
                                     {% formfield player.choice_of_trade label=None %}
                                 </div>
-                                <div class="submit-value">
+                                <div class="submit-value" >
                                         <p>Hvor mange aktier?</p>
 
                                         {% formfield player.choice_of_number_of_shares label=None %}
@@ -115,7 +122,6 @@
                             </div>
                         </div>
                     </div>
-
                 <div class="right-game-block">
                     {% if subsession.round_number > 1 %}
                     <table class="table company-table">
@@ -146,17 +152,44 @@
                             </tr>
                         {% endfor %}
                     </table>
+                    {% else %}
+
+
                     {% endif %}
+
                 </div>
+
             </div>
         </div>
     </div>
-
+<div id="countdown">15</div>
 
 
 {% endblock %}
 {% block scripts %}
        <script>
+       $(document).ready(function($) {
+           let age = 15, countdown = $("#countdown"),
+               adjustAge = function() {
+                countdown.text(age--);
+                if (age === 0) {
+                   clearInterval(timer);
+                } else if (age < 10) {
+                    countdown.css({
+                        color: "#fff"
+                    }).effect("pulsate", { times: 1 });
+                }
+           },
+           timer = setInterval(function () { adjustAge() }, 1000);
+       });
+
+
+       // Prevent submit with enter key
+       $(document).on("keydown", "form", function(event) {
+            return event.key !== "Enter";
+        });
+
+
         let containers = document.getElementsByClassName("faceContainer");
         let drawn_face = {{ player.drawn_face|yesno:"true,false" }};
         let states = document.getElementsByClassName("state-container");
