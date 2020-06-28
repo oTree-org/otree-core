@@ -2349,7 +2349,7 @@
   /*******************
   * *  Choose.html * *
   ********************/
-  div.game-container {
+  div.daytrader-game-container {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -2360,11 +2360,11 @@
     background-color: white;
     padding: 20px;
   }
-  div.game-container div.game-content {
+  div.daytrader-game-container div.game-content {
     width: 100%;
     background-color: orange;
   }
-  div.game-container div.game-content div.game-timer {
+  div.daytrader-game-container div.game-content div.game-timer {
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -2374,7 +2374,7 @@
     font-family: "Patrick Hand", cursive;
     z-index: 1;
   }
-  div.game-container div.game-content div.game-timer div.game-timer-content {
+  div.daytrader-game-container div.game-content div.game-timer div.game-timer-content {
     width: 20%;
     border: solid 6px #41739D;
     margin-top: -4%;
@@ -2384,13 +2384,13 @@
     letter-spacing: 1px;
     padding: 5px 5px 5px 5px;
   }
-  div.game-container div.header-block {
+  div.daytrader-game-container div.header-block {
     display: flex;
     flex-direction: row;
     width: 100%;
     margin-top: 2%;
   }
-  div.game-container div.header-block h2.company-title {
+  div.daytrader-game-container div.header-block h2.company-title {
     font-family: "Noticia Text", serif;
     font-weight: bold;
     letter-spacing: 2px;
@@ -2404,7 +2404,7 @@
     padding: 10px 0 10px 0;
     font-weight: bold;
   }
-  div.game-container div.header-block div.table-description {
+  div.daytrader-game-container div.header-block div.table-description {
     padding: 10px 0 10px 0;
     width: 50%;
     background-color: pink;
