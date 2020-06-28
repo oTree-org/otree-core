@@ -888,4 +888,28 @@
     }
   }
 
+  .pulse {
+     -webkit-animation-name: pulsate;
+    -webkit-animation-duration: 3s;
+    -webkit-animation-timing-function: ease-in-out;
+    -webkit-animation-iteration-count: infinite;
+
+
+
+      @-webkit-keyframes pulsate {
+     0% {
+        background-color: white !important;
+        color: $ku-red !important;
+     }
+      100% {
+        background-color: #BF0A30 !important;
+         color: white !important;
+     }
+  }
+
+
+
+
+
+ }
 }

@@ -33,7 +33,7 @@
                 <div class="game-timer-content" id="game-timer-container">
                     <span>RUNDE {{ current_round }}: </span>
                     <br>
-                    <span class="otree-timer__time-left"></span>
+                    <span class="otree-timer__time-left" id="timer_countdown"></span>
                 </div>
             </div>
             <div class="header-block">
@@ -103,9 +103,9 @@
                     </div>
                         <p>Du har <b>{{ player.wallet|c }}</b> og aktieprisen er lige nu <b>{{ player.price|c }}</b>.</p>
                         <p><b><u>Hvad vil du gøre?</u></b></p>
-                        <p>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
+
                         {% if subsession.round_number == 1 %}
-                        <p><b>Husk at gemme nogle penge til de næste runder.</b></p>
+                        <p><b>Husk at gemme nogle penge til de næste 9 runder.</b></p>
                         {% else %}
                         {% endif %}
 
@@ -115,7 +115,7 @@
                                 </div>
                                 <div class="submit-value" >
                                         <p>Hvor mange aktier?</p>
-
+                                        <p>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
                                         {% formfield player.choice_of_number_of_shares label=None %}
                                         <small><b>Når tiden udløber vil værdien blive gemt.</b></small>
                                 </div>
@@ -162,26 +162,13 @@
             </div>
         </div>
     </div>
-<div id="countdown">15</div>
+
 
 
 {% endblock %}
 {% block scripts %}
        <script>
-       $(document).ready(function($) {
-           let age = 15, countdown = $("#countdown"),
-               adjustAge = function() {
-                countdown.text(age--);
-                if (age === 0) {
-                   clearInterval(timer);
-                } else if (age < 10) {
-                    countdown.css({
-                        color: "#fff"
-                    }).effect("pulsate", { times: 1 });
-                }
-           },
-           timer = setInterval(function () { adjustAge() }, 1000);
-       });
+
 
 
        // Prevent submit with enter key
