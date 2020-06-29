@@ -753,15 +753,21 @@
     -webkit-animation-duration: 3s;
     -webkit-animation-timing-function: ease-in-out;
     -webkit-animation-iteration-count: infinite;
+    color: #BF0A30 !important;
+    border-color: #BF0A30 !important;
   }
   @-webkit-keyframes pulsate {
     0% {
-      background-color: white !important;
-      color: #901A1E !important;
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(191, 10, 48, 0.7);
+    }
+    70% {
+      transform: scale(1);
+      box-shadow: 0 0 0 10px rgba(191, 10, 48, 0);
     }
     100% {
-      background-color: #BF0A30 !important;
-      color: white !important;
+      transform: scale(0.95);
+      box-shadow: 0 0 0 0 rgba(191, 10, 48, 0);
     }
   }
 }
