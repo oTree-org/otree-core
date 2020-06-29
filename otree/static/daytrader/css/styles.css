@@ -2348,10 +2348,10 @@
     text-align: center;
   }
 
-  /*******************
+  /*********************
   * *  Choose.html * *
-  ********************/
-  div.game-container {
+  **********************/
+  div.choose-game-container {
     font-family: "Patrick Hand", sans-serif;
     font-size: 20px;
     letter-spacing: 0.5px;
@@ -2361,14 +2361,14 @@
     margin-top: 4%;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     border-radius: 10px;
-    width: 100%;
+    width: 90%;
     background-color: white;
     padding: 20px;
   }
-  div.game-container div.game-content {
+  div.choose-game-container div.game-content {
     width: 100%;
   }
-  div.game-container div.game-content div.game-timer {
+  div.choose-game-container div.game-content div.game-timer {
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -2377,7 +2377,7 @@
     font-size: 25px;
     z-index: 1;
   }
-  div.game-container div.game-content div.game-timer div.game-timer-content {
+  div.choose-game-container div.game-content div.game-timer div.game-timer-content {
     width: 20%;
     border: solid 6px #41739D;
     margin-top: -4%;
@@ -2386,14 +2386,14 @@
     letter-spacing: 1px;
     padding: 5px 5px 5px 5px;
   }
-  div.game-container div.header-block {
+  div.choose-game-container div.header-block {
     display: flex;
     flex-direction: row;
     justify-content: center;
     width: 100%;
     margin-top: 2%;
   }
-  div.game-container div.header-block h2.company-title {
+  div.choose-game-container div.header-block h2.company-title {
     font-family: "Noticia Text", serif;
     font-weight: bolder;
     letter-spacing: 2px;
@@ -2407,18 +2407,18 @@
     padding: 10px 0 10px 0;
     margin-top: -2%;
   }
-  div.game-container div.game-block {
+  div.choose-game-container div.game-block {
     width: 100%;
     display: flex;
     flex-direction: row;
   }
-  div.game-container div.game-block div.right-game-block {
-    width: 50%;
+  div.choose-game-container div.game-block div.right-game-block {
+    width: 30%;
     display: flex;
     justify-content: center;
+    margin-right: 12%;
   }
-  div.game-container div.game-block div.right-game-block table.company-table {
-    display: flex;
+  div.choose-game-container div.game-block div.right-game-block table.company-table {
     justify-content: center;
     margin: 10px 0;
     border-collapse: separate;
@@ -2427,16 +2427,17 @@
     display: inline-table;
     text-align: center;
   }
-  div.game-container div.game-block div.right-game-block table.company-table td {
+  div.choose-game-container div.game-block div.right-game-block table.company-table td {
     vertical-align: middle;
+    padding: 0.45rem;
   }
-  div.game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-left {
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-left {
     border-radius: 10px 0 0 10px;
   }
-  div.game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-right {
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-right {
     border-radius: 0 10px 10px 0;
   }
-  div.game-container div.game-block div.right-game-block table.company-table tr.table-corners th.table-header {
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.table-header {
     background: #41739D;
     color: white;
     font-weight: bold;
@@ -2446,21 +2447,21 @@
     text-align: center;
     box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
   }
-  div.game-container div.game-block div.right-game-block table.company-table tr.table-row {
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
-  div.game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data {
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data {
     font-size: 20px;
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
     text-align: center;
   }
-  div.game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data img.reveal-face {
-    width: 40px;
-    height: 40px;
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data img.reveal-face {
+    width: 35px;
+    height: 35px;
   }
-  div.game-container div.game-block div.right-game-block table.company-table .daytrader-table-row {
+  div.choose-game-container div.game-block div.right-game-block table.company-table .daytrader-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
     font-size: 13px;
@@ -2468,87 +2469,94 @@
     border-top: none !important;
     text-align: center;
   }
-  div.game-container div.game-block div.left-game-block {
-    width: 50%;
+  div.choose-game-container div.game-block div.first-round-game-block {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
   }
-  div.game-container div.game-block div.left-game-block div.sack-button-container {
+  div.choose-game-container div.game-block div.left-game-block {
+    width: 70%;
+  }
+  div.choose-game-container div.game-block div.sack-button-container {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
     margin: 0 10px;
-    height: 250px;
+    height: 210px;
   }
-  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons {
-    margin: 100px 0 0 4px;
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons {
+    margin: 70px 0 0 0;
   }
-  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons:hover {
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons:hover {
     cursor: pointer;
   }
-  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons img.sack-button {
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons img.sack-button {
     margin: 0;
     padding: 0;
-    width: 55px;
-    height: 55px;
+    width: 48px;
+    height: 48px;
   }
-  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons .company-face-in-sack {
-    width: 55px;
-    height: 55px;
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons .company-face-in-sack {
+    width: 48px;
+    height: 48px;
   }
-  div.game-container div.game-block div.left-game-block div.sack-button-container div.sack-buttons .company-face-in-sack:hover {
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons .company-face-in-sack:hover {
     cursor: pointer;
   }
-  div.game-container div.game-block div.left-game-block div.help-text {
+  div.choose-game-container div.game-block div.help-text {
     display: flex;
     justify-content: center;
     text-align: center;
     font-size: 15px;
   }
-  div.game-container div.game-block div.left-game-block div.table-description {
+  div.choose-game-container div.game-block div.table-description {
     padding: 10px 0 10px 0;
     text-align: center;
   }
-  div.game-container div.game-block div.left-game-block div.game-text {
+  div.choose-game-container div.game-block div.game-text {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  div.choose-game-container div.game-block div.game-choice {
     display: flex;
     justify-content: center;
     text-align: center;
     flex-direction: column;
   }
-  div.game-container div.game-block div.left-game-block div.game-choice {
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    flex-direction: column;
-  }
-  div.game-container div.game-block div.left-game-block div.game-choice div.choice-fields {
+  div.choose-game-container div.game-block div.game-choice div.choice-fields {
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
-  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value {
+  div.choose-game-container div.game-block div.game-choice div.submit-value {
     display: none;
     flex-direction: column;
     justify-content: center;
   }
-  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value #myInput {
+  div.choose-game-container div.game-block div.game-choice div.submit-value #myInput {
     font-size: 22px;
     display: flex;
     justify-content: center;
     text-align: center;
   }
-  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value .form-group {
+  div.choose-game-container div.game-block div.game-choice div.submit-value .form-group {
     display: flex;
     justify-content: center;
     margin-bottom: 0;
   }
-  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value .form-control {
+  div.choose-game-container div.game-block div.game-choice div.submit-value .form-control {
     display: flex;
     justify-content: center;
     width: 100%;
     border: solid 3px #41739D;
   }
-  div.game-container div.game-block div.left-game-block div.game-choice div.submit-value #id_choice_of_number_of_shares {
+  div.choose-game-container div.game-block div.game-choice div.submit-value #id_choice_of_number_of_shares {
     max-width: 166px;
     height: 40px;
     left: 550px;
