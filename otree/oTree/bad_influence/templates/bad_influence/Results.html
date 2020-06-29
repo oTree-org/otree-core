@@ -17,45 +17,44 @@
     <div class="report-container results-container">
         <div class="report-info">
             <div class="results-title">
-                <p>Du fik {{ payoff_ialt }} point</p>
-                <p>Du er spiller nr {{ player.id_in_group }}</p>
+                <p>Du er spiller {{ player.id_in_group }} og fik {{ payoff_ialt }} point.</p>
+            </div>
+            <div class="report-table-container">
+                <table class="table-responsive bad_influence-results-table">
+                    <tr class="report-header-row">
+                        <th><strong>Runde</strong></th>
+                        <th>point</th>
+                        <th>præference</th>
+                        <th>valg</th>
+                        <th>influencer</th>
+                        <th># venner</th>
+                        <th># skift</th>
+                        <th>stædighed</th>
+                    </tr>
+                    {% for p in player_in_all_rounds %}
+                        <tr class="bad_influence-table-row">
+                            <td><strong>{{ p.round_number }} ({{ p.spg }})</strong></td>
+                            <td>{{ p.points }} </td>
+                            <td>{{ p.preference_str }}</td>
+                            <td>{{ p.choice_str }} </td>
+                            <td>{% if p.hub %}ja{% else %}nej{% endif %}</td>
+                            <td>{{ p.number_of_friends }}</td>
+                            <td>{{ p.opinion_change }}</td>
+                            <td>{{ p.stubborn }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="bad_influence-table-row">
+                        <td><strong> i alt </strong></td>
+                        <td><strong>{{ payoff_ialt }}</strong></td>
+                        <td></td>
+                        <td></td>
+                        <td><strong>{{ fraction_hub }}</strong></td>
+                        <td><strong>{{ total_friends }}</strong></td>
+                        <td><strong>{{ total_opinion_changes }}</strong></td>
+                        <td><strong>{{ total_stubborn }} sek</strong></td>
+                </table>
             </div>
 
-
-            <table class="table table-responsive game-results-table">
-
-                <tr>
-                    <th><strong>Runde</strong></th>
-                    <th>point</th>
-                    <th>præference</th>
-                    <th>valg</th>
-                    <th>influencer</th>
-                    <th># venner</th>
-                    <th># skift</th>
-                    <th>stædighed</th>
-                </tr>
-                {% for p in player_in_all_rounds %}
-                    <tr>
-                        <td><strong>{{ p.round_number }} ({{ p.spg }})</strong></td>
-                        <td>{{ p.points }} </td>
-                        <td>{{ p.preference_str }}</td>
-                        <td>{{ p.choice_str }} </td>
-                        <td>{% if p.hub %}ja{% else %}nej{% endif %}</td>
-                        <td>{{ p.number_of_friends }}</td>
-                        <td>{{ p.opinion_change }}</td>
-                        <td>{{ p.stubborn }}</td>
-                    </tr>
-                {% endfor %}
-                <tr>
-                    <td><strong> i alt </strong></td>
-                    <td><strong>{{ payoff_ialt }}</strong></td>
-                    <td></td>
-                    <td></td>
-                    <td><strong>{{ fraction_hub }}</strong></td>
-                    <td><strong>{{ total_friends }}</strong></td>
-                    <td><strong>{{ total_opinion_changes }}</strong></td>
-                    <td><strong>{{ total_stubborn }} sek</strong></td>
-            </table>
 
             <!-- Rapport header -->
             <div class="rapport-header">
@@ -63,7 +62,7 @@
             </div>
 
             <div class="dropdown-questions dropdown">
-                <div class="d3-row question-title">
+                <div class="d3-row question-title-question">
                     Spørgsmål
                 </div>
                 <div class="d3-row">
@@ -80,7 +79,7 @@
                     <p id="d3playback"></p>
                     <button type="button" id="play-button" class="btn btn-primary play-button">Afspil</button>
                 </div>
-                <div class="alert alert-info">
+                <div class="report-info-container">
                     <!-- Explanation for questions -->
                     <div class="d3-row question-title">
                         Spørgsmål kontekst
@@ -126,7 +125,8 @@
                     {% for ranking in rankings %}
                         <tr class="bad_influence-table-row">
                             <td class="bad_influence-table-data">{{ forloop.counter }}</td>
-                            <td class="bad_influence-table-data"><strong class="player_number"> {{ ranking.0 }} </strong></td>
+                            <td class="bad_influence-table-data"><strong
+                                    class="player_number"> {{ ranking.0 }} </strong></td>
                             <td class="bad_influence-table-data">{{ ranking.1 }}</td>
                             <td class="bad_influence-table-data">{{ ranking.2 }}%</td>
                             <td class="bad_influence-table-data">{{ ranking.3 }}%</td>
@@ -137,7 +137,7 @@
                     {% endfor %}
                 </table>
                 <div class="explanation">
-                    <div class="alert alert-info">
+                    <div class="report-info-container">
                         <div class="d3-row question-title">
                             Stædighed forklaring
                         </div>
@@ -168,7 +168,7 @@
 
 
         for (let j = 0; j < playerNum.length; j++) {
-            if(playerNum[j].textContent !== player_id) {
+            if (playerNum[j].textContent !== player_id) {
             }
         }
     </script>

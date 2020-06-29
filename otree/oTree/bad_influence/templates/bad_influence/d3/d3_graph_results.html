@@ -91,6 +91,17 @@
     let sliderGroup = undefined;
     let width = 400;
     let height = 400;
+
+    if(window.innerWidth <= 320) {
+        width = 300;
+        height = 300;
+    }
+    else if(window.innerWidth > 320) {
+        width = 400;
+        height = 400;
+    }
+
+
     let data = JSON.parse('{{ data | safe }}');
     let selectedRunIdx = 0;
     let $questionHolder1 = $('#questionHolder1');
