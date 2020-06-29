@@ -18,6 +18,7 @@ unisex = df['unisex'].dropna().tolist()
 girls_names = df['girls'].dropna().tolist()
 boys_names = df['boys'].dropna().tolist()
 
+
 class Constants(BaseConstants):
     name_in_url = 'bad_influence'
     players_per_group = None
@@ -27,6 +28,7 @@ class Constants(BaseConstants):
     low_bonus = 5
     hub_fraction = 0.4
     round_length = 120
+    koen = random.choice([True, False])
 
 
 class Subsession(BaseSubsession):
@@ -276,7 +278,7 @@ class Player(BasePlayer):
     )
     choice_str = models.StringField()
     preference_str = models.StringField()
-    gender = models.BooleanField(initial=True)
+    gender = models.BooleanField(default=Constants.koen)
     number_of_friends = models.IntegerField()
     spg = models.LongStringField()
     last_choice_made_at = models.IntegerField()
@@ -292,6 +294,7 @@ class Player(BasePlayer):
     fulgt_preference_pct = models.FloatField(initial=0)
     navn = models.StringField()
     expected_score = models.IntegerField(initial=0)
+
 
     def navn_choices(self):
         uni = json.loads(self.session.vars['uni'])
