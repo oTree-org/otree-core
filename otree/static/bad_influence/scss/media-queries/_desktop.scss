@@ -456,14 +456,13 @@
     }
   }
 
-  .report-table-container {
+  .report-table-container-admin {
     display: flex;
     flex-direction: column;
     align-items: center;
     color: $ku-red;
 
     #badInfluenceTableReport {
-      width: 80%;
       display: inline-table;
       border-collapse: separate;
       border-spacing: 0 0.5rem;
@@ -498,6 +497,88 @@
       .bad_influence-table-row {
         box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
         border-radius: 10px;
+      }
+    }
+  }
+
+  div.report-info {
+    div.dropdown-questions {
+      display: flex;
+      align-items: center;
+      width: 70%;
+
+      div.report-info-container {
+        padding: 15px 30px 30px 30px;
+
+        div.question-title {
+          font-size: 22px;
+        }
+      }
+    }
+
+    div.report-table-container {
+      width: 70%;
+      table#badInfluenceTableReport {
+        display: inline-table;
+
+        tr.report-header-row {
+          th {
+            font-size: 30px;
+          }
+        }
+
+        tr.bad_influence-table-row {
+          td {
+            font-size: 30px;
+          }
+        }
+      }
+
+      div.explanation {
+        display: flex;
+        align-items: center;
+
+        div.report-info-container {
+          padding: 20px 40px;
+
+          div.question-title {
+            font-size: 22px;
+          }
+        }
+      }
+    }
+  }
+
+
+  div.results-container {
+    div.report-info {
+      div.results-title {
+        p {
+          font-size: 30px;
+        }
+      }
+
+      div.report-table-container {
+        width: 70%;
+        display: flex;
+        justify-content: center;
+
+        table.bad_influence-results-table {
+          display: inline-table;
+          border-spacing: 0 0.6rem;
+
+          th, td {
+            font-size: 24px;
+          }
+        }
+      }
+
+      div.report-table-container {
+        table#badInfluenceTableReport {
+          td, th {
+            font-size: 30px;
+          }
+        }
       }
     }
   }

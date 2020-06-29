@@ -192,7 +192,7 @@
 
     #chat {
       box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25),
-        0 10px 10px rgba(0, 0, 0, 0.22);
+      0 10px 10px rgba(0, 0, 0, 0.22);
       margin-bottom: 2%;
       width: 100%;
     }
@@ -253,43 +253,43 @@
     width: 100%;
 
     .choice-button {
-    width: 45%;
-    height: 55px;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-radius: 50px;
-    color: black;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-    font-family: "Annie Use Your Telescope", serif;
-    background-color: transparent;
-    border: 2px solid $ku-red;
-    margin: 5px 5px 10% 5px;
+      width: 45%;
+      height: 55px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: 50px;
+      color: black;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+      font-family: "Annie Use Your Telescope", serif;
+      background-color: transparent;
+      border: 2px solid $ku-red;
+      margin: 5px 5px 10% 5px;
 
-    &:hover {
-      background-color: $ku-dark-green;
-      color: white;
-      border-color: transparent;
-    }
-    &:active {
-      background-color: $ku-dark-green;
-      color: white;
-    }
+      &:hover {
+        background-color: $ku-dark-green;
+        color: white;
+        border-color: transparent;
+      }
 
-    &:focus {
-      border-color: $ku-dark-green;
-      background-color: $ku-dark-green;
-      color: white;
-    }
+      &:active {
+        background-color: $ku-dark-green;
+        color: white;
+      }
 
-    img {
-      width: 40px;
-      height: 40px;
-      align-self: center;
+      &:focus {
+        border-color: $ku-dark-green;
+        background-color: $ku-dark-green;
+        color: white;
+      }
+
+      img {
+        width: 40px;
+        height: 40px;
+        align-self: center;
+      }
     }
   }
-  }
-
 
 
   /*************************************
@@ -330,6 +330,7 @@
 
     * {
       box-sizing: border-box;
+
       &::before,
       &::after {
         box-sizing: border-box;
@@ -356,6 +357,7 @@
         margin-top: 30px;
         font-size: 30px;
       }
+
       .button-text {
         position: absolute;
         top: -5px;
@@ -378,115 +380,291 @@
       }
     }
   }
-}
 
-/*************************************
-*   Intro2.html table styling   *
-**************************************/
-.intro-2 {
-  font-family: "Patrick Hand", cursive;
+  /*************************************
+  *   Intro2.html table styling   *
+  **************************************/
+  .intro-2 {
+    font-family: "Patrick Hand", cursive;
 
-  .round-title {
-    font-size: 35px;
-  }
-
-  .game-introduction {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .round-info {
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-
-    h3 {
-      font-weight: bold;
+    .round-title {
+      font-size: 35px;
     }
-  }
-  .text-column {
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    width: 100%;
-  }
-  .svg-column {
-    display: flex;
-    justify-content: flex-end;
-    flex-direction: column;
-    width: 100%;
-    padding-right: 0;
-    margin-bottom: 2%;
-    border-color: $ku-red;
-    border-radius: 2px;
-    border-style: solid solid solid solid;
 
-    h2 {
-      font-size: 20px;
-    }
-  }
-
-  $bg: #f3f8fa;
-  $white: #fff;
-  $black: #901a1e;
-
-  * {
-    box-sizing: border-box;
-    &::before,
-    &::after {
-      box-sizing: border-box;
-    }
-  }
-
-  button {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    outline: none;
-    border: 0;
-    vertical-align: middle;
-    text-decoration: none;
-    background: transparent;
-    padding: 0;
-    font-size: inherit;
-    font-family: inherit;
-    z-index: 2;
-
-    &.start-game {
-      height: auto;
+    .game-introduction {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
       width: 100%;
-      margin-top: 30px;
-      font-size: 30px;
-      padding: 40px;
     }
-    .button-text {
-      position: absolute;
-      top: -5px;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      font-weight: 700;
-      line-height: 1.6;
+
+    .round-info {
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
       text-align: center;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      background-color: $ku-red;
-      color: white;
-      border-radius: 20px;
-      height: 50px;
+
+      h3 {
+        font-weight: bold;
+      }
     }
 
-    .button-text {
-      color: $white;
+    .text-column {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      width: 100%;
+    }
+
+    .svg-column {
+      display: flex;
+      justify-content: flex-end;
+      flex-direction: column;
+      width: 100%;
+      padding-right: 0;
+      margin-bottom: 2%;
+      border-color: $ku-red;
+      border-radius: 2px;
+      border-style: solid solid solid solid;
+
+      h2 {
+        font-size: 20px;
+      }
+    }
+
+    $bg: #f3f8fa;
+    $white: #fff;
+    $black: #901a1e;
+
+    * {
+      box-sizing: border-box;
+
+      &::before,
+      &::after {
+        box-sizing: border-box;
+      }
+    }
+
+    button {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      outline: none;
+      border: 0;
+      vertical-align: middle;
+      text-decoration: none;
+      background: transparent;
+      padding: 0;
+      font-size: inherit;
+      font-family: inherit;
+      z-index: 2;
+
+      &.start-game {
+        height: auto;
+        width: 100%;
+        margin-top: 30px;
+        font-size: 30px;
+        padding: 40px;
+      }
+
+      .button-text {
+        position: absolute;
+        top: -5px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        font-weight: 700;
+        line-height: 1.6;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        background-color: $ku-red;
+        color: white;
+        border-radius: 20px;
+        height: 50px;
+      }
+
+      .button-text {
+        color: $white;
+      }
+    }
+
+    .width-size {
+      width: 100%;
     }
   }
 
-  .width-size {
-    width: 100%;
+  .report-info {
+
+    div.rapport-header {
+      h2 {
+        color: $ku-red;
+      }
+    }
+
+    .dropdown-questions {
+      width: 90%;
+
+
+      div.report-info-container {
+        background: $ku-red;
+        color: white;
+        text-align: center;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+        padding: 10px 10px 20px 10px;
+
+        div.question-title {
+          color: white;
+          font-size: 16px;
+        }
+      }
+
+      p#d3historyChoice {
+        select {
+          border-radius: 10px;
+          font-family: 'Patrick Hand', sans-serif;
+          font-size: 16px;
+        }
+      }
+    }
+
+    .report-table-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: $ku-red;
+      width: 90%;
+
+      h2.rapport-header {
+        color: $ku-red;
+      }
+
+      #badInfluenceTableReport {
+        border-collapse: separate;
+        border-spacing: 0 0.5rem;
+
+        .border-corner-left {
+          border-radius: 10px 0 0 10px;
+          padding-left: 15px;
+        }
+
+        .border-corner-right {
+          border-radius: 0 10px 10px 0;
+          padding-right: 15px;
+        }
+
+        .bad_influence-table-header {
+          background: $ku-red;
+          color: white;
+          font-family: "Patrick Hand", sans-serif;
+          border-top: none !important;
+          text-align: center;
+          box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+          padding: 0 10px;
+        }
+
+        .bad_influence-table-data {
+          font-family: "Patrick Hand", sans-serif;
+          border-top: none !important;
+          text-align: center;
+          vertical-align: middle;
+          padding: 0 20px;
+        }
+
+        .bad_influence-table-row {
+          box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+          border-radius: 10px;
+        }
+      }
+
+      div.explanation {
+        margin: 16px 0;
+
+        div.report-info-container {
+          background: $ku-red;
+          color: white;
+          text-align: center;
+          border-radius: 10px;
+          padding: 10px 10px 20px 10px;
+
+          div.question-title {
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+          }
+        }
+      }
+    }
   }
 
+  div.results-container {
+    div.report-info {
+      div.results-title {
+        p {
+          text-align: center;
+          font-size: 16px;
+        }
+      }
 
+      div.report-table-container {
+        width: 90%;
+
+        table.bad_influence-results-table {
+          border-collapse: separate;
+          border-spacing: 0 0.5rem;
+          box-shadow: none;
+
+          tr.report-header-row {
+            th {
+              background: $ku-red;
+              color: white;
+              font-family: "Patrick Hand", sans-serif;
+              border-top: none !important;
+              text-align: center;
+              box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+              padding: 0 10px;
+              vertical-align: middle;
+            }
+
+            th:first-child {
+              border-radius: 10px 0 0 10px;
+              padding-left: 15px;
+            }
+
+            th:last-child {
+              border-radius: 0 10px 10px 0;
+              padding-right: 15px;
+            }
+          }
+
+          tr.bad_influence-table-row {
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+
+
+            td {
+              font-family: "Patrick Hand", sans-serif;
+              border-top: none !important;
+              text-align: center;
+              vertical-align: middle;
+              padding: 0 10px;
+            }
+          }
+        }
+      }
+
+      div.dropdown-questions {
+        div.question-title-question {
+          color: $ku-red;
+          font-size: 20px;
+          font-family: 'Roboto Slab', sans-serif;
+          font-weight: bold;
+          margin-bottom: 20px;
+        }
+      }
+    }
+  }
 }
