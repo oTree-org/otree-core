@@ -389,7 +389,7 @@
       width: 100%; }
 
   .report-info h1.bad_influence-report-title {
-    font-size: 28px;
+    font-size: 22px;
     margin-top: 5%;
     color: #901A1E; }
   .report-info div.rapport-header h2 {
@@ -1219,8 +1219,6 @@
         .intro-2 button.start-game .button-text:hover {
           background-color: #5f861e; }
 
-  .report-info h1.bad_influence-report-title {
-    font-size: 35px; }
   .report-info div.rapport-header {
     width: 100%;
     margin-top: 24px; }
@@ -1644,8 +1642,6 @@
         div.report-info div.report-table-container div.explanation div.report-info-container div.question-title {
           font-size: 22px; }
 
-  div.results-container div.report-info h1.bad_influence-report-title {
-    margin-top: 2%; }
   div.results-container div.report-info div.results-title p {
     font-size: 30px; }
   div.results-container div.report-info div.report-table-container {
@@ -1700,4 +1696,4 @@
     margin-top: 40px;
     font-size: 35px; } }
 
-/*# sourceMappingURL=styles.css.map */
+/*# sourceMappingURL=..%5Ccss%5Cstyles.css.map */

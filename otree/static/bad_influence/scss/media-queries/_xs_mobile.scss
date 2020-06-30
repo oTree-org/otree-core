@@ -496,6 +496,12 @@
 
   .report-info {
 
+    h1.bad_influence-report-title {
+      font-size: 28px;
+      margin-top: 5%;
+      color: $ku-red;
+    }
+
     div.rapport-header {
       h2 {
         color: $ku-red;
