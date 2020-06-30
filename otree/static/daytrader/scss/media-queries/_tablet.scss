@@ -18,7 +18,7 @@
   *******************************/
 
 
-  .daytrader-game-container {
+  div.daytrader-game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -29,7 +29,7 @@
     width: 90%;
     padding: 20px;
 
-    .content-container {
+    div.content-container {
       width: 80%;
     }
 
@@ -37,17 +37,19 @@
       width: 490px;
       height: 630px;
 
+
       .daytrader-start-game-btn {
         font-size: 50px;
         margin: 250px 0 0 20px;
-        width: 307px
-      }
+        width: 189px;
+
     }
+       }
 
     .daytrader-intro-container-first {
-      flex-direction: row;
       margin: 5px 0 0 0;
       width: 100%;
+      flex-direction: column-reverse;
     }
 
     .daytrader-intro-container-second {
@@ -112,6 +114,7 @@
 
       h3 {
         font-weight: bold;
+        font-size: 25px;
       }
     }
 
@@ -147,14 +150,7 @@
       }
 
       .daytrader-table-header {
-        background: $ku-dark-blue;
-        color: white;
-        font-weight: bold;
-        font-family: "Patrick Hand", sans-serif;
         font-size: 30px;
-        border-top: none !important;
-        text-align: center;
-        box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
       }
 
       .daytrader-table-data {
@@ -208,81 +204,9 @@
       }
     }
 
-    .otree-btn-next {
-
-
-    }
-
-    .field-choice_of_number_of_shares {
-      display: flex;
-      justify-content: center;
-    }
-
-    .daytrader-next-btn-container {
-
-      display: flex;
-      justify-content: center;
-
-      .daytrader-next-btn {
-        font-size: 25px;
-        width: 334px;
-        height: 45px;
-      }
-
-    }
-
     .reveal-face {
-      width: 40px;
-      height: 40px;
-    }
-
-    .field-choice_of_trade {
-      margin: 50px 0 0 0;
-      display: flex;
-      justify-content: center;
-      flex-direction: row;
-
-
-      .form-check {
-        display: flex;
-        margin-right: 0;
-        padding-right: 25px;
-        flex-direction: column;
-
-
-        .form-check-label {
-          font-family: "Patrick Hand", sans-serif;
-          font-size: 22px;
-          text-transform: capitalize;
-          text-align: center;
-        }
-
-        input.form-check-input[type="radio"] {
-          -webkit-appearance: none;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          outline: none;
-          border: 3px solid $ku-dark-blue;
-
-          &:before {
-            content: '';
-            display: block;
-            width: 60%;
-            height: 60%;
-            margin: 20% auto;
-            border-radius: 50%;
-          }
-
-          &:checked:before {
-            background: $ku-dark-blue;
-          }
-
-          &:checked {
-            border-color: $ku-dark-blue;
-          }
-        }
-      }
+      width: 35px;
+      height: 35px;
     }
 
     .daytrader-info-choice {
@@ -576,4 +500,300 @@
       text-align: center;
     }
   }
+
+
+  /*********************
+  * *  Choose.html * *
+  **********************/
+
+   div.choose-game-container {
+      font-family: "Patrick Hand", sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.5px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-top: 4%;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+      border-radius: 10px;
+      width: 90%;
+      background-color: white;
+      padding: 20px;
+
+      div.game-content {
+        width: 100%;
+
+        div.game-timer {
+            position: relative;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            text-align: center;
+            font-size: 23px;
+            z-index: 1;
+
+            div.game-timer-content {
+              width: 20%;
+              border: solid 6px $ku-dark-blue;
+              margin-top: -6%;
+              background-color: white;
+              font-weight: bold;
+              letter-spacing: 1px;
+              padding: 5px 5px 5px 5px;
+            }
+          }
+         }
+
+        div.header-block {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          width: 100%;
+          margin-top: 2%;
+
+          h2.company-title {
+            font-family: 'Noticia Text', serif;
+            font-weight: bolder;
+            letter-spacing: 2px;
+            font-size: 30px;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            text-transform: uppercase;
+            width: 100%;
+            padding: 0 0 10px 0;
+          }
+
+          div.table-description {
+            padding: 0;
+            margin: 0;
+            text-align: center;
+            font-size: 18px;
+            font-family: 'Noticia Text', serif;
+
+              p {
+                margin-bottom: 0;
+              }
+          }
+
+        }
+
+        div.game-block {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+
+           div.right-game-block  {
+              padding-left: 2%;
+              display: flex;
+              justify-content: center;
+
+              table.company-table {
+                justify-content: center;
+                border-collapse: separate;
+                border-spacing: 0 0.5em;
+                width: 320px;
+                display: inline-table;
+                text-align: center;
+
+                td {
+                  vertical-align: middle;
+                  padding: 0.45rem;
+                }
+
+                tr.table-corners {
+
+                    th.border-corner-left {
+                      border-radius: 10px 0 0 10px;
+                    }
+
+                    th.border-corner-right {
+                      border-radius: 0 10px 10px 0;
+                    }
+
+                    th.table-header {
+                      background: $ku-dark-blue;
+                      color: white;
+                      font-weight: bold;
+                      font-family: "Patrick Hand", sans-serif;
+                      font-size: 16px;
+                      border-top: none !important;
+                      text-align: center;
+                      box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+                    }
+                }
+                tr.table-row {
+                  box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+                  border-radius: 10px;
+
+                  td.table-data {
+                    font-size: 16px;
+                    font-family: "Patrick Hand", sans-serif;
+                    border-top: none !important;
+                    text-align: center;
+
+                    img.reveal-face {
+                       width: 35px;
+                       height: 35px;
+                    }
+                  }
+              }
+
+              .daytrader-table-row {
+                box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+                border-radius: 10px;
+                font-size: 18px;
+                font-family: "Patrick Hand", sans-serif;
+                border-top: none !important;
+                text-align: center;
+              }
+
+          }
+        }
+
+          div.first-round-game-block {
+            width: 100%;
+            justify-content: center;
+            display: flex;
+            flex-direction: column;
+          }
+          div.left-game-block {
+
+
+          }
+            div.sack-button-container {
+              width: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+              margin: 0 10px;
+              height: 210px;
+
+              div.sack-buttons {
+                  margin: 70px 0 0 0;
+
+                  &:hover {
+                    cursor: pointer;
+                  }
+
+                  img.sack-button {
+                    margin: 0;
+                    padding: 0;
+                    width: 48px;
+                    height: 48px;
+
+                  }
+                 .company-face-in-sack {
+                    width: 48px;
+                    height: 48px;
+
+                    &:hover {
+                      cursor: pointer;
+                    }
+                 }
+              }
+            }
+            div.help-text {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              font-size: 13px;
+            }
+
+            div.game-text {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              flex-direction: column;
+              margin-top: 10px;
+
+
+            }
+
+            div.game-choice {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              flex-direction: column;
+
+              div.radio-choose {
+                padding: 10px 10px 0 10px;
+              }
+
+              div.choice-fields {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                div.field-choice_of_trade {
+                    flex-direction: row;
+                    margin: 0;
+
+                  div.form-check {
+                    padding: 0 10px 10px 10px;
+                    flex-direction: column;
+                    margin-right: 0;
+                  }
+
+                  div.form-check:first-child {
+                    margin-left: 27px;
+                  }
+
+                  label.form-check-label {
+                    font-size: 18px;
+                    padding-top: 5px;
+                  }
+                }
+              }
+
+              div.submit-value {
+                display: none;
+                flex-direction: column;
+                justify-content: center;
+
+                #myInput {
+                  font-size: 18px;
+                  display: flex;
+                  justify-content: center;
+                  text-align: center;
+                }
+
+                .form-group {
+                  display: flex;
+                  justify-content: center;
+                  margin-bottom: 0;
+                }
+
+
+               .form-control {
+                  display: flex;
+                  justify-content: center;
+                  width: 100%;
+                  border: solid 3px $ku-dark-blue;
+                }
+
+                #id_choice_of_number_of_shares {
+                  max-width: 166px;
+                  height: 40px;
+                  left: 550px;
+                  top: 1637px;
+                  font-size: 18px;
+                  color: black;
+                  border: 5px solid #41739D;
+                  box-sizing: border-box;
+                  border-radius: 30px;
+                  text-align: center;
+                  display: flex;
+                  justify-content: center;
+              }
+            }
+        }
+      }
+   }
 }

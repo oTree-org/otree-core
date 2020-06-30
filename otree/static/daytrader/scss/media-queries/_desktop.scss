@@ -1,100 +1,33 @@
 @media (min-width: 1024px) {
   /*******************************
-  *  Hide otree default message  *
+  *  Intro pages - DayTrader  *
   ********************************/
 
-  .otree-timer {
-    display: none
-  }
-
-  .otree-title {
-    display: none
-  }
-
-
-  /******************************
-  *   Play.html info styling    *
-  *******************************/
-
-  .field-choice_of_trade {
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      flex-direction: row;
-
-      .form-check {
-        display: flex;
-        flex-direction: row;
-        margin-right: 0;
-
-        .form-check-label {
-          font-family: "Patrick Hand", sans-serif;
-          font-size: 20px;
-          text-transform: capitalize;
-          margin-left: 50px;
-        }
-
-        input.form-check-input[type="radio"] {
-          -webkit-appearance: none;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          outline: none;
-          border: 3px solid $ku-dark-blue;
-          position: absolute;
-
-          &:before {
-            content: '';
-            display: block;
-            width: 60%;
-            height: 60%;
-          }
-
-          &:checked:before {
-            background: $ku-dark-blue;
-          }
-
-          &:checked {
-            border-color: $ku-dark-blue;
-          }
-        }
-      }
-    }
-
-  .daytrader-game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  div.daytrader-game-container {
     margin-top: 2%;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-    border-radius: 10px;
     width: 90%;
-    background-color: white;
     padding: 40px 7.5%;
 
-    .daytrader-sack-button-container {
+    div.daytrader-sack-button-container {
       margin: 0 10px;
       height: 290px;
 
-      .daytrader-sack-buttons {
+      div.daytrader-sack-buttons {
         margin: 100px 0 0 4px;
       }
 
-      .company-face {
-        width: 35px;
-        height: 35px;
+      img.company-face {
+        width: 60px;
+        height: 60px;
       }
 
-      .result-table-face-1 {
-        margin: 77px 0 0 14px;
-      }
+      img.company-face-in-sack {
+        width: 60px;
+        height: 60px;
 
-      .result-table-face-2 {
-        margin: 3px 0 0 0;
-      }
-
-      .result-table-face-3 {
-        margin: 77px 14px 0 0;
+        &:hover {
+          cursor: pointer;
+        }
       }
     }
 
@@ -215,6 +148,12 @@
     .daytrader-next-btn-container {
       display: flex;
       justify-content: center;
+
+      .daytrader-next-btn {
+        font-size: 25px;
+        width: 310px;
+        height: 50px;
+      }
 
 
     }
@@ -530,6 +469,7 @@
   *********************************/
 
 
+
   .choice-button-holder {
     justify-content: center;
     display: flex;
@@ -665,6 +605,18 @@
       height: 50px;
     }
 
+    .result-table-face-1 {
+        margin: 77px 0 0 14px;
+      }
+
+      .result-table-face-2 {
+        margin: 3px 0 0 0;
+      }
+
+      .result-table-face-3 {
+        margin: 77px 14px 0 0;
+      }
+
     .graph-image {
       width: 700px;
       height: 400px;
@@ -783,8 +735,17 @@
       }
 
       .company-face {
-        width: 35px;
+         width: 35px;
         height: 35px;
+      }
+
+      .company-face-in-sack {
+        width: 60px;
+        height: 60px;
+
+        &:hover {
+          cursor: pointer;
+        }
       }
 
 
@@ -844,6 +805,10 @@
         width: 100%;
 
         div.game-timer {
+            position: relative;
+            top: 0;
+            left: 0;
+            right: 0;
             width: 100%;
             display: flex;
             flex-direction: row;
@@ -855,7 +820,7 @@
             div.game-timer-content {
               width: 20%;
               border: solid 6px $ku-dark-blue;
-              margin-top: -4%;
+              margin-top: -5%;
               background-color: white;
               font-weight: bold;
               letter-spacing: 1px;
@@ -866,26 +831,23 @@
 
         div.header-block {
           display: flex;
-          flex-direction: row;
+          flex-direction: column;
           justify-content: center;
           width: 100%;
           margin-top: 2%;
 
           h2.company-title {
-            font-family: 'Noticia Text', serif;
-            font-weight: bolder;
-            letter-spacing: 2px;
             font-size: 35px;
-            display: flex;
-            flex-direction: column;
-            text-align: center;
-            text-transform: uppercase;
-            color: $ku-dark-blue;
-            width: 50%;
-            padding: 10px 0 10px 0;
-            margin-top: -2%;
+            padding: 0 0 10px 0;
           }
 
+          div.table-description {
+            font-size: 20px;
+
+              p {
+                margin-bottom: 0;
+              }
+          }
         }
 
         div.game-block {
@@ -894,19 +856,11 @@
             flex-direction: row;
 
            div.right-game-block  {
-              width: 30%;
-              display: flex;
-              justify-content: center;
-              margin-right: 12%;
+             padding-left: 2%;
 
               table.company-table {
-                justify-content: center;
-                margin: 10px 0;
-                border-collapse: separate;
-                border-spacing: 0 0.5em;
+                margin: 0;
                 width: 500px;
-                display: inline-table;
-                text-align: center;
 
                 td {
                   vertical-align: middle;
@@ -934,8 +888,9 @@
                       box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
                     }
                 }
+
                 tr.table-row {
-                  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+                  box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
                   border-radius: 10px;
 
                   td.table-data {
@@ -970,7 +925,7 @@
             flex-direction: column;
           }
           div.left-game-block {
-            width: 70%;
+
 
           }
             div.sack-button-container {
@@ -979,7 +934,7 @@
               align-items: center;
               justify-content: center;
               background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
-              margin: 0 10px;
+              margin: 0;
               height: 210px;
 
               div.sack-buttons {
@@ -1013,71 +968,92 @@
               font-size: 15px;
             }
 
-            div.table-description {
-              padding: 10px 0 10px 0;
+            div.game-text {
+              display: flex;
+              justify-content: center;
               text-align: center;
+              flex-direction: column;
+              margin-top: 10px;
             }
 
-              div.game-text {
-                display: flex;
-                justify-content: center;
-                text-align: center;
-                flex-direction: column;
-                margin-top: 10px;
-              }
+            div.game-choice {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              flex-direction: column;
 
-              div.game-choice {
-                display: flex;
-                justify-content: center;
-                text-align: center;
-                flex-direction: column;
-
-                div.choice-fields {
+              div.choice-fields {
                   display: flex;
                   flex-direction: column;
                   justify-content: center;
-                }
 
-                div.submit-value {
-                  display: none;
-                  flex-direction: column;
+                div.field-choice_of_trade {
+                    flex-direction: row;
+                    margin: 0;
+
+                 div.form-check {
+                    padding: 0 0 0 9px;
+                    flex-direction: row;
+                    margin-right: 0;
+
+                    input.form-check-input {
+                      margin-right: 0;
+
+                    }
+                  }
+
+                  div.form-check:first-child {
+                    margin-left: 0;
+                  }
+
+                  label.form-check-label {
+                    font-size: 18px;
+                    padding-top: 0;
+                    padding-left: 10px;
+                  }
+                }
+              }
+
+              div.submit-value {
+                display: none;
+                flex-direction: column;
+                justify-content: center;
+
+                #myInput {
+                  font-size: 22px;
+                  display: flex;
                   justify-content: center;
-
-                  #myInput {
-                    font-size: 22px;
-                    display: flex;
-                    justify-content: center;
-                    text-align: center;
-                  }
-
-                  .form-group {
-                    display: flex;
-                    justify-content: center;
-                    margin-bottom: 0;
-                  }
-
-
-                 .form-control {
-                    display: flex;
-                    justify-content: center;
-                    width: 100%;
-                    border: solid 3px $ku-dark-blue;
-                  }
-
-                  #id_choice_of_number_of_shares {
-                    max-width: 166px;
-                    height: 40px;
-                    left: 550px;
-                    top: 1637px;
-                    font-size: 20px;
-                    color: black;
-                    border: 5px solid #41739D;
-                    box-sizing: border-box;
-                    border-radius: 30px;
-                    text-align: center;
-                    display: flex;
-                    justify-content: center;
+                  text-align: center;
                 }
+
+                .form-group {
+                  display: flex;
+                  justify-content: center;
+                  margin-bottom: 0;
+                }
+
+
+               .form-control {
+                  display: flex;
+                  justify-content: center;
+                  width: 100%;
+                  border: solid 3px $ku-dark-blue;
+                }
+
+                #id_choice_of_number_of_shares {
+                  max-width: 166px;
+                  height: 40px;
+                  left: 550px;
+                  top: 1637px;
+                  font-size: 20px;
+                  color: black;
+                  border: 5px solid #41739D;
+                  box-sizing: border-box;
+                  border-radius: 30px;
+                  text-align: center;
+                  display: flex;
+                  justify-content: center;
+              }
             }
 
         }

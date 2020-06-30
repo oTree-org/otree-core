@@ -2,17 +2,17 @@
   /*******************************
   *  Hide otree default message  *
   ********************************/
-  .otree-timer {
+  div.otree-timer {
     display: none;
   }
 
-  .otree-title {
+  h2.otree-title {
     display: none;
   }
 
-  /******************************
-  *   Play.html info styling    *
-  *******************************/
+  /*******************************
+  *  Intro pages - DayTrader  *
+  ********************************/
   .field-choice_of_trade {
     margin: 10px 0 0 0;
     display: flex;
@@ -52,7 +52,7 @@
     border-color: #41739D;
   }
 
-  .daytrader-game-container {
+  div.daytrader-game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -78,10 +78,10 @@
       *  All day trader pages   *
     *****************************/
   }
-  .daytrader-game-container .content-container {
+  div.daytrader-game-container div.content-container {
     width: 96%;
   }
-  .daytrader-game-container .future-modal, .daytrader-game-container .short-modal, .daytrader-game-container .long-modal, .daytrader-game-container .info-cascade-modal, .daytrader-game-container .lemming-modal {
+  div.daytrader-game-container .future-modal, div.daytrader-game-container .short-modal, div.daytrader-game-container .long-modal, div.daytrader-game-container .info-cascade-modal, div.daytrader-game-container .lemming-modal {
     display: none;
     position: fixed;
     z-index: 1;
@@ -93,7 +93,7 @@
     background-color: black;
     background-color: rgba(0, 0, 0, 0.4);
   }
-  .daytrader-game-container .future-modal .future-modal-content, .daytrader-game-container .future-modal .short-modal-content, .daytrader-game-container .future-modal .long-modal-content, .daytrader-game-container .future-modal .info-cascade-modal-content, .daytrader-game-container .future-modal .lemminge-modal-content, .daytrader-game-container .short-modal .future-modal-content, .daytrader-game-container .short-modal .short-modal-content, .daytrader-game-container .short-modal .long-modal-content, .daytrader-game-container .short-modal .info-cascade-modal-content, .daytrader-game-container .short-modal .lemminge-modal-content, .daytrader-game-container .long-modal .future-modal-content, .daytrader-game-container .long-modal .short-modal-content, .daytrader-game-container .long-modal .long-modal-content, .daytrader-game-container .long-modal .info-cascade-modal-content, .daytrader-game-container .long-modal .lemminge-modal-content, .daytrader-game-container .info-cascade-modal .future-modal-content, .daytrader-game-container .info-cascade-modal .short-modal-content, .daytrader-game-container .info-cascade-modal .long-modal-content, .daytrader-game-container .info-cascade-modal .info-cascade-modal-content, .daytrader-game-container .info-cascade-modal .lemminge-modal-content, .daytrader-game-container .lemming-modal .future-modal-content, .daytrader-game-container .lemming-modal .short-modal-content, .daytrader-game-container .lemming-modal .long-modal-content, .daytrader-game-container .lemming-modal .info-cascade-modal-content, .daytrader-game-container .lemming-modal .lemminge-modal-content {
+  div.daytrader-game-container .future-modal .future-modal-content, div.daytrader-game-container .future-modal .short-modal-content, div.daytrader-game-container .future-modal .long-modal-content, div.daytrader-game-container .future-modal .info-cascade-modal-content, div.daytrader-game-container .future-modal .lemminge-modal-content, div.daytrader-game-container .short-modal .future-modal-content, div.daytrader-game-container .short-modal .short-modal-content, div.daytrader-game-container .short-modal .long-modal-content, div.daytrader-game-container .short-modal .info-cascade-modal-content, div.daytrader-game-container .short-modal .lemminge-modal-content, div.daytrader-game-container .long-modal .future-modal-content, div.daytrader-game-container .long-modal .short-modal-content, div.daytrader-game-container .long-modal .long-modal-content, div.daytrader-game-container .long-modal .info-cascade-modal-content, div.daytrader-game-container .long-modal .lemminge-modal-content, div.daytrader-game-container .info-cascade-modal .future-modal-content, div.daytrader-game-container .info-cascade-modal .short-modal-content, div.daytrader-game-container .info-cascade-modal .long-modal-content, div.daytrader-game-container .info-cascade-modal .info-cascade-modal-content, div.daytrader-game-container .info-cascade-modal .lemminge-modal-content, div.daytrader-game-container .lemming-modal .future-modal-content, div.daytrader-game-container .lemming-modal .short-modal-content, div.daytrader-game-container .lemming-modal .long-modal-content, div.daytrader-game-container .lemming-modal .info-cascade-modal-content, div.daytrader-game-container .lemming-modal .lemminge-modal-content {
     background-color: #fefefe;
     margin: 15% auto;
     padding: 20px;
@@ -103,20 +103,20 @@
     display: flex;
     justify-content: center;
   }
-  .daytrader-game-container .daytrader-future, .daytrader-game-container .short-modal-link, .daytrader-game-container .long-modal-link, .daytrader-game-container .info-cascade-link, .daytrader-game-container .info-lemminge-link {
+  div.daytrader-game-container .daytrader-future, div.daytrader-game-container .short-modal-link, div.daytrader-game-container .long-modal-link, div.daytrader-game-container .info-cascade-link, div.daytrader-game-container .info-lemminge-link {
     color: #41739D;
     text-decoration: underline;
   }
-  .daytrader-game-container .daytrader-future:hover, .daytrader-game-container .short-modal-link:hover, .daytrader-game-container .long-modal-link:hover, .daytrader-game-container .info-cascade-link:hover, .daytrader-game-container .info-lemminge-link:hover {
+  div.daytrader-game-container .daytrader-future:hover, div.daytrader-game-container .short-modal-link:hover, div.daytrader-game-container .long-modal-link:hover, div.daytrader-game-container .info-cascade-link:hover, div.daytrader-game-container .info-lemminge-link:hover {
     cursor: pointer;
   }
-  .daytrader-game-container .daytrader-intro-info-container {
+  div.daytrader-game-container .daytrader-intro-info-container {
     margin: 10px 0;
   }
-  .daytrader-game-container #continue {
+  div.daytrader-game-container #continue {
     display: none;
   }
-  .daytrader-game-container .daytrader-sack-button-container {
+  div.daytrader-game-container div.daytrader-sack-button-container {
     width: 100%;
     height: 170px;
     display: flex;
@@ -125,34 +125,34 @@
     background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
     margin: 0 0 15px 0;
   }
-  .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons {
+  div.daytrader-game-container div.daytrader-sack-button-container div.daytrader-sack-buttons {
     margin: 65px 0 0 0;
   }
-  .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons:hover {
+  div.daytrader-game-container div.daytrader-sack-button-container div.daytrader-sack-buttons:hover {
     cursor: pointer;
   }
-  .daytrader-game-container .daytrader-sack-button-container .company-face {
+  div.daytrader-game-container div.daytrader-sack-button-container .company-face {
     height: 20px;
     width: 20px;
   }
-  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack {
+  div.daytrader-game-container div.daytrader-sack-button-container .company-face-in-sack {
     width: 40px;
     height: 40px;
   }
-  .daytrader-game-container .daytrader-sack-button-container .company-face-in-sack:hover {
+  div.daytrader-game-container div.daytrader-sack-button-container .company-face-in-sack:hover {
     cursor: pointer;
   }
-  .daytrader-game-container .sack-button {
+  div.daytrader-game-container .sack-button {
     margin: 0;
     padding: 0;
     width: 40px;
     height: 40px;
   }
-  .daytrader-game-container .sack-button:hover {
+  div.daytrader-game-container .sack-button:hover {
     cursor: pointer;
     filter: contrast(1.75);
   }
-  .daytrader-game-container .daytrader-intro-title {
+  div.daytrader-game-container .daytrader-intro-title {
     color: #41739D;
     text-transform: uppercase;
     font-family: "Noticia Text", serif;
@@ -161,7 +161,7 @@
     font-size: 40px;
     padding: 20px 0 0 0;
   }
-  .daytrader-game-container .daytrader-intro-frontpage-img {
+  div.daytrader-game-container .daytrader-intro-frontpage-img {
     background: url("/static/main_platform/otree/media/front-page-sackbackground.svg") no-repeat;
     background-size: cover;
     width: 300px;
@@ -170,7 +170,7 @@
     justify-content: center;
     align-items: center;
   }
-  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+  div.daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
     font-family: "Patrick Hand", sans-serif;
     background: #41739D;
     font-size: 38px;
@@ -180,50 +180,50 @@
     border-radius: 10px;
     border: 2px solid #41739D;
   }
-  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn:hover {
+  div.daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn:hover {
     cursor: pointer;
     background: #5f861e;
     border-color: transparent;
   }
-  .daytrader-game-container .daytrader-sack {
+  div.daytrader-game-container .daytrader-sack {
     height: 175px;
     margin: 0 0 20px 0;
   }
-  .daytrader-game-container .daytrader-intro-container-first {
+  div.daytrader-game-container .daytrader-intro-container-first {
     display: flex;
     justify-content: space-evenly;
     flex-direction: column;
     width: 77%;
   }
-  .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
+  div.daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
     align-self: center;
   }
-  .daytrader-game-container .daytrader-intro-container-second {
+  div.daytrader-game-container .daytrader-intro-container-second {
     display: flex;
     align-items: flex-start;
     flex-direction: column;
   }
-  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
+  div.daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
     width: 100%;
   }
-  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
+  div.daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
     display: flex;
     justify-content: center;
     width: 100%;
   }
-  .daytrader-game-container .daytrader-future {
+  div.daytrader-game-container .daytrader-future {
     color: #41739D;
     text-decoration: underline;
   }
-  .daytrader-game-container .daytrader-future:hover {
+  div.daytrader-game-container .daytrader-future:hover {
     cursor: pointer;
   }
-  .daytrader-game-container .go-long-content {
+  div.daytrader-game-container .go-long-content {
     margin: 25px 0;
     width: 100%;
     display: none;
   }
-  .daytrader-game-container .daytrader-round-title {
+  div.daytrader-game-container .daytrader-round-title {
     font-family: "Noticia Text", serif;
     font-weight: bold;
     letter-spacing: 2px;
@@ -237,26 +237,26 @@
     width: 100%;
     padding: 20px 0 20px 0;
   }
-  .daytrader-game-container .daytrader-round-info {
+  div.daytrader-game-container .daytrader-round-info {
     font-size: 18px;
     font-family: "Patrick Hand", sans-serif;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-round-info h3 {
+  div.daytrader-game-container .daytrader-round-info h3 {
     font-weight: bold;
   }
-  .daytrader-game-container .round-introduction {
+  div.daytrader-game-container .round-introduction {
     font-family: "Patrick Hand", cursive;
     display: flex;
     justify-content: center;
     flex-direction: column;
     width: 100%;
   }
-  .daytrader-game-container .daytrader-next-btn-container {
+  div.daytrader-game-container .daytrader-next-btn-container {
     display: flex;
     justify-content: center;
   }
-  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
+  div.daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
     font-size: 18px;
     background: #41739D;
     font-family: "Patrick Hand", sans-serif;
@@ -269,30 +269,30 @@
     border-radius: 10px;
     border: 2px solid #41739D;
   }
-  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn:hover {
+  div.daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn:hover {
     cursor: pointer;
     background-color: #5f861e;
     border-color: transparent;
   }
-  .daytrader-game-container .company-face {
+  div.daytrader-game-container .company-face {
     width: 28px;
     height: 28px;
   }
-  .daytrader-game-container .daytrader-table {
+  div.daytrader-game-container .daytrader-table {
     margin: 10px 0;
     border-collapse: separate;
     border-spacing: 0 0.5em;
   }
-  .daytrader-game-container .daytrader-table td {
+  div.daytrader-game-container .daytrader-table td {
     vertical-align: middle;
   }
-  .daytrader-game-container .daytrader-table .border-corner-left {
+  div.daytrader-game-container .daytrader-table .border-corner-left {
     border-radius: 10px 0 0 10px;
   }
-  .daytrader-game-container .daytrader-table .border-corner-right {
+  div.daytrader-game-container .daytrader-table .border-corner-right {
     border-radius: 0 10px 10px 0;
   }
-  .daytrader-game-container .daytrader-table .daytrader-table-header {
+  div.daytrader-game-container .daytrader-table .daytrader-table-header {
     background: #41739D;
     color: white;
     font-weight: bold;
@@ -300,50 +300,50 @@
     font-size: 13px;
     border-top: none !important;
     text-align: center;
-    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+    box-shadow: 0 0 20px rgba(65, 115, 157, 0.5);
   }
-  .daytrader-game-container .daytrader-table .daytrader-table-data {
+  div.daytrader-game-container .daytrader-table .daytrader-table-data {
     font-size: 13px;
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-table .daytrader-table-row {
+  div.daytrader-game-container .daytrader-table .daytrader-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
-  .daytrader-game-container .daytrader-form-container {
+  div.daytrader-game-container .daytrader-form-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
-  .daytrader-game-container .daytrader-form-container .daytrader-form-info {
+  div.daytrader-game-container .daytrader-form-container .daytrader-form-info {
     font-size: 18px;
     font-family: "Patrick Hand", sans-serif;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-submit-value {
+  div.daytrader-game-container .daytrader-submit-value {
     display: none;
     flex-direction: column;
     justify-content: center;
   }
-  .daytrader-game-container .daytrader-submit-value .form-group {
+  div.daytrader-game-container .daytrader-submit-value .form-group {
     display: flex;
     justify-content: center;
   }
-  .daytrader-game-container .daytrader-submit-value #myInput {
+  div.daytrader-game-container .daytrader-submit-value #myInput {
     font-size: 18px;
     display: flex;
     justify-content: center;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-submit-value .form-control {
+  div.daytrader-game-container .daytrader-submit-value .form-control {
     display: flex;
     justify-content: center;
     width: 90%;
     border: solid 3px #41739D;
   }
-  .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
+  div.daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
     max-width: 166px;
     height: 40px;
     left: 550px;
@@ -357,38 +357,38 @@
     display: flex;
     justify-content: center;
   }
-  .daytrader-game-container .field-choice_of_number_of_shares {
+  div.daytrader-game-container .field-choice_of_number_of_shares {
     display: flex;
     justify-content: center;
     width: 50%;
     text-align: center;
   }
-  .daytrader-game-container .reveal-face {
+  div.daytrader-game-container .reveal-face {
     width: 20px;
     height: 20px;
   }
-  .daytrader-game-container .daytrader-info-choice {
+  div.daytrader-game-container .daytrader-info-choice {
     width: 100%;
     display: flex;
     justify-content: center;
   }
-  .daytrader-game-container #tableResults {
+  div.daytrader-game-container #tableResults {
     margin: 10px 0;
     border-collapse: separate;
     border-spacing: 0 0.5em;
     width: 90%;
   }
-  .daytrader-game-container #tableResults td {
+  div.daytrader-game-container #tableResults td {
     vertical-align: middle;
     color: black;
   }
-  .daytrader-game-container #tableResults .border-corner-left {
+  div.daytrader-game-container #tableResults .border-corner-left {
     border-radius: 10px 0 0 10px;
   }
-  .daytrader-game-container #tableResults .border-corner-right {
+  div.daytrader-game-container #tableResults .border-corner-right {
     border-radius: 0 10px 10px 0;
   }
-  .daytrader-game-container #tableResults .daytrader-table-header {
+  div.daytrader-game-container #tableResults .daytrader-table-header {
     background: #41739D;
     color: white;
     font-weight: bold;
@@ -398,13 +398,13 @@
     text-align: center;
     box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
   }
-  .daytrader-game-container #tableResults .daytrader-table-data {
+  div.daytrader-game-container #tableResults .daytrader-table-data {
     font-size: 13px;
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
     text-align: center;
   }
-  .daytrader-game-container #tableResults .daytrader-table-row {
+  div.daytrader-game-container #tableResults .daytrader-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
@@ -770,19 +770,250 @@
       box-shadow: 0 0 0 0 rgba(191, 10, 48, 0);
     }
   }
+
+  /*********************
+  * *  Choose.html * *
+  **********************/
+  div.choose-game-container {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 4%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    width: 100%;
+    background-color: white;
+    padding: 20px;
+  }
+  div.choose-game-container div.game-content {
+    width: 100%;
+  }
+  div.choose-game-container div.game-content div.game-timer {
+    position: fixed;
+    top: 3%;
+    left: 37%;
+    right: 0;
+    width: 100%;
+    display: flex;
+    text-align: center;
+    font-size: 20px;
+  }
+  div.choose-game-container div.game-content div.game-timer div.game-timer-content {
+    border: solid 6px #41739D;
+    margin-top: -6%;
+    background-color: white;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 5px 5px 5px 5px;
+  }
+  div.choose-game-container div.header-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    margin-top: 22%;
+  }
+  div.choose-game-container div.header-block h2.company-title {
+    font-family: "Noticia Text", serif;
+    font-weight: bolder;
+    letter-spacing: 2px;
+    font-size: 22px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    text-transform: uppercase;
+    width: 100%;
+    padding: 0 0 10px 0;
+  }
+  div.choose-game-container div.header-block div.table-description {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 14px;
+    font-family: "Noticia Text", serif;
+  }
+  div.choose-game-container div.header-block div.table-description p {
+    margin-bottom: 0;
+  }
+  div.choose-game-container div.game-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block {
+    padding-left: 2%;
+    display: flex;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table {
+    justify-content: center;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    width: 320px;
+    display: inline-table;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table td {
+    vertical-align: middle;
+    padding: 0.45rem 0;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 12px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data {
+    font-size: 12px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data img.reveal-face {
+    width: 30px;
+    height: 30px;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.first-round-game-block {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+  }
+  div.choose-game-container div.game-block div.sack-button-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+    margin: 0 10px;
+    height: 210px;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons {
+    margin: 70px 0 0 0;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons:hover {
+    cursor: pointer;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons img.sack-button {
+    margin: 0;
+    padding: 0;
+    width: 48px;
+    height: 48px;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons .company-face-in-sack {
+    width: 48px;
+    height: 48px;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons .company-face-in-sack:hover {
+    cursor: pointer;
+  }
+  div.choose-game-container div.game-block div.help-text {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 10px;
+  }
+  div.choose-game-container div.game-block div.game-text {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  div.choose-game-container div.game-block div.game-choice {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+  }
+  div.choose-game-container div.game-block div.game-choice div.radio-choose {
+    padding: 10px 10px 0 10px;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade {
+    flex-direction: row;
+    margin: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade div.form-check {
+    padding: 0 10px 10px 10px;
+    flex-direction: column;
+    margin-right: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade div.form-check:first-child {
+    margin-left: 27px;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade label.form-check-label {
+    font-size: 14px;
+    padding-top: 5px;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value #myInput {
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value .form-group {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value .form-control {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border: solid 3px #41739D;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value #id_choice_of_number_of_shares {
+    max-width: 166px;
+    height: 40px;
+    left: 550px;
+    top: 1637px;
+    font-size: 14px;
+    color: black;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+  }
 }
 @media (min-width: 375px) {
-  /*******************************
-  *  Hide otree default message  *
-  ********************************/
-  .otree-timer {
-    display: none;
-  }
-
-  .otree-title {
-    display: none;
-  }
-
   /******************************
   *   Play.html info styling    *
   *******************************/
@@ -834,7 +1065,7 @@
   .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
     font-size: 38px;
     margin: 180px 0 0 0;
-    width: 200px;
+    width: 189px;
   }
   .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
     width: 100%;
@@ -1183,6 +1414,248 @@
     color: black;
     font-size: 14px;
   }
+
+  /*********************
+  * *  Choose.html * *
+  **********************/
+  div.choose-game-container {
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 16px;
+    letter-spacing: 0.5px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 4%;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+    border-radius: 10px;
+    width: 100%;
+    background-color: white;
+    padding: 20px;
+  }
+  div.choose-game-container div.game-content {
+    width: 100%;
+  }
+  div.choose-game-container div.game-content div.game-timer {
+    position: fixed;
+    top: 3%;
+    left: 37%;
+    right: 0;
+    width: 100%;
+    display: flex;
+    text-align: center;
+    font-size: 20px;
+  }
+  div.choose-game-container div.game-content div.game-timer div.game-timer-content {
+    border: solid 6px #41739D;
+    margin-top: -6%;
+    background-color: white;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 5px 5px 5px 5px;
+  }
+  div.choose-game-container div.header-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    margin-top: 22%;
+  }
+  div.choose-game-container div.header-block h2.company-title {
+    font-family: "Noticia Text", serif;
+    font-weight: bolder;
+    letter-spacing: 2px;
+    font-size: 25px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    text-transform: uppercase;
+    width: 100%;
+    padding: 0 0 10px 0;
+  }
+  div.choose-game-container div.header-block div.table-description {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 16px;
+    font-family: "Noticia Text", serif;
+  }
+  div.choose-game-container div.header-block div.table-description p {
+    margin-bottom: 0;
+  }
+  div.choose-game-container div.game-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block {
+    padding-left: 2%;
+    display: flex;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table {
+    justify-content: center;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    width: 320px;
+    display: inline-table;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table td {
+    vertical-align: middle;
+    padding: 0.45rem;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 14px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data {
+    font-size: 14px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data img.reveal-face {
+    width: 35px;
+    height: 35px;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.first-round-game-block {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+  }
+  div.choose-game-container div.game-block div.sack-button-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+    margin: 0 10px;
+    height: 210px;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons {
+    margin: 70px 0 0 0;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons:hover {
+    cursor: pointer;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons img.sack-button {
+    margin: 0;
+    padding: 0;
+    width: 48px;
+    height: 48px;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons .company-face-in-sack {
+    width: 48px;
+    height: 48px;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons .company-face-in-sack:hover {
+    cursor: pointer;
+  }
+  div.choose-game-container div.game-block div.help-text {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 10px;
+  }
+  div.choose-game-container div.game-block div.game-text {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  div.choose-game-container div.game-block div.game-choice {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+  }
+  div.choose-game-container div.game-block div.game-choice div.radio-choose {
+    padding: 10px 10px 0 10px;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade {
+    flex-direction: row;
+    margin: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade div.form-check {
+    padding: 0 10px 10px 10px;
+    flex-direction: column;
+    margin-right: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade div.form-check:first-child {
+    margin-left: 27px;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade label.form-check-label {
+    font-size: 16px;
+    padding-top: 5px;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value #myInput {
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value .form-group {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value .form-control {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border: solid 3px #41739D;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value #id_choice_of_number_of_shares {
+    max-width: 166px;
+    height: 40px;
+    left: 550px;
+    top: 1637px;
+    font-size: 16px;
+    color: black;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+  }
 }
 @media (min-width: 768px) {
   /*******************************
@@ -1199,7 +1672,7 @@
   /******************************
   *   Play.html info styling    *
   *******************************/
-  .daytrader-game-container {
+  div.daytrader-game-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1219,67 +1692,68 @@
       *  All day trader pages   *
     *****************************/
   }
-  .daytrader-game-container .content-container {
+  div.daytrader-game-container div.content-container {
     width: 80%;
   }
-  .daytrader-game-container .daytrader-intro-frontpage-img {
+  div.daytrader-game-container .daytrader-intro-frontpage-img {
     width: 490px;
     height: 630px;
   }
-  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+  div.daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
     font-size: 50px;
     margin: 250px 0 0 20px;
-    width: 307px;
+    width: 189px;
   }
-  .daytrader-game-container .daytrader-intro-container-first {
-    flex-direction: row;
+  div.daytrader-game-container .daytrader-intro-container-first {
     margin: 5px 0 0 0;
     width: 100%;
+    flex-direction: column-reverse;
   }
-  .daytrader-game-container .daytrader-intro-container-second {
+  div.daytrader-game-container .daytrader-intro-container-second {
     flex-direction: row;
   }
-  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
+  div.daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
     width: 75%;
   }
-  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
+  div.daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
     width: 25%;
     margin: 0 0 0 10px;
   }
-  .daytrader-game-container .daytrader-sack {
+  div.daytrader-game-container .daytrader-sack {
     margin: 0 20px;
   }
-  .daytrader-game-container .daytrader-intro-title {
+  div.daytrader-game-container .daytrader-intro-title {
     font-size: 80px;
     padding: 20px 0 0 0;
     letter-spacing: 8px;
   }
-  .daytrader-game-container .daytrader-sack {
+  div.daytrader-game-container .daytrader-sack {
     height: 230px;
     padding-bottom: 20px;
   }
-  .daytrader-game-container .daytrader-intro-container-first {
+  div.daytrader-game-container .daytrader-intro-container-first {
     display: flex;
     justify-content: center;
     flex-direction: row;
     width: 100%;
   }
-  .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
+  div.daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
     align-self: center;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-round-title {
+  div.daytrader-game-container .daytrader-round-title {
     font-size: 40px;
     padding: 10px 0 10px 0;
   }
-  .daytrader-game-container .daytrader-round-info {
+  div.daytrader-game-container .daytrader-round-info {
     font-size: 20px;
     font-family: "Patrick Hand", sans-serif;
   }
-  .daytrader-game-container .daytrader-round-info h3 {
+  div.daytrader-game-container .daytrader-round-info h3 {
     font-weight: bold;
+    font-size: 25px;
   }
-  .daytrader-game-container .round-introduction {
+  div.daytrader-game-container .round-introduction {
     font-family: "Patrick Hand", cursive;
     display: flex;
     justify-content: center;
@@ -1287,58 +1761,51 @@
     width: 100%;
     align-items: center;
   }
-  .daytrader-game-container .company-face {
+  div.daytrader-game-container .company-face {
     width: 50px;
     height: 50px;
   }
-  .daytrader-game-container .daytrader-table {
+  div.daytrader-game-container .daytrader-table {
     margin: 10px 0;
     border-collapse: separate;
     border-spacing: 0 0.5em;
   }
-  .daytrader-game-container .daytrader-table .border-corner-left {
+  div.daytrader-game-container .daytrader-table .border-corner-left {
     border-radius: 10px 0 0 10px;
   }
-  .daytrader-game-container .daytrader-table .border-corner-right {
+  div.daytrader-game-container .daytrader-table .border-corner-right {
     border-radius: 0 10px 10px 0;
   }
-  .daytrader-game-container .daytrader-table .daytrader-table-header {
-    background: #41739D;
-    color: white;
-    font-weight: bold;
-    font-family: "Patrick Hand", sans-serif;
+  div.daytrader-game-container .daytrader-table .daytrader-table-header {
     font-size: 30px;
-    border-top: none !important;
-    text-align: center;
-    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
   }
-  .daytrader-game-container .daytrader-table .daytrader-table-data {
+  div.daytrader-game-container .daytrader-table .daytrader-table-data {
     font-size: 26px;
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-table .daytrader-table-row {
+  div.daytrader-game-container .daytrader-table .daytrader-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
-  .daytrader-game-container .daytrader-form-container {
+  div.daytrader-game-container .daytrader-form-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
-  .daytrader-game-container .daytrader-form-container .daytrader-form-info {
+  div.daytrader-game-container .daytrader-form-container .daytrader-form-info {
     font-size: 22px;
     font-family: "Patrick Hand", sans-serif;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-submit-value #myInput {
+  div.daytrader-game-container .daytrader-submit-value #myInput {
     font-size: 22px;
   }
-  .daytrader-game-container .daytrader-submit-value .form-control {
+  div.daytrader-game-container .daytrader-submit-value .form-control {
     width: 70%;
   }
-  .daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
+  div.daytrader-game-container .daytrader-submit-value #id_choice_of_number_of_shares {
     max-width: 344px !important;
     height: 50px;
     left: 550px;
@@ -1349,77 +1816,24 @@
     box-sizing: border-box;
     border-radius: 30px;
   }
-  .daytrader-game-container .field-choice_of_number_of_shares {
-    display: flex;
-    justify-content: center;
+  div.daytrader-game-container .reveal-face {
+    width: 35px;
+    height: 35px;
   }
-  .daytrader-game-container .daytrader-next-btn-container {
-    display: flex;
-    justify-content: center;
-  }
-  .daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
-    font-size: 25px;
-    width: 334px;
-    height: 45px;
-  }
-  .daytrader-game-container .reveal-face {
-    width: 40px;
-    height: 40px;
-  }
-  .daytrader-game-container .field-choice_of_trade {
-    margin: 50px 0 0 0;
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check {
-    display: flex;
-    margin-right: 0;
-    padding-right: 25px;
-    flex-direction: column;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check .form-check-label {
-    font-family: "Patrick Hand", sans-serif;
-    font-size: 22px;
-    text-transform: capitalize;
-    text-align: center;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio] {
-    -webkit-appearance: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    outline: none;
-    border: 3px solid #41739D;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
-    content: "";
-    display: block;
-    width: 60%;
-    height: 60%;
-    margin: 20% auto;
-    border-radius: 50%;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
-    background: #41739D;
-  }
-  .daytrader-game-container .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
-    border-color: #41739D;
-  }
-  .daytrader-game-container .daytrader-info-choice {
+  div.daytrader-game-container .daytrader-info-choice {
     width: 100%;
   }
-  .daytrader-game-container #tableResults {
+  div.daytrader-game-container #tableResults {
     display: inline-table;
     width: 100%;
   }
-  .daytrader-game-container #tableResults .daytrader-table-header {
+  div.daytrader-game-container #tableResults .daytrader-table-header {
     font-size: 20px;
   }
-  .daytrader-game-container #tableResults .daytrader-table-data {
+  div.daytrader-game-container #tableResults .daytrader-table-data {
     font-size: 18px;
   }
-  .daytrader-game-container .results-desc {
+  div.daytrader-game-container .results-desc {
     padding: 0 30px;
   }
 
@@ -1662,70 +2076,260 @@
     padding: 0;
     text-align: center;
   }
-}
-@media (min-width: 1024px) {
-  /*******************************
-  *  Hide otree default message  *
-  ********************************/
-  .otree-timer {
-    display: none;
-  }
 
-  .otree-title {
-    display: none;
-  }
-
-  /******************************
-  *   Play.html info styling    *
-  *******************************/
-  .field-choice_of_trade {
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    flex-direction: row;
-  }
-  .field-choice_of_trade .form-check {
-    display: flex;
-    flex-direction: row;
-    margin-right: 0;
-  }
-  .field-choice_of_trade .form-check .form-check-label {
+  /*********************
+  * *  Choose.html * *
+  **********************/
+  div.choose-game-container {
     font-family: "Patrick Hand", sans-serif;
-    font-size: 20px;
-    text-transform: capitalize;
-    margin-left: 50px;
-  }
-  .field-choice_of_trade .form-check input.form-check-input[type=radio] {
-    -webkit-appearance: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    outline: none;
-    border: 3px solid #41739D;
-    position: absolute;
-  }
-  .field-choice_of_trade .form-check input.form-check-input[type=radio]:before {
-    content: "";
-    display: block;
-    width: 60%;
-    height: 60%;
-  }
-  .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked:before {
-    background: #41739D;
-  }
-  .field-choice_of_trade .form-check input.form-check-input[type=radio]:checked {
-    border-color: #41739D;
-  }
-
-  .daytrader-game-container {
+    font-size: 18px;
+    letter-spacing: 0.5px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    margin-top: 2%;
+    margin-top: 4%;
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     border-radius: 10px;
     width: 90%;
     background-color: white;
+    padding: 20px;
+  }
+  div.choose-game-container div.game-content {
+    width: 100%;
+  }
+  div.choose-game-container div.game-content div.game-timer {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    text-align: center;
+    font-size: 23px;
+    z-index: 1;
+  }
+  div.choose-game-container div.game-content div.game-timer div.game-timer-content {
+    width: 20%;
+    border: solid 6px #41739D;
+    margin-top: -6%;
+    background-color: white;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 5px 5px 5px 5px;
+  }
+  div.choose-game-container div.header-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    margin-top: 2%;
+  }
+  div.choose-game-container div.header-block h2.company-title {
+    font-family: "Noticia Text", serif;
+    font-weight: bolder;
+    letter-spacing: 2px;
+    font-size: 30px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    text-transform: uppercase;
+    width: 100%;
+    padding: 0 0 10px 0;
+  }
+  div.choose-game-container div.header-block div.table-description {
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 18px;
+    font-family: "Noticia Text", serif;
+  }
+  div.choose-game-container div.header-block div.table-description p {
+    margin-bottom: 0;
+  }
+  div.choose-game-container div.game-block {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block {
+    padding-left: 2%;
+    display: flex;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table {
+    justify-content: center;
+    border-collapse: separate;
+    border-spacing: 0 0.5em;
+    width: 320px;
+    display: inline-table;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table td {
+    vertical-align: middle;
+    padding: 0.45rem;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-left {
+    border-radius: 10px 0 0 10px;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.border-corner-right {
+    border-radius: 0 10px 10px 0;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-corners th.table-header {
+    background: #41739D;
+    color: white;
+    font-weight: bold;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 16px;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row {
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data {
+    font-size: 16px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data img.reveal-face {
+    width: 35px;
+    height: 35px;
+  }
+  div.choose-game-container div.game-block div.right-game-block table.company-table .daytrader-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    font-size: 18px;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.first-round-game-block {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    flex-direction: column;
+  }
+  div.choose-game-container div.game-block div.sack-button-container {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+    margin: 0 10px;
+    height: 210px;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons {
+    margin: 70px 0 0 0;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons:hover {
+    cursor: pointer;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons img.sack-button {
+    margin: 0;
+    padding: 0;
+    width: 48px;
+    height: 48px;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons .company-face-in-sack {
+    width: 48px;
+    height: 48px;
+  }
+  div.choose-game-container div.game-block div.sack-button-container div.sack-buttons .company-face-in-sack:hover {
+    cursor: pointer;
+  }
+  div.choose-game-container div.game-block div.help-text {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    font-size: 13px;
+  }
+  div.choose-game-container div.game-block div.game-text {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  div.choose-game-container div.game-block div.game-choice {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    flex-direction: column;
+  }
+  div.choose-game-container div.game-block div.game-choice div.radio-choose {
+    padding: 10px 10px 0 10px;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade {
+    flex-direction: row;
+    margin: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade div.form-check {
+    padding: 0 10px 10px 10px;
+    flex-direction: column;
+    margin-right: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade div.form-check:first-child {
+    margin-left: 27px;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade label.form-check-label {
+    font-size: 18px;
+    padding-top: 5px;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value #myInput {
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    text-align: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value .form-group {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value .form-control {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    border: solid 3px #41739D;
+  }
+  div.choose-game-container div.game-block div.game-choice div.submit-value #id_choice_of_number_of_shares {
+    max-width: 166px;
+    height: 40px;
+    left: 550px;
+    top: 1637px;
+    font-size: 18px;
+    color: black;
+    border: 5px solid #41739D;
+    box-sizing: border-box;
+    border-radius: 30px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+  }
+}
+@media (min-width: 1024px) {
+  /*******************************
+  *  Intro pages - DayTrader  *
+  ********************************/
+  div.daytrader-game-container {
+    margin-top: 2%;
+    width: 90%;
     padding: 40px 7.5%;
     /**********************
     *    intro1.html      *
@@ -1743,123 +2347,126 @@
       *  All day trader pages   *
     *****************************/
   }
-  .daytrader-game-container .daytrader-sack-button-container {
+  div.daytrader-game-container div.daytrader-sack-button-container {
     margin: 0 10px;
     height: 290px;
   }
-  .daytrader-game-container .daytrader-sack-button-container .daytrader-sack-buttons {
+  div.daytrader-game-container div.daytrader-sack-button-container div.daytrader-sack-buttons {
     margin: 100px 0 0 4px;
   }
-  .daytrader-game-container .daytrader-sack-button-container .company-face {
-    width: 35px;
-    height: 35px;
+  div.daytrader-game-container div.daytrader-sack-button-container img.company-face {
+    width: 60px;
+    height: 60px;
   }
-  .daytrader-game-container .daytrader-sack-button-container .result-table-face-1 {
-    margin: 77px 0 0 14px;
+  div.daytrader-game-container div.daytrader-sack-button-container img.company-face-in-sack {
+    width: 60px;
+    height: 60px;
   }
-  .daytrader-game-container .daytrader-sack-button-container .result-table-face-2 {
-    margin: 3px 0 0 0;
+  div.daytrader-game-container div.daytrader-sack-button-container img.company-face-in-sack:hover {
+    cursor: pointer;
   }
-  .daytrader-game-container .daytrader-sack-button-container .result-table-face-3 {
-    margin: 77px 14px 0 0;
-  }
-  .daytrader-game-container .sack-button {
+  div.daytrader-game-container .sack-button {
     margin: 0;
     padding: 0;
     width: 60px;
     height: 60px;
   }
-  .daytrader-game-container .content-container {
+  div.daytrader-game-container .content-container {
     width: 70%;
   }
-  .daytrader-game-container .future-modal-content, .daytrader-game-container .short-modal-content, .daytrader-game-container .long-modal-content, .daytrader-game-container .info-cascade-modal-content, .daytrader-game-container lemming-modal {
+  div.daytrader-game-container .future-modal-content, div.daytrader-game-container .short-modal-content, div.daytrader-game-container .long-modal-content, div.daytrader-game-container .info-cascade-modal-content, div.daytrader-game-container lemming-modal {
     width: 50%;
   }
-  .daytrader-game-container .daytrader-intro-info-container {
+  div.daytrader-game-container .daytrader-intro-info-container {
     margin: 10px 0;
   }
-  .daytrader-game-container .daytrader-intro-title {
+  div.daytrader-game-container .daytrader-intro-title {
     font-size: 120px;
     margin: 0;
   }
-  .daytrader-game-container .daytrader-intro-frontpage-img {
+  div.daytrader-game-container .daytrader-intro-frontpage-img {
     width: 450px;
     height: 550px;
     display: flex;
     justify-content: center;
     align-items: center;
   }
-  .daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
+  div.daytrader-game-container .daytrader-intro-frontpage-img .daytrader-start-game-btn {
     font-size: 55px;
     margin: 250px 0 0 11px;
     width: 280px;
   }
-  .daytrader-game-container .daytrader-sack {
+  div.daytrader-game-container .daytrader-sack {
     height: 300px;
     padding-bottom: 20px;
   }
-  .daytrader-game-container .daytrader-intro-container-first {
+  div.daytrader-game-container .daytrader-intro-container-first {
     display: flex;
     justify-content: center;
     flex-direction: row;
   }
-  .daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
+  div.daytrader-game-container .daytrader-intro-container-first .daytrader-intro-first {
     align-self: center;
     width: 40%;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-intro-container-second {
+  div.daytrader-game-container .daytrader-intro-container-second {
     display: flex;
     margin: 0;
     flex-direction: row;
     align-items: center;
   }
-  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
+  div.daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-info {
     flex-grow: 2;
   }
-  .daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
+  div.daytrader-game-container .daytrader-intro-container-second .daytrader-intro-container-second-button {
     flex-grow: 1;
     margin: 0 0 0 100px;
   }
-  .daytrader-game-container .go-long-content {
+  div.daytrader-game-container .go-long-content {
     margin: 50px 0;
     width: 100%;
     display: none;
   }
-  .daytrader-game-container #continue {
+  div.daytrader-game-container #continue {
     display: none;
   }
-  .daytrader-game-container .daytrader-round-title {
+  div.daytrader-game-container .daytrader-round-title {
     font-size: 50px;
     width: 100%;
   }
-  .daytrader-game-container .daytrader-round-info {
+  div.daytrader-game-container .daytrader-round-info {
     font-size: 25px;
     width: 100%;
     padding-top: 10px;
   }
-  .daytrader-game-container .daytrader-next-btn-container {
+  div.daytrader-game-container .daytrader-next-btn-container {
     display: flex;
     justify-content: center;
   }
-  .daytrader-game-container .company-face {
+  div.daytrader-game-container .daytrader-next-btn-container .daytrader-next-btn {
+    font-size: 25px;
+    width: 310px;
+    height: 50px;
+  }
+  div.daytrader-game-container .company-face {
     width: 50px;
     height: 50px;
   }
-  .daytrader-game-container .daytrader-table {
+  div.daytrader-game-container .daytrader-table {
     margin: 10px 0;
     border-collapse: separate;
     border-spacing: 0 0.5em;
     width: 100%;
     display: inline-table;
   }
-  .daytrader-game-container .daytrader-table .border-corner-left {
+  div.daytrader-game-container .daytrader-table .border-corner-left {
     border-radius: 10px 0 0 10px;
   }
-  .daytrader-game-container .daytrader-table .border-corner-right {
+  div.daytrader-game-container .daytrader-table .border-corner-right {
     border-radius: 0 10px 10px 0;
   }
-  .daytrader-game-container .daytrader-table .daytrader-table-header {
+  div.daytrader-game-container .daytrader-table .daytrader-table-header {
     background: #41739D;
     color: white;
     font-weight: bold;
@@ -1869,44 +2476,44 @@
     text-align: center;
     box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
   }
-  .daytrader-game-container .daytrader-table .daytrader-table-data {
+  div.daytrader-game-container .daytrader-table .daytrader-table-data {
     font-size: 26px;
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
     text-align: center;
   }
-  .daytrader-game-container .daytrader-table .daytrader-table-row {
+  div.daytrader-game-container .daytrader-table .daytrader-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
-  .daytrader-game-container .daytrader-form-container {
+  div.daytrader-game-container .daytrader-form-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
-  .daytrader-game-container .daytrader-form-container .daytrader-form-info {
+  div.daytrader-game-container .daytrader-form-container .daytrader-form-info {
     font-size: 25px;
     font-family: "Patrick Hand", sans-serif;
   }
-  .daytrader-game-container .field-choice_of_number_of_shares {
+  div.daytrader-game-container .field-choice_of_number_of_shares {
     width: 40%;
   }
-  .daytrader-game-container .reveal-face {
+  div.daytrader-game-container .reveal-face {
     width: 40px;
     height: 40px;
   }
-  .daytrader-game-container .daytrader-admin-company-list {
+  div.daytrader-game-container .daytrader-admin-company-list {
     font-size: 22px;
     display: flex;
     align-items: center;
   }
-  .daytrader-game-container #tableResults .daytrader-table-header {
+  div.daytrader-game-container #tableResults .daytrader-table-header {
     font-size: 22px;
   }
-  .daytrader-game-container #tableResults .daytrader-table-data {
+  div.daytrader-game-container #tableResults .daytrader-table-data {
     font-size: 20px;
   }
-  .daytrader-game-container #tableResults .results-sack-button-container {
+  div.daytrader-game-container #tableResults .results-sack-button-container {
     margin: 0 10px;
     width: 119px;
     height: 154px;
@@ -1915,17 +2522,17 @@
     justify-content: center;
     background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
   }
-  .daytrader-game-container #tableResults .results-sack-button-container .company-face {
+  div.daytrader-game-container #tableResults .results-sack-button-container .company-face {
     width: 35px;
     height: 35px;
   }
-  .daytrader-game-container #tableResults .results-sack-button-container .result-table-face-1 {
+  div.daytrader-game-container #tableResults .results-sack-button-container .result-table-face-1 {
     margin: 77px 0 0 14px;
   }
-  .daytrader-game-container #tableResults .results-sack-button-container .result-table-face-2 {
+  div.daytrader-game-container #tableResults .results-sack-button-container .result-table-face-2 {
     margin: 3px 0 0 0;
   }
-  .daytrader-game-container #tableResults .results-sack-button-container .result-table-face-3 {
+  div.daytrader-game-container #tableResults .results-sack-button-container .result-table-face-3 {
     margin: 77px 14px 0 0;
   }
 
@@ -2215,6 +2822,15 @@
     width: 50px;
     height: 50px;
   }
+  .report-info .result-table-face-1 {
+    margin: 77px 0 0 14px;
+  }
+  .report-info .result-table-face-2 {
+    margin: 3px 0 0 0;
+  }
+  .report-info .result-table-face-3 {
+    margin: 77px 14px 0 0;
+  }
   .report-info .graph-image {
     width: 700px;
     height: 400px;
@@ -2320,6 +2936,13 @@
     width: 35px;
     height: 35px;
   }
+  .admin-table-data .admin-sack-button-container .company-face-in-sack {
+    width: 60px;
+    height: 60px;
+  }
+  .admin-table-data .admin-sack-button-container .company-face-in-sack:hover {
+    cursor: pointer;
+  }
   .admin-table-data .admin-sack-button-container .admin-table-face-1 {
     margin: 77px 0 0 14px;
   }
@@ -2369,6 +2992,10 @@
     width: 100%;
   }
   div.choose-game-container div.game-content div.game-timer {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
     width: 100%;
     display: flex;
     flex-direction: row;
@@ -2380,7 +3007,7 @@
   div.choose-game-container div.game-content div.game-timer div.game-timer-content {
     width: 20%;
     border: solid 6px #41739D;
-    margin-top: -4%;
+    margin-top: -5%;
     background-color: white;
     font-weight: bold;
     letter-spacing: 1px;
@@ -2388,24 +3015,20 @@
   }
   div.choose-game-container div.header-block {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: center;
     width: 100%;
     margin-top: 2%;
   }
   div.choose-game-container div.header-block h2.company-title {
-    font-family: "Noticia Text", serif;
-    font-weight: bolder;
-    letter-spacing: 2px;
     font-size: 35px;
-    display: flex;
-    flex-direction: column;
-    text-align: center;
-    text-transform: uppercase;
-    color: #41739D;
-    width: 50%;
-    padding: 10px 0 10px 0;
-    margin-top: -2%;
+    padding: 0 0 10px 0;
+  }
+  div.choose-game-container div.header-block div.table-description {
+    font-size: 20px;
+  }
+  div.choose-game-container div.header-block div.table-description p {
+    margin-bottom: 0;
   }
   div.choose-game-container div.game-block {
     width: 100%;
@@ -2413,19 +3036,11 @@
     flex-direction: row;
   }
   div.choose-game-container div.game-block div.right-game-block {
-    width: 30%;
-    display: flex;
-    justify-content: center;
-    margin-right: 12%;
+    padding-left: 2%;
   }
   div.choose-game-container div.game-block div.right-game-block table.company-table {
-    justify-content: center;
-    margin: 10px 0;
-    border-collapse: separate;
-    border-spacing: 0 0.5em;
+    margin: 0;
     width: 500px;
-    display: inline-table;
-    text-align: center;
   }
   div.choose-game-container div.game-block div.right-game-block table.company-table td {
     vertical-align: middle;
@@ -2448,7 +3063,7 @@
     box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
   }
   div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row {
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
   div.choose-game-container div.game-block div.right-game-block table.company-table tr.table-row td.table-data {
@@ -2475,16 +3090,13 @@
     display: flex;
     flex-direction: column;
   }
-  div.choose-game-container div.game-block div.left-game-block {
-    width: 70%;
-  }
   div.choose-game-container div.game-block div.sack-button-container {
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
-    margin: 0 10px;
+    margin: 0;
     height: 210px;
   }
   div.choose-game-container div.game-block div.sack-button-container div.sack-buttons {
@@ -2512,10 +3124,6 @@
     text-align: center;
     font-size: 15px;
   }
-  div.choose-game-container div.game-block div.table-description {
-    padding: 10px 0 10px 0;
-    text-align: center;
-  }
   div.choose-game-container div.game-block div.game-text {
     display: flex;
     justify-content: center;
@@ -2533,6 +3141,26 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade {
+    flex-direction: row;
+    margin: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade div.form-check {
+    padding: 0 0 0 9px;
+    flex-direction: row;
+    margin-right: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade div.form-check input.form-check-input {
+    margin-right: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade div.form-check:first-child {
+    margin-left: 0;
+  }
+  div.choose-game-container div.game-block div.game-choice div.choice-fields div.field-choice_of_trade label.form-check-label {
+    font-size: 18px;
+    padding-top: 0;
+    padding-left: 10px;
   }
   div.choose-game-container div.game-block div.game-choice div.submit-value {
     display: none;
