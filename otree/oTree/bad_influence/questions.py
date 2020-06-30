@@ -33,7 +33,6 @@ def kontrol(hub, gender, number_of_friends):
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
         'result_page_text_1': "De blå ansigter viser dem som valgte blå, de røde ansigter viser dem som valgte rød. (" + face_expl + " " + graph_expl + ")",
-        'result_page_text_2': "",
         'graph_explanation': "",
         'face_explanation': "",
         'stubbornness': stubborn_expl,
