@@ -31,8 +31,8 @@ its state with a fixed probability, a mix of strategies need to be employed.
 
 
 class Constants(BaseConstants):
-    timeout90 = 900
-    timeout30 = 600
+    timeout90 = 90
+    timeout30 = 30
     name_in_url = 'daytrader'
     players_per_group = None
     num_rounds = 10
@@ -195,7 +195,7 @@ class Player(BasePlayer):
     price_change = models.CurrencyField()
     choice_of_number_of_shares = models.PositiveIntegerField(default=0, max=1000, widget=forms.TextInput(attrs={
         'autofocus': True,
-        'id': 'myInput'
+        'id': 'myInput',
     }))
     can_buy = models.PositiveIntegerField()
     tjent_ialt = models.CurrencyField()

@@ -1,41 +1,27 @@
 @media (min-width: 1024px) {
   /*******************************
-  *  Hide otree default message  *
+  *  Intro pages - DayTrader  *
   ********************************/
 
-  .otree-timer {
-    display: none
-  }
-
-  .otree-title {
-    display: none
-  }
-
-
-  /******************************
-  *   Play.html info styling    *
-  *******************************/
-
-  .daytrader-game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  div.daytrader-game-container {
     margin-top: 2%;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-    border-radius: 10px;
     width: 90%;
-    background-color: white;
     padding: 40px 7.5%;
 
-    .daytrader-sack-button-container {
+    div.daytrader-sack-button-container {
       margin: 0 10px;
       height: 290px;
 
-      .daytrader-sack-buttons {
+      div.daytrader-sack-buttons {
         margin: 100px 0 0 4px;
       }
 
-      .company-face-in-sack {
+      img.company-face {
+        width: 60px;
+        height: 60px;
+      }
+
+      img.company-face-in-sack {
         width: 60px;
         height: 60px;
 
@@ -43,31 +29,13 @@
           cursor: pointer;
         }
       }
-
-      .company-face {
-        width: 35px;
-        height: 35px;
-      }
-
-      .result-table-face-1 {
-        margin: 77px 0 0 14px;
-      }
-
-      .result-table-face-2 {
-        margin: 3px 0 0 0;
-      }
-
-      .result-table-face-3 {
-        margin: 77px 14px 0 0;
-      }
     }
 
-    .sack-btn {
+    .sack-button {
       margin: 0;
       padding: 0;
       width: 60px;
       height: 60px;
-
 
     }
 
@@ -181,6 +149,12 @@
       display: flex;
       justify-content: center;
 
+      .daytrader-next-btn {
+        font-size: 25px;
+        width: 310px;
+        height: 50px;
+      }
+
 
     }
 
@@ -243,46 +217,8 @@
       }
     }
 
-    // Container til input af antal aktier og næste knap
-    .daytrader-submit-value {
 
-      #myInput {
-        font-size: 24px;
-      }
 
-     .form-control {
-        width: 70%;
-        border: solid 3px $ku-dark-blue;
-      }
-
-      #id_choice_of_number_of_shares {
-        max-width: 344px !important;
-        height: 50px;
-        left: 550px;
-        top: 1637px;
-        font-size: 23px;
-        color: black;
-        border: 5px solid #41739D;
-        box-sizing: border-box;
-        border-radius: 30px;
-      }
-
-      .otree-btn-next {
-        font-size: 30px;
-        background: $ku-dark-blue;
-        font-family: "Patrick Hand", sans-serif;
-        width: 344px;
-        height: 55px;
-
-        border: 5px solid $ku-dark-blue;
-        box-sizing: border-box;
-        border-radius: 30px;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-    }
 
     .field-choice_of_number_of_shares {
       width: 40%;
@@ -295,49 +231,7 @@
     }
 
 
-    .field-choice_of_trade {
-      margin: 0;
-      display: flex;
-      justify-content: center;
 
-      .form-check {
-        display: flex;
-        flex-direction: row;
-        margin-right: 0;
-
-        .form-check-label {
-          font-family: "Patrick Hand", sans-serif;
-          font-size: 24px;
-          text-transform: capitalize;
-          margin-left: 50px;
-        }
-
-        input.form-check-input[type="radio"] {
-          -webkit-appearance: none;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          outline: none;
-          border: 3px solid $ku-dark-blue;
-          position: absolute;
-
-          &:before {
-            content: '';
-            display: block;
-            width: 60%;
-            height: 60%;
-          }
-
-          &:checked:before {
-            background: $ku-dark-blue;
-          }
-
-          &:checked {
-            border-color: $ku-dark-blue;
-          }
-        }
-      }
-    }
 
     .daytrader-admin-company-list {
       font-size: 22px;
@@ -575,6 +469,7 @@
   *********************************/
 
 
+
   .choice-button-holder {
     justify-content: center;
     display: flex;
@@ -710,6 +605,18 @@
       height: 50px;
     }
 
+    .result-table-face-1 {
+        margin: 77px 0 0 14px;
+      }
+
+      .result-table-face-2 {
+        margin: 3px 0 0 0;
+      }
+
+      .result-table-face-3 {
+        margin: 77px 14px 0 0;
+      }
+
     .graph-image {
       width: 700px;
       height: 400px;
@@ -794,6 +701,21 @@
       }
     }
   }
+    .otree-btn-next {
+                    font-size: 30px;
+                    background: $ku-dark-blue;
+                    font-family: "Patrick Hand", sans-serif;
+                    width: 344px;
+                    height: 55px;
+
+                    border: 5px solid $ku-dark-blue;
+                    box-sizing: border-box;
+                    border-radius: 30px;
+
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                  }
 
   .admin-table-data {
     display: flex;
@@ -813,8 +735,17 @@
       }
 
       .company-face {
-        width: 35px;
+         width: 35px;
         height: 35px;
+      }
+
+      .company-face-in-sack {
+        width: 60px;
+        height: 60px;
+
+        &:hover {
+          cursor: pointer;
+        }
       }
 
 
@@ -831,7 +762,7 @@
       }
     }
 
-    .sack-btn {
+    .sack-button {
       margin: 0;
       padding: 0;
       width: 60px;
@@ -852,7 +783,282 @@
     }
   }
 
+  /*********************
+  * *  Choose.html * *
+  **********************/
 
+   div.choose-game-container {
+      font-family: "Patrick Hand", sans-serif;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-top: 4%;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+      border-radius: 10px;
+      width: 90%;
+      background-color: white;
+      padding: 20px;
+
+      div.game-content {
+        width: 100%;
+
+        div.game-timer {
+            position: relative;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            text-align: center;
+            font-size: 25px;
+            z-index: 1;
+
+            div.game-timer-content {
+              width: 20%;
+              border: solid 6px $ku-dark-blue;
+              margin-top: -5%;
+              background-color: white;
+              font-weight: bold;
+              letter-spacing: 1px;
+              padding: 5px 5px 5px 5px;
+            }
+          }
+         }
+
+        div.header-block {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          width: 100%;
+          margin-top: 2%;
+
+          h2.company-title {
+            font-size: 35px;
+            padding: 0 0 10px 0;
+          }
+
+          div.table-description {
+            font-size: 20px;
+
+              p {
+                margin-bottom: 0;
+              }
+          }
+        }
+
+        div.game-block {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+
+           div.right-game-block  {
+             padding-left: 2%;
+
+              table.company-table {
+                margin: 0;
+                width: 500px;
+
+                td {
+                  vertical-align: middle;
+                  padding: 0.45rem;
+                }
+
+                tr.table-corners {
+
+                    th.border-corner-left {
+                      border-radius: 10px 0 0 10px;
+                    }
+
+                    th.border-corner-right {
+                      border-radius: 0 10px 10px 0;
+                    }
+
+                    th.table-header {
+                      background: $ku-dark-blue;
+                      color: white;
+                      font-weight: bold;
+                      font-family: "Patrick Hand", sans-serif;
+                      font-size: 20px;
+                      border-top: none !important;
+                      text-align: center;
+                      box-shadow: 0px 0px 20px rgba(65, 115, 157, 0.5);
+                    }
+                }
+
+                tr.table-row {
+                  box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+                  border-radius: 10px;
+
+                  td.table-data {
+                    font-size: 20px;
+                    font-family: "Patrick Hand", sans-serif;
+                    border-top: none !important;
+                    text-align: center;
+
+                    img.reveal-face {
+                       width: 35px;
+                       height: 35px;
+                    }
+                  }
+              }
+
+              .daytrader-table-row {
+                box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+                border-radius: 10px;
+                font-size: 13px;
+                font-family: "Patrick Hand", sans-serif;
+                border-top: none !important;
+                text-align: center;
+              }
+
+          }
+        }
+
+          div.first-round-game-block {
+            width: 100%;
+            justify-content: center;
+            display: flex;
+            flex-direction: column;
+          }
+          div.left-game-block {
+
+
+          }
+            div.sack-button-container {
+              width: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background: url("/static/main_platform/otree/media/sack-images/sack-empty.svg") no-repeat center;
+              margin: 0;
+              height: 210px;
+
+              div.sack-buttons {
+                  margin: 70px 0 0 0;
+
+                  &:hover {
+                    cursor: pointer;
+                  }
+
+                  img.sack-button {
+                    margin: 0;
+                    padding: 0;
+                    width: 48px;
+                    height: 48px;
+
+                  }
+                 .company-face-in-sack {
+                    width: 48px;
+                    height: 48px;
+
+                    &:hover {
+                      cursor: pointer;
+                    }
+                 }
+              }
+            }
+            div.help-text {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              font-size: 15px;
+            }
+
+            div.game-text {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              flex-direction: column;
+              margin-top: 10px;
+            }
+
+            div.game-choice {
+              display: flex;
+              justify-content: center;
+              text-align: center;
+              flex-direction: column;
+
+              div.choice-fields {
+                  display: flex;
+                  flex-direction: column;
+                  justify-content: center;
+
+                div.field-choice_of_trade {
+                    flex-direction: row;
+                    margin: 0;
+
+                 div.form-check {
+                    padding: 0 0 0 9px;
+                    flex-direction: row;
+                    margin-right: 0;
+
+                    input.form-check-input {
+                      margin-right: 0;
+
+                    }
+                  }
+
+                  div.form-check:first-child {
+                    margin-left: 0;
+                  }
+
+                  label.form-check-label {
+                    font-size: 18px;
+                    padding-top: 0;
+                    padding-left: 10px;
+                  }
+                }
+              }
+
+              div.submit-value {
+                display: none;
+                flex-direction: column;
+                justify-content: center;
+
+                #myInput {
+                  font-size: 22px;
+                  display: flex;
+                  justify-content: center;
+                  text-align: center;
+                }
+
+                .form-group {
+                  display: flex;
+                  justify-content: center;
+                  margin-bottom: 0;
+                }
+
+
+               .form-control {
+                  display: flex;
+                  justify-content: center;
+                  width: 100%;
+                  border: solid 3px $ku-dark-blue;
+                }
+
+                #id_choice_of_number_of_shares {
+                  max-width: 166px;
+                  height: 40px;
+                  left: 550px;
+                  top: 1637px;
+                  font-size: 20px;
+                  color: black;
+                  border: 5px solid #41739D;
+                  box-sizing: border-box;
+                  border-radius: 30px;
+                  text-align: center;
+                  display: flex;
+                  justify-content: center;
+              }
+            }
+
+        }
+      }
+   }
 
 }
 

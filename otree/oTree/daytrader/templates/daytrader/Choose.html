@@ -16,47 +16,247 @@
             justify-content: center;
         }
 
-        #timer {
-            display: flex;
-            justify-content: center;
+        #countdown {
+            width: 100px;
+            border: 1px solid #000;
+            margin: 10px auto 0;
+            font-size: 60px;
+            text-align: center;
         }
+
     </style>
 {% endblock %}
 {% block content %}
-    <div class="daytrader-game-container">
+    <div class="choose-game-container">
         <div class="game-content">
             <div class="game-timer">
-                <div class="game-timer-content">
-                            <span>RUNDE {{ current_round }}: </span>
+                <div class="game-timer-content" id="game-timer-container">
+                    <span>RUNDE {{ current_round }}: </span>
                     <br>
-                          <span class="otree-timer__time-left"></span>
-
-
+                    <span class="otree-timer__time-left" id="timer_countdown"></span>
                 </div>
-
             </div>
             <div class="header-block">
-                <h2 class="company-title">
+                    <div class="table-description">
+                        <p>Du er trader <b>{{ player.round_number }}</b> og du skal nu handle aktier i firmaet</p>
+                    </div>
+
+             <h2 class="company-title">
                     {{ player.company_name }}
                 </h2>
-                <div class="table-description">
-                    <p>
-                        Du er trader nummer <b>{{ player.round_number }}</b> og du skal nu handle aktier i firmaet
-                        <br><b>'{{ player.company_name }}'</b>
-                    </p>
+
+            </div>
+
+
+            <div class="game-block">
+                 {% if subsession.round_number == 1 %}
+                     <div class="first-round-game-block">
+
+                        <div class="sack-button-container">
+                            <div class="sack-buttons">
+                                <table>
+                                    <tr>
+                                    <td></td>
+                                    <td id="sack-container-1">
+                                        <img
+                                            src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                            alt="unknown face"
+                                            class="sack-button">
+                                    </td>
+                                    <td></td>
+                                    </tr>
+                                    <tr>
+                                    <td id="sack-container-2">
+                                        <img
+                                            src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                            alt="unknown face"
+                                            class="sack-button">
+                                    </td>
+                                    <td></td>
+                                    <td id="sack-container-3">
+                                        <img
+                                            src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                            alt="unknown face"
+                                            class="sack-button">
+                                    </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            </div>
+                             <div class="help-text">
+                                     <p>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</p>
+                             </div>
+
+
+                            <div class="game-choice">
+                                 <div class="game-text">
+                                {% if subsession.round_number == 1 %}
+                                <p>Du skal handle aktier i 10 runde i 10 forskellige firmaer.</p>
+                                <p>Det er første runde, og du er den første trader i dag.</p>
+                                {% else %}
+                                {% endif %}
+
+                            </div>
+                            <div class="radio-choose">
+                                <p>
+                                    Du har <b>{{ player.wallet|c }}</b>
+                                <br>
+                                    Aktieprisen er lige nu <b>{{ player.price|c }}</b>
+                                </p>
+                                <p><b><u>Hvad vil du gøre?</u></b></p>
+                            </div>
+
+                                <div class="choice-container">
+                                     <div class="choice-fields">
+                                        {% formfield player.choice_of_trade label=None %}
+                                    </div>
+                                    <div class="submit-value">
+                                            <p><b><u>Hvor mange aktier?</u></b></p>
+                                            <p>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
+                                                <br>
+                                            {% if subsession.round_number == 1 %}
+                                                <small><i>Husk at gemme nogle penge til de næste 9 runder.</i></small>
+                                            {% else %}
+                                            {% endif %}
+
+                                            {% formfield player.choice_of_number_of_shares label=None %}
+                                            <small><b>Når tiden udløber vil værdien blive gemt.</b></small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                         </div>
+                    </div>
+                 {% else %}
+                <div class="left-game-block">
+
+                    <div class="sack-button-container">
+                        <div class="sack-buttons">
+                            <table>
+                                <tr>
+                                <td></td>
+                                <td id="sack-container-1">
+                                    <img
+                                        src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                        alt="unknown face"
+                                        class="sack-button">
+                                </td>
+                                <td></td>
+                                </tr>
+                                <tr>
+                                <td id="sack-container-2">
+                                    <img
+                                        src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                        alt="unknown face"
+                                        class="sack-button">
+                                </td>
+                                <td></td>
+                                <td id="sack-container-3">
+                                    <img
+                                        src="{% static 'daytrader/media/unknown-face-green.png' %}"
+                                        alt="unknown face"
+                                        class="sack-button">
+                                </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    {% if subsession.round_number == 1 %}
+                    <div class="help-text">
+                         <p>(Tryk på et af spørgsmålstegnene i sækken for at se din private info)</p>
+                    </div>
+                    {% else %}
+
+                    {% endif %}
+
+                    <div class="game-choice">
+                         <div class="game-text">
+                        {% if subsession.round_number == 1 %}
+                        <p>Du skal handle aktier i 10 runde i 10 forskellige firmaer.</p>
+                        <p>Det er første runde, og du er den første trader i dag.</p>
+                        {% else %}
+                        {% endif %}
+
+                    </div>
+                   <div class="radio-choose">
+                        <p>
+                            Du har <b>{{ player.wallet|c }}</b>
+                        <br>
+                            Aktieprisen er lige nu <b>{{ player.price|c }}</b>
+                        </p>
+                        <p><b><u>Hvad vil du gøre?</u></b></p>
+                   </div>
+
+
+
+
+                        <div class="choice-container">
+                                 <div class="choice-fields">
+                                    {% formfield player.choice_of_trade label=None %}
+                                </div>
+                                <div class="submit-value" >
+                                         <p><b><u>Hvor mange aktier?</u></b></p>
+                                        <p>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
+                                        {% formfield player.choice_of_number_of_shares label=None %}
+                                        <small><b>Når tiden udløber vil værdien blive gemt.</b></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <div class="right-game-block">
+                    {% if subsession.round_number > 1 %}
+                    <table class="table company-table">
+                        <tr class="table-corners">
+                            <th class="table-header border-corner-left">Trader</th>
+                            <th class="table-header">Pris</th>
+                            <th class="table-header">Private info</th>
+                            <th class="table-header border-corner-right">Handel</th>
+                        </tr>
+                        {% for r, price, choice, deals, states in data %}
+                            <tr class="table-row">
+                                <td class="company-id table-data"> {{ r }}</td>
+                                <td class="table-data"> {{ price|c }}</td>
+                                <td class="table-data">
+                                    <img src="{% static 'daytrader/media/unknown_face_daytrader.png' %}" alt="unknown face"
+                                     class="reveal-face">
+                                </td>
+                                <td class="table-data">
+                                {% if choice == True %}
+                                    +
+                                {% else %}
+                                    {% if deals > 0 %}
+                                        -
+                                    {% endif %}
+                                {% endif %}
+                                {{ deals }} aktier.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                    {% else %}
+
+
+                    {% endif %}
 
                 </div>
+
             </div>
+          {% endif %}
         </div>
     </div>
 
 
 
-
-
 {% endblock %}
 {% block scripts %}
-    <script>
+       <script>
+
+
+
+       // Prevent submit with enter key
+       $(document).on("keydown", "form", function(event) {
+            return event.key !== "Enter";
+        });
 
 
         let containers = document.getElementsByClassName("faceContainer");
@@ -71,11 +271,12 @@
         let sackContainer2 = document.querySelector("#sack-container-2");
         let sackContainer3 = document.querySelector("#sack-container-3");
 
-        let containerSack = document.querySelector(".daytrader-sack-button-container");
-        let sackButtons = document.getElementsByClassName("sack-btn");
+        let containerSack = document.querySelector(".sack-button-container");
+        let sackButtons = document.getElementsByClassName("sack-button");
 
         let radioButton = document.getElementsByClassName("form-check-input");
-        let inputContainer = document.querySelector(".daytrader-submit-value");
+        let inputContainer = document.querySelector(".submit-value");
+
 
         // Show the InputField, focus the input and select the input
         for (let button = 0; button < radioButton.length; button++) {
@@ -92,15 +293,12 @@
         }
 
 
-
-
         function toggle(className, displayState) {
             let elements = document.getElementsByClassName(className);
 
             for (let i = 0; i < elements.length; i++) {
                 elements[i].style.display = displayState;
             }
-
         }
 
         for (let i = 0; i < sackButtons.length; i++) {
@@ -141,7 +339,7 @@
                 localStorage.setItem("all_selections", JSON.stringify(existingSelections));
 
                 if (sackButtons[i].parentElement.getAttribute("id") === "sack-container-1") {
-                    toggle("sack-btn", "none");
+                    toggle("sack-button", "none");
                     if (drawn_face === true) {
                         sackContainer1.appendChild(happyFace);
                         sackContainer2.appendChild(unknownFace2);
@@ -154,7 +352,7 @@
                 }
 
                 if (sackButtons[i].parentElement.getAttribute("id") === "sack-container-2") {
-                    toggle("sack-btn", "none");
+                    toggle("sack-button", "none");
                     if (drawn_face === true) {
                         sackContainer1.appendChild(unknownFace2);
                         sackContainer2.appendChild(happyFace);
@@ -167,7 +365,7 @@
                 }
 
                 if (sackButtons[i].parentElement.getAttribute("id") === "sack-container-3") {
-                    toggle("sack-btn", "none");
+                    toggle("sack-button", "none");
                     if (drawn_face === true) {
                         sackContainer1.appendChild(unknownFace1);
                         sackContainer2.appendChild(unknownFace2);
@@ -185,29 +383,22 @@
 
         let selection = JSON.parse(localStorage.getItem("selected_click"));
         if (selection.name === "{{ player.company_name }}" && selection.group_id === {{ group.id }}) {
-            try {
-                toggle("sack-btn", "none");
-                let happyFace = document.createElement("img");
-                happyFace.className = "company-face-in-sack";
-                happyFace.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
-                let sadFace = document.createElement("img");
-                sadFace.className = "company-face-in-sack";
-                sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}";
-                let unknownFace1 = document.createElement("img");
-                unknownFace1.className = "company-face-in-sack";
-                unknownFace1.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
-                let unknownFace2 = document.createElement("img");
-                unknownFace2.className = "company-face-in-sack";
-                unknownFace2.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
-            }
-             catch(err) {
-                console.log("Selection-name is null")
-            }
-
-
+            toggle("sack-button", "none");
+            let happyFace = document.createElement("img");
+            happyFace.className = "company-face-in-sack";
+            happyFace.src = "{% static 'daytrader/media/happy_face_daytrader.png' %}";
+            let sadFace = document.createElement("img");
+            sadFace.className = "company-face-in-sack";
+            sadFace.src = "{% static 'daytrader/media/sad_face_daytrader.png' %}";
+            let unknownFace1 = document.createElement("img");
+            unknownFace1.className = "company-face-in-sack";
+            unknownFace1.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
+            let unknownFace2 = document.createElement("img");
+            unknownFace2.className = "company-face-in-sack";
+            unknownFace2.src = "{% static 'daytrader/media/unknown-face-green.png' %}";
 
             if (selection.button_click === "sack-container-1") {
-                toggle("sack-btn", "none");
+                toggle("sack-button", "none");
                 if (drawn_face === true) {
                     sackContainer1.appendChild(happyFace);
                     sackContainer2.appendChild(unknownFace2);
@@ -245,9 +436,6 @@
                 }
             }
         }
-
-
-
 
     </script>
 {% endblock %}
