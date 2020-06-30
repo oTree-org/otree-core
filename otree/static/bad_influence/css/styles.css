@@ -358,101 +358,233 @@
   .intro-title button .button-text:hover {
     background-color: #5f861e;
   }
-}
-/*************************************
-*   Intro2.html table styling   *
-**************************************/
-.intro-2 {
-  font-family: "Patrick Hand", cursive;
-}
-.intro-2 .round-title {
-  font-size: 35px;
-}
-.intro-2 .game-introduction {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  width: 100%;
-}
-.intro-2 .round-info {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  text-align: center;
-}
-.intro-2 .round-info h3 {
-  font-weight: bold;
-}
-.intro-2 .text-column {
-  display: flex;
-  flex-direction: column;
-  text-align: center;
-  width: 100%;
-}
-.intro-2 .svg-column {
-  display: flex;
-  justify-content: flex-end;
-  flex-direction: column;
-  width: 100%;
-  padding-right: 0;
-  margin-bottom: 2%;
-  border-color: #901A1E;
-  border-radius: 2px;
-  border-style: solid solid solid solid;
-}
-.intro-2 .svg-column h2 {
-  font-size: 20px;
-}
-.intro-2 * {
-  box-sizing: border-box;
-}
-.intro-2 *::before, .intro-2 *::after {
-  box-sizing: border-box;
-}
-.intro-2 button {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
-  outline: none;
-  border: 0;
-  vertical-align: middle;
-  text-decoration: none;
-  background: transparent;
-  padding: 0;
-  font-size: inherit;
-  font-family: inherit;
-  z-index: 2;
-}
-.intro-2 button.start-game {
-  height: auto;
-  width: 100%;
-  margin-top: 30px;
-  font-size: 30px;
-  padding: 40px;
-}
-.intro-2 button .button-text {
-  position: absolute;
-  top: -5px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  font-weight: 700;
-  line-height: 1.6;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  background-color: #901A1E;
-  color: white;
-  border-radius: 20px;
-  height: 50px;
-}
-.intro-2 button .button-text {
-  color: #fff;
-}
-.intro-2 .width-size {
-  width: 100%;
-}
 
+  /*************************************
+  *   Intro2.html table styling   *
+  **************************************/
+  .intro-2 {
+    font-family: "Patrick Hand", cursive;
+  }
+  .intro-2 .round-title {
+    font-size: 35px;
+  }
+  .intro-2 .game-introduction {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+  }
+  .intro-2 .round-info {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+  }
+  .intro-2 .round-info h3 {
+    font-weight: bold;
+  }
+  .intro-2 .text-column {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    width: 100%;
+  }
+  .intro-2 .svg-column {
+    display: flex;
+    justify-content: flex-end;
+    flex-direction: column;
+    width: 100%;
+    padding-right: 0;
+    margin-bottom: 2%;
+    border-color: #901A1E;
+    border-radius: 2px;
+    border-style: solid solid solid solid;
+  }
+  .intro-2 .svg-column h2 {
+    font-size: 20px;
+  }
+  .intro-2 * {
+    box-sizing: border-box;
+  }
+  .intro-2 *::before, .intro-2 *::after {
+    box-sizing: border-box;
+  }
+  .intro-2 button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  .intro-2 button.start-game {
+    height: auto;
+    width: 100%;
+    margin-top: 30px;
+    font-size: 30px;
+    padding: 40px;
+  }
+  .intro-2 button .button-text {
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  .intro-2 button .button-text {
+    color: #fff;
+  }
+  .intro-2 .width-size {
+    width: 100%;
+  }
+
+  .report-info div.rapport-header h2 {
+    color: #901A1E;
+  }
+  .report-info .dropdown-questions {
+    width: 90%;
+  }
+  .report-info .dropdown-questions div.report-info-container {
+    background: #901A1E;
+    color: white;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+    padding: 10px 10px 20px 10px;
+  }
+  .report-info .dropdown-questions div.report-info-container div.question-title {
+    color: white;
+    font-size: 16px;
+  }
+  .report-info .dropdown-questions p#d3historyChoice select {
+    border-radius: 10px;
+    font-family: "Patrick Hand", sans-serif;
+    font-size: 16px;
+  }
+  .report-info .report-table-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #901A1E;
+    width: 90%;
+  }
+  .report-info .report-table-container h2.rapport-header {
+    color: #901A1E;
+  }
+  .report-info .report-table-container #badInfluenceTableReport {
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .border-corner-left {
+    border-radius: 10px 0 0 10px;
+    padding-left: 15px;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .border-corner-right {
+    border-radius: 0 10px 10px 0;
+    padding-right: 15px;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-header {
+    background: #901A1E;
+    color: white;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+    padding: 0 10px;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-data {
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0 20px;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-row {
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+  }
+  .report-info .report-table-container div.explanation {
+    margin: 16px 0;
+  }
+  .report-info .report-table-container div.explanation div.report-info-container {
+    background: #901A1E;
+    color: white;
+    text-align: center;
+    border-radius: 10px;
+    padding: 10px 10px 20px 10px;
+  }
+  .report-info .report-table-container div.explanation div.report-info-container div.question-title {
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  div.results-container div.report-info div.results-title p {
+    text-align: center;
+    font-size: 16px;
+  }
+  div.results-container div.report-info div.report-table-container {
+    width: 90%;
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table {
+    border-collapse: separate;
+    border-spacing: 0 0.5rem;
+    box-shadow: none;
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.report-header-row th {
+    background: #901A1E;
+    color: white;
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+    padding: 0 10px;
+    vertical-align: middle;
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.report-header-row th:first-child {
+    border-radius: 10px 0 0 10px;
+    padding-left: 15px;
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.report-header-row th:last-child {
+    border-radius: 0 10px 10px 0;
+    padding-right: 15px;
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.bad_influence-table-row {
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.bad_influence-table-row td {
+    font-family: "Patrick Hand", sans-serif;
+    border-top: none !important;
+    text-align: center;
+    vertical-align: middle;
+    padding: 0 10px;
+  }
+  div.results-container div.report-info div.dropdown-questions div.question-title-question {
+    color: #901A1E;
+    font-size: 20px;
+    font-family: "Roboto Slab", sans-serif;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+}
 @media (min-width: 375px) {
   /*******************************
   *  Hide otree default message  *
@@ -876,6 +1008,16 @@
       justify-self: center;
     }
   }
+
+  div.results-container div.report-info div.results-title p {
+    font-size: 18px;
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table th, div.results-container div.report-info div.report-table-container table.bad_influence-results-table td {
+    font-size: 18px;
+  }
+  div.results-container div.report-info div.report-table-container table#badInfluenceTableReport th, div.results-container div.report-info div.report-table-container table#badInfluenceTableReport td {
+    font-size: 18px;
+  }
 }
 @media (min-width: 768px) {
   /*******************************
@@ -1291,44 +1433,40 @@
     background-color: #5f861e;
   }
 
-  .report-info .report-table-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    color: #901A1E;
+  .report-info div.rapport-header {
+    width: 100%;
+    margin-top: 24px;
   }
-  .report-info .report-table-container #badInfluenceTableReport {
-    width: 90%;
-    display: inline-table;
-    border-collapse: separate;
-    border-spacing: 0 0.5rem;
+  .report-info div.dropdown-questions div.report-info-container {
+    padding: 10px 30px;
   }
-  .report-info .report-table-container #badInfluenceTableReport .border-corner-left {
-    border-radius: 10px 0 0 10px;
+  .report-info div.dropdown-questions div.report-info-container div.question-title {
+    font-size: 22px;
   }
-  .report-info .report-table-container #badInfluenceTableReport .border-corner-right {
-    border-radius: 0 10px 10px 0;
+  .report-info div.report-table-container table#badInfluenceTableReport {
+    width: 100%;
   }
-  .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-header {
-    background: #901A1E;
-    color: white;
-    font-weight: bold;
-    font-family: "Patrick Hand", sans-serif;
-    font-size: 20px;
-    border-top: none !important;
-    text-align: center;
-    box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+  .report-info div.report-table-container table#badInfluenceTableReport tr.report-header-row th {
+    font-size: 18px;
   }
-  .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-data {
-    font-size: 26px;
-    font-family: "Patrick Hand", sans-serif;
-    border-top: none !important;
-    text-align: center;
-    vertical-align: middle;
+  .report-info div.report-table-container table#badInfluenceTableReport tr.bad_influence-table-row td {
+    font-size: 22px;
   }
-  .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-row {
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
-    border-radius: 10px;
+  .report-info div.report-table-container div.explanation div.report-info-container {
+    padding: 20px 40px;
+  }
+  .report-info div.report-table-container div.explanation div.report-info-container div.question-title {
+    font-size: 22px;
+  }
+
+  div.results-container div.report-info div.results-title p {
+    font-size: 18px;
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table th, div.results-container div.report-info div.report-table-container table.bad_influence-results-table td {
+    font-size: 22px;
+  }
+  div.results-container div.report-info div.report-table-container table#badInfluenceTableReport th, div.results-container div.report-info div.report-table-container table#badInfluenceTableReport td {
+    font-size: 22px;
   }
 }
 @media (min-width: 1024px) {
@@ -1734,25 +1872,24 @@
     color: #fff;
   }
 
-  .report-table-container {
+  .report-table-container-admin {
     display: flex;
     flex-direction: column;
     align-items: center;
     color: #901A1E;
   }
-  .report-table-container #badInfluenceTableReport {
-    width: 80%;
+  .report-table-container-admin #badInfluenceTableReport {
     display: inline-table;
     border-collapse: separate;
     border-spacing: 0 0.5rem;
   }
-  .report-table-container #badInfluenceTableReport .border-corner-left {
+  .report-table-container-admin #badInfluenceTableReport .border-corner-left {
     border-radius: 10px 0 0 10px;
   }
-  .report-table-container #badInfluenceTableReport .border-corner-right {
+  .report-table-container-admin #badInfluenceTableReport .border-corner-right {
     border-radius: 0 10px 10px 0;
   }
-  .report-table-container #badInfluenceTableReport .bad_influence-table-header {
+  .report-table-container-admin #badInfluenceTableReport .bad_influence-table-header {
     background: #901A1E;
     color: white;
     font-weight: bold;
@@ -1762,16 +1899,69 @@
     text-align: center;
     box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
   }
-  .report-table-container #badInfluenceTableReport .bad_influence-table-data {
+  .report-table-container-admin #badInfluenceTableReport .bad_influence-table-data {
     font-size: 26px;
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
     text-align: center;
     vertical-align: middle;
   }
-  .report-table-container #badInfluenceTableReport .bad_influence-table-row {
+  .report-table-container-admin #badInfluenceTableReport .bad_influence-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
+  }
+
+  div.report-info div.dropdown-questions {
+    display: flex;
+    align-items: center;
+    width: 70%;
+  }
+  div.report-info div.dropdown-questions div.report-info-container {
+    padding: 15px 30px 30px 30px;
+  }
+  div.report-info div.dropdown-questions div.report-info-container div.question-title {
+    font-size: 22px;
+  }
+  div.report-info div.report-table-container {
+    width: 70%;
+  }
+  div.report-info div.report-table-container table#badInfluenceTableReport {
+    display: inline-table;
+  }
+  div.report-info div.report-table-container table#badInfluenceTableReport tr.report-header-row th {
+    font-size: 30px;
+  }
+  div.report-info div.report-table-container table#badInfluenceTableReport tr.bad_influence-table-row td {
+    font-size: 30px;
+  }
+  div.report-info div.report-table-container div.explanation {
+    display: flex;
+    align-items: center;
+  }
+  div.report-info div.report-table-container div.explanation div.report-info-container {
+    padding: 20px 40px;
+  }
+  div.report-info div.report-table-container div.explanation div.report-info-container div.question-title {
+    font-size: 22px;
+  }
+
+  div.results-container div.report-info div.results-title p {
+    font-size: 30px;
+  }
+  div.results-container div.report-info div.report-table-container {
+    width: 70%;
+    display: flex;
+    justify-content: center;
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table {
+    display: inline-table;
+    border-spacing: 0 0.6rem;
+  }
+  div.results-container div.report-info div.report-table-container table.bad_influence-results-table th, div.results-container div.report-info div.report-table-container table.bad_influence-results-table td {
+    font-size: 24px;
+  }
+  div.results-container div.report-info div.report-table-container table#badInfluenceTableReport td, div.results-container div.report-info div.report-table-container table#badInfluenceTableReport th {
+    font-size: 30px;
   }
 }
 @media (min-width: 1150px) {

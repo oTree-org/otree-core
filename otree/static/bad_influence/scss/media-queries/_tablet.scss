@@ -485,48 +485,71 @@
   }
 
   .report-info {
-    .report-table-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: $ku-red;
+    div.rapport-header {
+      width: 100%;
+      margin-top: 24px;
+    }
 
-      #badInfluenceTableReport {
-        width: 90%;
-        display: inline-table;
-        border-collapse: separate;
-        border-spacing: 0 0.5rem;
+    div.dropdown-questions {
+      div.report-info-container {
+        padding: 10px 30px;
 
-        .border-corner-left {
-          border-radius: 10px 0 0 10px;
+        div.question-title {
+          font-size: 22px;
+        }
+      }
+    }
+
+    div.report-table-container {
+      table#badInfluenceTableReport {
+        width: 100%;
+
+        tr.report-header-row {
+          th {
+            font-size: 18px;
+          }
         }
 
-        .border-corner-right {
-          border-radius: 0 10px 10px 0;
+        tr.bad_influence-table-row {
+          td {
+            font-size: 22px;
+          }
         }
+      }
 
-        .bad_influence-table-header {
-          background: $ku-red;
-          color: white;
-          font-weight: bold;
-          font-family: "Patrick Hand", sans-serif;
-          font-size: 20px;
-          border-top: none !important;
-          text-align: center;
-          box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
+      div.explanation {
+        div.report-info-container {
+          padding: 20px 40px;
+
+          div.question-title {
+            font-size: 22px;
+          }
         }
+      }
+    }
+  }
 
-        .bad_influence-table-data {
-          font-size: 26px;
-          font-family: "Patrick Hand", sans-serif;
-          border-top: none !important;
-          text-align: center;
-          vertical-align: middle;
+  div.results-container {
+    div.report-info {
+      div.results-title {
+        p {
+          font-size: 18px;
         }
+      }
 
-        .bad_influence-table-row {
-          box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
-          border-radius: 10px;
+      div.report-table-container {
+        table.bad_influence-results-table {
+          th, td {
+            font-size: 22px;
+          }
+        }
+      }
+
+      div.report-table-container {
+        table#badInfluenceTableReport {
+          th, td {
+            font-size: 22px;
+          }
         }
       }
     }

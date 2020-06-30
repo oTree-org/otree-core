@@ -13,6 +13,10 @@ color_pairs = [('red','blue'), ('blue','yellow'), ('yellow','red'), ('green','bl
                ('blue','red'), ('yellow','blue'), ('red','yellow'), ('blue','green')
                ]
 
+stubborn_expl = "*Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædigt spilleren forsøgte at få de andre til at skifte mening. "
+graph_expl = "Hvis den grå linje i grafen til højre overstiger 50%, har et mindretal af influencers fået flertal i klassen."
+face_expl = "Klik på et ansigt til venstre for at se en spillers venne-netværk. Klik igen for at se hele netværket."
+
 def kontrol(hub, gender, number_of_friends):
     minority_choice = "rød"
     majority_choice = "blå"
@@ -22,18 +26,17 @@ def kontrol(hub, gender, number_of_friends):
     return {
         'title': 'Farver',
         'text': "Du kan vælge mellem farverne rød og blå.",
-        'preference':
-            ("Din præference: {prefers}.")
+        'preference': ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit endelige valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-        'result_page_text_1': "De blå ansigter repræsenterer dem som ikke tror klimaforandringerne er menneskeskabte",
-        'result_page_text_2': "De røde ansigter repræsenterer dem som tror klimaforandringerne er menneskeskabte",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+        'result_page_text_1': "De blå ansigter viser dem som valgte blå, de røde ansigter viser dem som valgte rød. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': "",
+        'face_explanation': "",
+        'stubbornness': stubborn_expl,
         'majority_choice': majority_choice,
         'minority_choice': minority_choice,
         'minority_color_img': colors[color_pairs[0][0]],
@@ -54,14 +57,14 @@ def studietur(hub, gender, number_of_friends):
             ("Din præference {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-        'result_page_text_1': "De blå ansigter repræsenterer dem som vil på studietur til Rom.",
-        'result_page_text_2': "De gule ansigter repræsenterer dem som vil på studietur til Paris.",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+        'result_page_text_1': "De blå ansigter viser dem som ville til Rom. De gule viser dem som ville til Paris. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': graph_expl,
+        'face_explanation': face_expl,
+        'stubbornness': stubborn_expl,
         'minority_choice': "Rom",
         'majority_choice': "Paris",
         'minority_color_img': colors[color_pairs[1][0]],
@@ -84,14 +87,14 @@ def matematik(hub, gender, number_of_friends):
             ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-        'result_page_text_1': "De røde ansigter repræsenterer dem som har valgt ikke at mobbe den nye matematiklærer.",
-        'result_page_text_2': "De gule ansigter repræsenterer dem som har valgt at mobbe den nye matematiklærer.",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+        'result_page_text_1': "De gule ansigter viser dem som ville mobbe matematiklæreren. De røde viser dem som ikke ville mobbe. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': graph_expl,
+        'face_explanation': face_expl,
+        'stubbornness': stubborn_expl,
         'minority_choice': "Rom",
         'minority_choice': "mobbe",
         'majority_choice': "ikke mobbe",
@@ -114,14 +117,14 @@ def hpv(hub, gender, number_of_friends):
             ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-         'result_page_text_1': "De blå ansigter repræsenterer dem som gerne vil vaccineres mod HPV.",
-        'result_page_text_2': "De grønne ansigter repræsenterer dem som ikke vil vaccineres mod HPV.",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+        'result_page_text_1': "De blå ansigter viser dem som gerne ville vaccineres mod HPV. De grønne viser dem som ikke ville vaccineres. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': graph_expl,
+        'face_explanation': face_expl,
+        'stubbornness': stubborn_expl,
         'minority_choice': "vil ikke",
         'majority_choice': "vil gerne",
         'minority_color_img': colors[color_pairs[3][0]],
@@ -143,14 +146,14 @@ def billeddeling(hub, gender, number_of_friends):
             ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-         'result_page_text_1': "De blå ansigter repræsenterer dem som har valgt at dele nøgenbilledet.",
-        'result_page_text_2': "De røde ansigter repræsenterer dem som har valgt ikke at dele nøgenbilledet.",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+        'result_page_text_1': "De blå ansigter viser dem som ville dele nøgenbilledet. De røde viser dem som ikke ville. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': graph_expl,
+        'face_explanation': face_expl,
+        'stubbornness': stubborn_expl,
         'minority_choice': "dele",
         'majority_choice': "ikke dele",
         'minority_color_img': colors[color_pairs[4][0]],
@@ -177,14 +180,14 @@ def stikkeri(hub, gender, number_of_friends, city):
             ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-        'result_page_text_1': "De blå ansigter repræsenterer dem som har valgt ikke at sladre til lærerne.",
-        'result_page_text_2': "De gule ansigter repræsenterer dem som har valgt at sladre til lærerne.",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+        'result_page_text_1': "De gule ansigter viser dem som ville sladre om at det var Oscar og William. De blå viser dem som ikke ville sladre. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': graph_expl,
+        'face_explanation': face_expl,
+        'stubbornness': stubborn_expl,
         'minority_choice': "sig det",
         'majority_choice': "hold mund",
         'minority_color_img': colors[color_pairs[5][0]],
@@ -208,14 +211,14 @@ def alkohol(hub, gender, number_of_friends):
             ("Din præference: {prefers}")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-                'result_page_text_1': "De røde ansigter repræsenterer dem som har valgt at smugle sprut med til festen. ",
-        'result_page_text_2': "De gule ansigter repræsenterer dem som har valgt ikke at smugle sprut med til festen.",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+                'result_page_text_1': "De røde ansigter viser dem som ville smugle sprut med til festen. De gule viser dem som ikke ville. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': graph_expl,
+        'face_explanation': face_expl,
+        'stubbornness': stubborn_expl,
         'minority_choice': "smugle",
         'majority_choice': "ikke smugle",
         'minority_color_img': colors[color_pairs[6][0]],
@@ -238,14 +241,14 @@ def klima(hub, gender, number_of_friends):
             ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-                        'result_page_text_1': "De blå ansigter repræsenterer dem som ikke tror klimaforandringerne er menneskeskabte",
-        'result_page_text_2': "De grønne ansigter repræsenterer dem som tror klimaforandringerne er menneskeskabte",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+        'result_page_text_1': "De blå ansigter viser dem som ikke tror at klimaforandringerne er menneskeskabte. De grønne viser dem som tror på det. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': graph_expl,
+        'face_explanation': face_expl,
+        'stubbornness': stubborn_expl,
         'majority_choice': "menneskeskabte",
         'minority_choice': "naturlige",
         'minority_color_img': colors[color_pairs[7][0]],
@@ -273,14 +276,14 @@ def sexchikane(hub, gender, number_of_friends):
             ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-                             'result_page_text_1': "De blå ansigter repræsenterer dem som har valgt at sige det til rektoren. ",
-        'result_page_text_2': "De røde ansigter repræsenterer dem som har valgt ikke at sige det til rektoren. ",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+        'result_page_text_1': "De blå ansigter viser dem som ville fortælle rektor om vikarens adfærd. De røde ansigter viser dem som ville ignorere det. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': graph_expl,
+        'face_explanation': face_expl,
+        'stubbornness': stubborn_expl,
         'minority_choice': "ignorér",
         'majority_choice': "sig det",
         'minority_color_img': colors[color_pairs[8][0]],
@@ -303,14 +306,14 @@ def moon(hub, gender, number_of_friends):
             ("Din præference: {prefers}.")
                 .format(prefers=prefers, other=other),
         'challenge':
-            ("Du får 3 point hvis det du vælger får flertal i klassen. " +
+            ("Du får 3 point hvis dit valg får flertal i klassen. " +
              "Du får {num} point ekstra hvis dit valg svarer til din præference.")
                 .format(num=number_of_friends),
-        'result_page_text_1': "De blå ansigter repræsenterer dem som ikke tror på månelandingen. ",
-        'result_page_text_2': "De gule ansigter repræsenterer dem som tror på månelandingen.",
-        'graph_explanation': "Hvis den blå linje overstiger 50%, har det oprindelige mindretal formået at snyde det oprindelig flertal til at hoppe på en konspirationsteori.",
-        'face_explanation': "Klik på ansigterne for at se de individuelle venne-netværk. Klik igen for at se hele netværket. ",
-        'stubbornness': "Stædighed (i sekunder) angiver hvor længe en spiller har bibeholdt sin præference når spilleren var i mindretal i venne-netværket. Det giver et praj om, hvor stædig spilleren forsøgte at få de andre til at skifte mening. Stædigheden antages at korrelere med de opnåede antal point. ",
+        'result_page_text_1': "De blå ansigter viser dem som ikke troede på at amerikanerne landede på månen. De  gule viser dem som troede på det. (" + face_expl + " " + graph_expl + ")",
+        'result_page_text_2': "",
+        'graph_explanation': graph_expl,
+        'face_explanation': face_expl,
+        'stubbornness': stubborn_expl,
         'majority_choice': "tror på det",
         'minority_choice': "tror det ikke",
         'minority_color_img': colors[color_pairs[9][0]],

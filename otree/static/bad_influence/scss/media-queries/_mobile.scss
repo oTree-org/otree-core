@@ -243,47 +243,46 @@
     width: 100%;
 
     .choice-button {
-    width: 45%;
-    height: 55px;
-    font-size: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-radius: 50px;
-    color: black;
-    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-    font-family: "Annie Use Your Telescope", serif;
-    background-color: transparent;
-    border: 2px solid $ku-red;
-    margin: 5px 5px 10% 5px;
+      width: 45%;
+      height: 55px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-radius: 50px;
+      color: black;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+      font-family: "Annie Use Your Telescope", serif;
+      background-color: transparent;
+      border: 2px solid $ku-red;
+      margin: 5px 5px 10% 5px;
 
 
-    &:hover {
-      background-color: $ku-dark-green;
-      color: white;
-      border-color: transparent;
+      &:hover {
+        background-color: $ku-dark-green;
+        color: white;
+        border-color: transparent;
 
-    }
+      }
 
-    &:active {
-      background-color: $ku-dark-green;
-      color: white;
+      &:active {
+        background-color: $ku-dark-green;
+        color: white;
 
-    }
+      }
 
-    &:focus {
-      border-color: $ku-dark-green;
-      background-color: $ku-dark-green;
-      color: white;
-    }
+      &:focus {
+        border-color: $ku-dark-green;
+        background-color: $ku-dark-green;
+        color: white;
+      }
 
-    img {
-      width: 40px;
-      height: 40px;
-      align-self: center;
+      img {
+        width: 40px;
+        height: 40px;
+        align-self: center;
+      }
     }
   }
-  }
-
 
 
   /*************************************
@@ -494,6 +493,32 @@
         grid-area: main;
         align-self: center;
         justify-self: center;
+      }
+    }
+  }
+
+  div.results-container {
+    div.report-info {
+      div.results-title {
+        p {
+          font-size: 18px;
+        }
+      }
+
+      div.report-table-container {
+        table.bad_influence-results-table {
+          th, td {
+            font-size: 18px;
+          }
+        }
+      }
+
+      div.report-table-container {
+        table#badInfluenceTableReport {
+          th, td {
+            font-size: 18px;
+          }
+        }
       }
     }
   }
