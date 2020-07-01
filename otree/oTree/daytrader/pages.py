@@ -123,12 +123,17 @@ class Results(Page):
         handler = [p.choice_of_number_of_shares for p in self.player.in_all_rounds()]
         price = [c(p.price) for p in self.player.in_all_rounds()]
         closing = [c(p.closing_price(p.company_name)) for p in self.player.in_all_rounds()]
-        print(handler)
         data = zip(firma, tilstand, choices, handler, price, closing, tjent)
         handelsvaerdi = c(sum([p.price * p.choice_of_number_of_shares
                                for p in self.player.in_all_rounds()]))
 
-        print(choices)
+        rankings = []
+        if 'profit' in self.session.vars:
+            for p in self.group.get_players():
+                rankings.append((p.id_in_group, p.tjent_ialt))
+        else:
+            for p in self.group.get_players():
+                rankings.append((p.id_in_group, 0))
 
         return {
             'handlet': handelsvaerdi,
@@ -143,6 +148,7 @@ class Results(Page):
             'price': price,
             'closing': closing,
             'tjent': tjent,
+            'rankings': sorted(rankings, key=lambda x: x[1], reverse=True),
         }
 
 
