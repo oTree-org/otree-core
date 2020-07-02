@@ -46,7 +46,8 @@
     <button id="advance_users" class="btn btn-primary" type="button"
        data-toggle="popover" data-trigger="hover"
        data-content="{{ advance_users_button_text }}">
-        Advance slowest user(s)
+        Fremryk langsomeste bruger(e)
+
     </button>
     {% endif %}
 
@@ -126,15 +127,16 @@
 {% endif %}
 {% endblock %}
 
-
 {% block internal_scripts %}
 {{ block.super }}
+
 <script>
 let $table, $tbody;
 
 $(document).ready(function() {
     $table = $('#monitor-table');
     $tbody = $table.find('tbody');
+
 
     ajax_and_refresh_table();
     setup_ajax_advance();
@@ -178,6 +180,9 @@ function setup_ajax_advance() {
 
     $('#advance_users').on('click', function () {
         $('#advance_users').attr("disabled", true);
+
+
+
         $.ajax({
             url: '{% url 'AdvanceSession' session.code %}',
             type: 'POST',

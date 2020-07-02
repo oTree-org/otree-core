@@ -129,6 +129,7 @@
                                             {% endif %}
 
                                             {% formfield player.choice_of_number_of_shares label=None %}
+                                             <div class="error-message" id="error"></div>
                                             <small><b>Når tiden udløber vil værdien blive gemt.</b></small>
                                         </div>
                                     </div>
@@ -207,9 +208,7 @@
                                          <p><b><u>Hvor mange aktier?</u></b></p>
                                         <p>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
                                         {% formfield player.choice_of_number_of_shares label=None %}
-                                        <div class="error-message" id="error">
-
-                                        </div>
+                                        <div class="error-message" id="error"></div>
                                         <small><b>Når tiden udløber vil værdien blive gemt.</b></small>
                                 </div>
                             </div>
@@ -263,14 +262,14 @@
 
 
 
+        // Error handling for input values
+        let player_max_value = {{ player.can_buy }};
+        let error_max_value_exceeded = document.createElement("P");
+        let error_message_node = document.createTextNode("*Vælg et mindre antal aktier!");
+        error_max_value_exceeded.append(error_message_node);
+        let border_color = document.getElementById("myInput");
 
-           let player_max_value = {{ player.can_buy }};
-           let error_max_value_exceeded = document.createElement("P");
-           let textnode = document.createTextNode("*Vælg et mindre antal aktier!");
-            error_max_value_exceeded.append(textnode);
-           let border_color = document.getElementById("myInput");
-
-        $(document).on('keyup', function () {
+       $(document).on('keyup', function () {
             let player_actual_value = document.getElementById("myInput").value;
             if (player_max_value < player_actual_value) {
                 document.getElementById("error").appendChild(error_max_value_exceeded);
@@ -278,13 +277,9 @@
 
             } else if (player_max_value >= player_actual_value) {
                 border_color.style.borderColor = "#5f861e";
-                 document.getElementById("error").removeChild(error_max_value_exceeded);
-
-            } else {
-                console.log("player_max_value is None")
+                document.getElementById("error").removeChild(error_max_value_exceeded);
             }
-
-        });
+       });
 
 
 
