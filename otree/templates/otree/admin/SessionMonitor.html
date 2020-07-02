@@ -130,7 +130,7 @@
 {% block internal_scripts %}
 {{ block.super }}
 <script>
-var $table, $tbody;
+let $table, $tbody;
 
 $(document).ready(function() {
     $table = $('#monitor-table');
@@ -158,9 +158,10 @@ function wrap_timestamp() {
     });
 }
 
+
 // ajax request for advance session button
 function setup_ajax_advance() {
-    var csrftoken = $("[name=csrfmiddlewaretoken]").val();
+    let csrftoken = $("[name=csrfmiddlewaretoken]").val();
 
     function csrfSafeMethod(method) {
         // these HTTP methods do not require CSRF protection
@@ -194,10 +195,11 @@ function setup_ajax_advance() {
 }
 
 
+
 function refreshTable(new_json) {
     $("div#refresh_server_error").hide();
     $('#num_participants_visited').html(new_json.length);
-    var old_json = $table.data("raw");
+    let old_json = $table.data("raw");
     // build table for the first time
     if (old_json === undefined) {
         populateTableBody($tbody, new_json);
@@ -205,34 +207,34 @@ function refreshTable(new_json) {
         // compute delta and update
         // corresponding values in table
 
-        var diffpatcher = jsondiffpatch.create({
+        let diffpatcher = jsondiffpatch.create({
             objectHash: function (obj) {
                 return obj.code;
             }
         });
-        var deltas = diffpatcher.diff(old_json, new_json);
-        for (var i in deltas) {
+        let deltas = diffpatcher.diff(old_json, new_json);
+        for (let i in deltas) {
             if (i === '_t') {
                 // this is a special value; skip it.
                 continue;
             }
-            var delta = deltas[i];
-            var rowSelector = 'tr:eq(' + i + ')';
-            var nthBodyRow = $tbody.find(rowSelector);
+            let delta = deltas[i];
+            let rowSelector = 'tr:eq(' + i + ')';
+            let nthBodyRow = $tbody.find(rowSelector);
             // Array means an insertion
             if (delta.constructor === Array) {
-                var newRowHTML = createTableRow(delta[0]);
-                var numRows = $tbody.find('tr').length;
+                let newRowHTML = createTableRow(delta[0]);
+                let numRows = $tbody.find('tr').length;
                 if (parseInt(i) === numRows) {
                     $tbody.append(newRowHTML);
                 } else {
-                    var newRow = $(newRowHTML);
+                    let newRow = $(newRowHTML);
                     newRow.insertBefore(nthBodyRow);
                 }
                 flashGreen($tbody.find(rowSelector))
             } else {
                 for (header_name in delta) {
-                    var cell_to_update = nthBodyRow.find("td[data-field='" + header_name + "']");
+                    let cell_to_update = nthBodyRow.find("td[data-field='" + header_name + "']");
                     cell_to_update.text(delta[header_name][1]);
                     flashGreen(cell_to_update);
                 }
@@ -246,7 +248,7 @@ function refreshTable(new_json) {
 
 // ajax requests to the server for participants data
 function ajax_and_refresh_table() {
-    var start = Date.now();
+    let start = Date.now();
     $.ajax({
         url: '{% url "SessionMonitor" session.code %}',
         type: 'GET',
@@ -257,10 +259,10 @@ function ajax_and_refresh_table() {
         },
         success: function(new_json) {
             refreshTable(new_json);
-            var msElapsed = Date.now() - start;
+            let msElapsed = Date.now() - start;
             // feedback mechanism to avoid straining the server:
             // back off if requests are taking a long time
-            var msUntilNextRequest = Math.max(msElapsed*2, 3000);
+            let msUntilNextRequest = Math.max(msElapsed*2, 3000);
             setTimeout(ajax_and_refresh_table, msUntilNextRequest);
         }
     });

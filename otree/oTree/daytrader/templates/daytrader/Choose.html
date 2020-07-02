@@ -24,6 +24,15 @@
             text-align: center;
         }
 
+        #error {
+            color: #BF0A30;
+            font-weight: bold;
+            font-style: italic;
+            padding: 0;
+            margin: 0;
+            font-size: 20px;
+
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -198,6 +207,9 @@
                                          <p><b><u>Hvor mange aktier?</u></b></p>
                                         <p>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
                                         {% formfield player.choice_of_number_of_shares label=None %}
+                                        <div class="error-message" id="error">
+
+                                        </div>
                                         <small><b>Når tiden udløber vil værdien blive gemt.</b></small>
                                 </div>
                             </div>
@@ -235,21 +247,46 @@
                     </table>
                     {% else %}
 
-
                     {% endif %}
-
                 </div>
-
             </div>
           {% endif %}
         </div>
-    </div>
+
 
 
 
 {% endblock %}
+
 {% block scripts %}
        <script>
+
+
+
+
+           let player_max_value = {{ player.can_buy }};
+           let error_max_value_exceeded = document.createElement("P");
+           let textnode = document.createTextNode("*Vælg et mindre antal aktier!");
+            error_max_value_exceeded.append(textnode);
+           let border_color = document.getElementById("myInput");
+
+        $(document).on('keyup', function () {
+            let player_actual_value = document.getElementById("myInput").value;
+            if (player_max_value < player_actual_value) {
+                document.getElementById("error").appendChild(error_max_value_exceeded);
+                border_color.style.borderColor = "#BF0A30";
+
+            } else if (player_max_value >= player_actual_value) {
+                border_color.style.borderColor = "#5f861e";
+                 document.getElementById("error").removeChild(error_max_value_exceeded);
+
+            } else {
+                console.log("player_max_value is None")
+            }
+
+        });
+
+
 
 
 
