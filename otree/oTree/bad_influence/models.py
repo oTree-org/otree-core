@@ -293,6 +293,7 @@ class Player(BasePlayer):
     fulgt_flertallet_pct = models.FloatField(initial=0)
     fulgt_preference_pct = models.FloatField(initial=0)
     navn = models.StringField()
+
     expected_score = models.IntegerField(initial=0)
 
 

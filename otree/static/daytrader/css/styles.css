@@ -1012,6 +1012,17 @@
     display: flex;
     justify-content: center;
   }
+  div.choose-game-container div#error {
+    color: #BF0A30;
+    font-weight: bold;
+    font-style: italic;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+  }
+  div.choose-game-container div#error p {
+    margin-bottom: 0;
+  }
 }
 @media (min-width: 375px) {
   /******************************
@@ -1655,6 +1666,9 @@
     text-align: center;
     display: flex;
     justify-content: center;
+  }
+  div.choose-game-container div#error {
+    font-size: 15px;
   }
 }
 @media (min-width: 768px) {
@@ -2321,6 +2335,9 @@
     text-align: center;
     display: flex;
     justify-content: center;
+  }
+  div.choose-game-container div#error {
+    font-size: 16px;
   }
 }
 @media (min-width: 1024px) {
@@ -3197,6 +3214,9 @@
     text-align: center;
     display: flex;
     justify-content: center;
+  }
+  div.choose-game-container div.game-block div.game-choice div#error {
+    font-size: 20px;
   }
 }
 

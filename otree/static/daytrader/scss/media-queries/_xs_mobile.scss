@@ -1202,5 +1202,17 @@
             }
         }
       }
+      div#error {
+        color: #BF0A30;
+        font-weight: bold;
+        font-style: italic;
+        padding: 0;
+        margin: 0;
+        font-size: 13px;
+
+        p {
+          margin-bottom: 0;
+        }
+      }
    }
 }

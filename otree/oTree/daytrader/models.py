@@ -31,12 +31,11 @@ its state with a fixed probability, a mix of strategies need to be employed.
 
 
 class Constants(BaseConstants):
-    timeout90 = 900
-    timeout30 = 300
+    timeout90 = 30
+    timeout30 = 30
     name_in_url = 'daytrader'
     players_per_group = None
     num_rounds = 10
-
 
     # share attributes
     num_shares = 100000
@@ -88,7 +87,7 @@ class Subsession(BaseSubsession):
                 player.wallet = Constants.start_wallet
                 player.price = Constants.start_price
             player.company_name = company_names[(
-                idp + self.round_number - 1) % number_of_players]
+                                                        idp + self.round_number - 1) % number_of_players]
             player.company_state = Json_action.to_string(
                 company_states[(idp + self.round_number - 1) % number_of_players])
             player.drawn_face = random.choice(
@@ -97,7 +96,7 @@ class Subsession(BaseSubsession):
 
     def vars_for_admin_report(self):
         number_of_rounds = sum([1 if '{}{}'.format(self.session.vars['company_names'][0], r)
-                                in self.session.vars else 0 for r in range(1, Constants.num_rounds + 2)])
+                                     in self.session.vars else 0 for r in range(1, Constants.num_rounds + 2)])
 
         company_data = {}
         price_table = []
@@ -152,9 +151,6 @@ class Subsession(BaseSubsession):
 
         player_number = len(profit)
         handler = []
-
-
-
 
         return {
             'company': list(zip(names, states, choices, drawn_faces)),
@@ -292,9 +288,9 @@ class Player(BasePlayer):
         for idp, p in enumerate(self.in_all_rounds()):
             if p.choice_of_trade == 1:
                 self.session.vars['profit'].append((self.closing_price(p.company_name)
-                                                        - p.price) * p.choice_of_number_of_shares)
+                                                    - p.price) * p.choice_of_number_of_shares)
             else:
                 self.session.vars['profit'].append(-(self.closing_price(p.company_name)
-                                                         - p.price) * p.choice_of_number_of_shares)
+                                                     - p.price) * p.choice_of_number_of_shares)
         self.tjent_ialt = sum(self.session.vars['profit'])
         return self.session.vars['profit']
