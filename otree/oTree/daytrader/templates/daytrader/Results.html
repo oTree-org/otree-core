@@ -17,6 +17,11 @@
             justify-content: center;
         }
     </style>
+
+
+
+
+
     <div class="daytrader-game-container">
 
         <p class="daytrader-round-info">
@@ -184,6 +189,29 @@
         <p class="daytrader-round-info">
            Tak for at du handlede med os 💰
         </p>
-    </div>
 
+
+
+      <div class="ranking-container">
+      <h2 class="rapport-header ">Topscorerliste</h2>
+
+
+
+      <table class="table table-responsive" id="rankingTable">
+          <tr class="table-corners">
+              <th class="table-ranking-header border-corner-left"></th>
+              <th class="table-ranking-header"> spiller nr.</th>
+              <th class="table-ranking-header border-corner-right"> tjent i alt</th>
+          </tr>
+          {% for ranking in rankings %}
+              <tr class="table-ranking-row">
+                  <td class="table-ranking-data"><strong>{{ forloop.counter }}</strong></td>
+                  <td class="table-ranking-data"> {{ ranking.0 }} </td>
+                  <td class="table-ranking-data"> {{ ranking.1 }} </td>
+              </tr>
+          {% endfor %}
+      </table>
+
+
+    </div>
 {% endblock %}
