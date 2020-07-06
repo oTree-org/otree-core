@@ -411,8 +411,7 @@ class SessionMonitor(AdminSessionPageMixin, vanilla.TemplateView):
         column_names = [display_names[col] for col in field_names]
 
         advance_users_button_text = (
-            "Advance the slowest user(s) by one page, "
-            "by forcing a timeout on their current page. "
+            "Denne knap fremrykker alle spillere en side."
         )
 
         participants = self.session.participant_set.filter(visited=True)

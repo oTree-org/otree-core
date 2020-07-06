@@ -23,7 +23,6 @@
             font-size: 60px;
             text-align: center;
         }
-
     </style>
 {% endblock %}
 {% block content %}
@@ -44,10 +43,7 @@
              <h2 class="company-title">
                     {{ player.company_name }}
                 </h2>
-
             </div>
-
-
             <div class="game-block">
                  {% if subsession.round_number == 1 %}
                      <div class="first-round-game-block">
@@ -120,6 +116,7 @@
                                             {% endif %}
 
                                             {% formfield player.choice_of_number_of_shares label=None %}
+                                             <div class="error-message" id="error"></div>
                                             <small><b>Når tiden udløber vil værdien blive gemt.</b></small>
                                         </div>
                                     </div>
@@ -186,10 +183,6 @@
                         </p>
                         <p><b><u>Hvad vil du gøre?</u></b></p>
                    </div>
-
-
-
-
                         <div class="choice-container">
                                  <div class="choice-fields">
                                     {% formfield player.choice_of_trade label=None %}
@@ -198,6 +191,7 @@
                                          <p><b><u>Hvor mange aktier?</u></b></p>
                                         <p>Du kan handle med maks. <b>{{ player.can_buy }} aktier. </b>
                                         {% formfield player.choice_of_number_of_shares label=None %}
+                                        <div class="error-message" id="error"></div>
                                         <small><b>Når tiden udløber vil værdien blive gemt.</b></small>
                                 </div>
                             </div>
@@ -235,23 +229,53 @@
                     </table>
                     {% else %}
 
-
                     {% endif %}
-
                 </div>
-
             </div>
           {% endif %}
         </div>
-    </div>
+
 
 
 
 {% endblock %}
+
 {% block scripts %}
        <script>
 
+        // Get players max shares he/she can use
+        let player_max_value = {{ player.can_buy }};
 
+        // Get error div from html
+        let error_container = document.getElementById("error");
+
+        // Create a p tag to go into error_container (div)
+        let error_max_value_exceeded = document.createElement("P");
+        error_max_value_exceeded.setAttribute("class", "error_message_p");
+
+        // Create error message (TextNode) and append to p tag
+        let error_message_node = document.createTextNode("*Vælg et mindre antal aktier!");
+        error_max_value_exceeded.append(error_message_node);
+
+        // get the input field's border to manipulate color
+        let border_color = document.getElementById("myInput");
+
+        // Use the variables to check for valid value and invalid value
+       $(document).on('keyup', function () {
+            let player_actual_value = document.getElementById("myInput").value;
+            if (player_max_value < player_actual_value) {
+                document.getElementById("error").appendChild(error_max_value_exceeded);
+                border_color.style.borderColor = "#BF0A30";
+
+            } else if (player_max_value >= player_actual_value) {
+                border_color.style.borderColor = "#5f861e";
+
+                // Remove error message when value is within player_max_value range
+                if (error_max_value_exceeded.parentNode) {
+                    error_max_value_exceeded.parentNode.removeChild(error_max_value_exceeded);
+                }
+            }
+       });
 
        // Prevent submit with enter key
        $(document).on("keydown", "form", function(event) {
