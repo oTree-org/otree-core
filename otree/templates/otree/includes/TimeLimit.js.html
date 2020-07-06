@@ -44,11 +44,15 @@
                     timerBackground.classList.add("pulse");
                 }
 
-                if (timer < "0:07") {
-                    knock();
+                if (timer < "0:10") {
                     pulse();
                 }
-                console.log(timer)
+
+                if (timer < "0:06") {
+                     knock();
+
+                }
+
             });
     });
 
