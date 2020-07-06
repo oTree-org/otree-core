@@ -27,7 +27,7 @@ class Constants(BaseConstants):
     high_bonus = 10
     low_bonus = 5
     hub_fraction = 0.4
-    round_length = 12000
+    round_length = 120
     koen = random.choice([True, False])
 
 
