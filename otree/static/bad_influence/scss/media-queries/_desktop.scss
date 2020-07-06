@@ -419,7 +419,6 @@
     }
 
     button {
-
       &.start-game {
 
         display: flex;
@@ -452,6 +451,56 @@
 
       .button-text {
         color: $white;
+      }
+    }
+
+    div.bad_influence-form-container {
+      div.form-group {
+        div.controls {
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          div.form-check {
+            padding: 30px 15px;
+
+            input.form-check-input[type="radio"] {
+              -webkit-appearance: none;
+              width: 40px;
+              height: 40px;
+              border-radius: 50%;
+              outline: none;
+              border: 3px solid $ku-red;
+
+              &:before {
+                content: '';
+                display: block;
+                width: 60%;
+                height: 60%;
+                margin: 20% auto;
+                border-radius: 50%;
+              }
+
+              &:checked:before {
+                background: $ku-red;
+              }
+
+              &:checked {
+                border-color: $ku-red;
+              }
+            }
+
+            label {
+              font-size: 32px;
+              padding: 0 0 0 7.5px;
+            }
+          }
+        }
+      }
+
+      div.button-container {
+        button {
+          width: 30%;
+        }
       }
     }
   }
@@ -502,6 +551,10 @@
   }
 
   div.report-info {
+    h1.bad_influence-report-title {
+      margin-top: 0;
+      font-size: 40px;
+    }
     div.dropdown-questions {
       display: flex;
       align-items: center;
@@ -518,6 +571,7 @@
 
     div.report-table-container {
       width: 70%;
+
       table#badInfluenceTableReport {
         display: inline-table;
 
@@ -552,6 +606,12 @@
 
   div.results-container {
     div.report-info {
+      div.button-container {
+        width: 30%;
+      }
+
+
+
       div.results-title {
         p {
           font-size: 30px;

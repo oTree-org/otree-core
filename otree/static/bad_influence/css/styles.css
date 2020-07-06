@@ -452,7 +452,49 @@
   .intro-2 .width-size {
     width: 100%;
   }
+  .intro-2 div.bad_influence-form-container {
+    width: 80%;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls {
+    display: flex;
+    flex-direction: column;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check {
+    display: flex;
+    flex-direction: row;
+    padding: 15px 0 15px 32%;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 20% auto;
+    border-radius: 50%;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked:before {
+    background: #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked {
+    border-color: #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check label {
+    font-size: 22px;
+  }
 
+  .report-info h1.bad_influence-report-title {
+    font-size: 28px;
+    margin-top: 5%;
+    color: #901A1E;
+  }
   .report-info div.rapport-header h2 {
     color: #901A1E;
   }
@@ -505,8 +547,11 @@
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
     text-align: center;
+    padding: 0 15px;
+  }
+  .report-info .report-table-container #badInfluenceTableReport .report-header-row {
     box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
-    padding: 0 10px;
+    border-radius: 10px;
   }
   .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-data {
     font-family: "Patrick Hand", sans-serif;
@@ -537,8 +582,53 @@
   }
 
   div.results-container div.report-info div.results-title p {
+    font-size: 20px;
     text-align: center;
-    font-size: 16px;
+  }
+  div.results-container div.report-info div.button-container {
+    width: 80%;
+    display: flex;
+    justify-content: center;
+  }
+  div.results-container div.report-info div.button-container button {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    outline: none;
+    border: 0;
+    vertical-align: middle;
+    text-decoration: none;
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    z-index: 2;
+  }
+  div.results-container div.report-info div.button-container button.start-game {
+    height: auto;
+    width: 80%;
+    margin-top: 30px;
+    font-size: 30px;
+    padding: 40px;
+  }
+  div.results-container div.report-info div.button-container button .button-text {
+    position: absolute;
+    top: -5px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    font-weight: 700;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background-color: #901A1E;
+    color: white;
+    border-radius: 20px;
+    height: 50px;
+  }
+  div.results-container div.report-info div.button-container button .button-text {
+    color: #fff;
   }
   div.results-container div.report-info div.report-table-container {
     width: 90%;
@@ -1008,9 +1098,36 @@
       justify-self: center;
     }
   }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 20% auto;
+    border-radius: 50%;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked:before {
+    background: #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked {
+    border-color: #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check label {
+    font-size: 28px;
+    padding: 0 0 0 7.5px;
+  }
 
   div.results-container div.report-info div.results-title p {
-    font-size: 18px;
+    font-size: 22px;
+    padding: 0 25px;
   }
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table th, div.results-container div.report-info div.report-table-container table.bad_influence-results-table td {
     font-size: 18px;
@@ -1432,7 +1549,43 @@
   .intro-2 button.start-game .button-text:hover {
     background-color: #5f861e;
   }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check {
+    padding: 15px 0 15px 180px;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 20% auto;
+    border-radius: 50%;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked:before {
+    background: #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked {
+    border-color: #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check label {
+    font-size: 32px;
+    padding: 0 0 0 7.5px;
+  }
+  .intro-2 div.bad_influence-form-container div.button-container {
+    display: flex;
+    justify-content: center;
+  }
 
+  .report-info h1.bad_influence-report-title {
+    font-size: 35px;
+  }
   .report-info div.rapport-header {
     width: 100%;
     margin-top: 24px;
@@ -1460,7 +1613,7 @@
   }
 
   div.results-container div.report-info div.results-title p {
-    font-size: 18px;
+    font-size: 25px;
   }
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table th, div.results-container div.report-info div.report-table-container table.bad_influence-results-table td {
     font-size: 22px;
@@ -1871,6 +2024,43 @@
   .intro-2 button .button-text {
     color: #fff;
   }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check {
+    padding: 30px 15px;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio] {
+    -webkit-appearance: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    outline: none;
+    border: 3px solid #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:before {
+    content: "";
+    display: block;
+    width: 60%;
+    height: 60%;
+    margin: 20% auto;
+    border-radius: 50%;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked:before {
+    background: #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked {
+    border-color: #901A1E;
+  }
+  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check label {
+    font-size: 32px;
+    padding: 0 0 0 7.5px;
+  }
+  .intro-2 div.bad_influence-form-container div.button-container button {
+    width: 30%;
+  }
 
   .report-table-container-admin {
     display: flex;
@@ -1911,6 +2101,10 @@
     border-radius: 10px;
   }
 
+  div.report-info h1.bad_influence-report-title {
+    margin-top: 0;
+    font-size: 40px;
+  }
   div.report-info div.dropdown-questions {
     display: flex;
     align-items: center;
@@ -1945,6 +2139,9 @@
     font-size: 22px;
   }
 
+  div.results-container div.report-info div.button-container {
+    width: 30%;
+  }
   div.results-container div.report-info div.results-title p {
     font-size: 30px;
   }

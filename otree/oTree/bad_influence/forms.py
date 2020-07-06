@@ -19,3 +19,4 @@ LinkFormset = inlineformset_factory(Player, Link,
                                     fields=['edge'])
 
 """
+
