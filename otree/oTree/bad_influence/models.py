@@ -1,5 +1,5 @@
 from otree.api import (
-    models, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
+    models, BaseConstants, BaseSubsession, BaseGroup, BasePlayer, widgets
 )
 import json
 import networkx as nx
@@ -27,7 +27,7 @@ class Constants(BaseConstants):
     high_bonus = 10
     low_bonus = 5
     hub_fraction = 0.4
-    round_length = 120
+    round_length = 12000
     koen = random.choice([True, False])
 
 
@@ -292,7 +292,7 @@ class Player(BasePlayer):
     points_total = models.IntegerField(initial=0)
     fulgt_flertallet_pct = models.FloatField(initial=0)
     fulgt_preference_pct = models.FloatField(initial=0)
-    navn = models.StringField()
+    navn = models.StringField(widget=widgets.RadioSelectHorizontal())
     expected_score = models.IntegerField(initial=0)
 
 

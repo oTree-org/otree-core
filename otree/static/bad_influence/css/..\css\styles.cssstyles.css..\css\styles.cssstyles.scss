@@ -63,6 +63,7 @@
     min-height: 300px;
     width: 100%;
   }
+
   .answer-container svg {
     width: 100%;
   }
@@ -76,6 +77,7 @@
     padding-top: 2%;
     font-family: "Patrick Hand", cursive;
   }
+
   #timer-text #timer {
     padding-left: 5px;
   }
@@ -185,12 +187,14 @@
     display: flex;
     font-size: 20px;
   }
+
   .chat #chat,
 .message #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
     width: 100%;
   }
+
   .chat #message,
 .message #message {
     font-size: 20px;
@@ -204,6 +208,7 @@
     justify-content: center;
     display: flex;
   }
+
   .send #send {
     width: 90%;
     height: 50px;
@@ -211,6 +216,7 @@
     font-size: 20px;
     border-color: transparent;
   }
+
   .send #send:hover {
     background-color: #5f861e;
   }
@@ -227,6 +233,7 @@
   .results-container {
     margin-top: 4%;
   }
+
   .results-container .report-info {
     padding-bottom: 30px;
   }
@@ -245,6 +252,7 @@
     display: flex;
     width: 100%;
   }
+
   .choice-button-holder .choice-button {
     width: 45%;
     height: 55px;
@@ -259,20 +267,24 @@
     border: 2px solid #901A1E;
     margin: 5px 5px 10% 5px;
   }
+
   .choice-button-holder .choice-button:hover {
     background-color: #5f861e;
     color: white;
     border-color: transparent;
   }
+
   .choice-button-holder .choice-button:active {
     background-color: #5f861e;
     color: white;
   }
+
   .choice-button-holder .choice-button:focus {
     border-color: #5f861e;
     background-color: #5f861e;
     color: white;
   }
+
   .choice-button-holder .choice-button img {
     width: 40px;
     height: 40px;
@@ -292,6 +304,7 @@
     font-family: "Patrick Hand", cursive;
     height: 100vh;
   }
+
   .intro-title .bad {
     justify-content: center;
     font-weight: bold;
@@ -303,6 +316,7 @@
     margin: 0;
     padding: 0;
   }
+
   .intro-title .influence {
     font-weight: bold;
     font-size: 50px;
@@ -313,12 +327,15 @@
     padding: 0;
     letter-spacing: 7px;
   }
+
   .intro-title * {
     box-sizing: border-box;
   }
+
   .intro-title *::before, .intro-title *::after {
     box-sizing: border-box;
   }
+
   .intro-title button {
     position: relative;
     display: inline-block;
@@ -333,12 +350,14 @@
     font-family: inherit;
     z-index: 2;
   }
+
   .intro-title button.start-game {
     height: auto;
     width: 100%;
     margin-top: 30px;
     font-size: 30px;
   }
+
   .intro-title button .button-text {
     position: absolute;
     top: -5px;
@@ -355,6 +374,7 @@
     border-radius: 20px;
     height: 50px;
   }
+
   .intro-title button .button-text:hover {
     background-color: #5f861e;
   }
@@ -365,30 +385,36 @@
   .intro-2 {
     font-family: "Patrick Hand", cursive;
   }
+
   .intro-2 .round-title {
     font-size: 35px;
   }
+
   .intro-2 .game-introduction {
     display: flex;
     justify-content: center;
     flex-direction: column;
     width: 100%;
   }
+
   .intro-2 .round-info {
     display: flex;
     justify-content: center;
     flex-direction: column;
     text-align: center;
   }
+
   .intro-2 .round-info h3 {
     font-weight: bold;
   }
+
   .intro-2 .text-column {
     display: flex;
     flex-direction: column;
     text-align: center;
     width: 100%;
   }
+
   .intro-2 .svg-column {
     display: flex;
     justify-content: flex-end;
@@ -400,15 +426,19 @@
     border-radius: 2px;
     border-style: solid solid solid solid;
   }
+
   .intro-2 .svg-column h2 {
     font-size: 20px;
   }
+
   .intro-2 * {
     box-sizing: border-box;
   }
+
   .intro-2 *::before, .intro-2 *::after {
     box-sizing: border-box;
   }
+
   .intro-2 button {
     position: relative;
     display: inline-block;
@@ -423,6 +453,7 @@
     font-family: inherit;
     z-index: 2;
   }
+
   .intro-2 button.start-game {
     height: auto;
     width: 100%;
@@ -430,6 +461,7 @@
     font-size: 30px;
     padding: 40px;
   }
+
   .intro-2 button .button-text {
     position: absolute;
     top: -5px;
@@ -446,48 +478,13 @@
     border-radius: 20px;
     height: 50px;
   }
+
   .intro-2 button .button-text {
     color: #fff;
   }
+
   .intro-2 .width-size {
     width: 100%;
-  }
-  .intro-2 div.bad_influence-form-container {
-    width: 80%;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls {
-    display: flex;
-    flex-direction: column;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check {
-    display: flex;
-    flex-direction: row;
-    padding: 15px 0 15px 32%;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio] {
-    -webkit-appearance: none;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    outline: none;
-    border: 3px solid #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:before {
-    content: "";
-    display: block;
-    width: 60%;
-    height: 60%;
-    margin: 20% auto;
-    border-radius: 50%;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked:before {
-    background: #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked {
-    border-color: #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check label {
-    font-size: 22px;
   }
 
   .report-info h1.bad_influence-report-title {
@@ -495,12 +492,15 @@
     margin-top: 5%;
     color: #901A1E;
   }
+
   .report-info div.rapport-header h2 {
     color: #901A1E;
   }
+
   .report-info .dropdown-questions {
     width: 90%;
   }
+
   .report-info .dropdown-questions div.report-info-container {
     background: #901A1E;
     color: white;
@@ -509,15 +509,18 @@
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
     padding: 10px 10px 20px 10px;
   }
+
   .report-info .dropdown-questions div.report-info-container div.question-title {
     color: white;
     font-size: 16px;
   }
+
   .report-info .dropdown-questions p#d3historyChoice select {
     border-radius: 10px;
     font-family: "Patrick Hand", sans-serif;
     font-size: 16px;
   }
+
   .report-info .report-table-container {
     display: flex;
     flex-direction: column;
@@ -526,33 +529,36 @@
     color: #901A1E;
     width: 90%;
   }
+
   .report-info .report-table-container h2.rapport-header {
     color: #901A1E;
   }
+
   .report-info .report-table-container #badInfluenceTableReport {
     border-collapse: separate;
     border-spacing: 0 0.5rem;
   }
+
   .report-info .report-table-container #badInfluenceTableReport .border-corner-left {
     border-radius: 10px 0 0 10px;
     padding-left: 15px;
   }
+
   .report-info .report-table-container #badInfluenceTableReport .border-corner-right {
     border-radius: 0 10px 10px 0;
     padding-right: 15px;
   }
+
   .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-header {
     background: #901A1E;
     color: white;
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
     text-align: center;
-    padding: 0 15px;
-  }
-  .report-info .report-table-container #badInfluenceTableReport .report-header-row {
     box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
-    border-radius: 10px;
+    padding: 0 10px;
   }
+
   .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-data {
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
@@ -560,13 +566,16 @@
     vertical-align: middle;
     padding: 0 20px;
   }
+
   .report-info .report-table-container #badInfluenceTableReport .bad_influence-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
+
   .report-info .report-table-container div.explanation {
     margin: 16px 0;
   }
+
   .report-info .report-table-container div.explanation div.report-info-container {
     background: #901A1E;
     color: white;
@@ -574,6 +583,7 @@
     border-radius: 10px;
     padding: 10px 10px 20px 10px;
   }
+
   .report-info .report-table-container div.explanation div.report-info-container div.question-title {
     color: white;
     font-size: 16px;
@@ -582,62 +592,20 @@
   }
 
   div.results-container div.report-info div.results-title p {
-    font-size: 20px;
     text-align: center;
+    font-size: 16px;
   }
-  div.results-container div.report-info div.button-container {
-    width: 80%;
-    display: flex;
-    justify-content: center;
-  }
-  div.results-container div.report-info div.button-container button {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    outline: none;
-    border: 0;
-    vertical-align: middle;
-    text-decoration: none;
-    background: transparent;
-    padding: 0;
-    font-size: inherit;
-    font-family: inherit;
-    z-index: 2;
-  }
-  div.results-container div.report-info div.button-container button.start-game {
-    height: auto;
-    width: 80%;
-    margin-top: 30px;
-    font-size: 30px;
-    padding: 40px;
-  }
-  div.results-container div.report-info div.button-container button .button-text {
-    position: absolute;
-    top: -5px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    font-weight: 700;
-    line-height: 1.6;
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    background-color: #901A1E;
-    color: white;
-    border-radius: 20px;
-    height: 50px;
-  }
-  div.results-container div.report-info div.button-container button .button-text {
-    color: #fff;
-  }
+
   div.results-container div.report-info div.report-table-container {
     width: 90%;
   }
+
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table {
     border-collapse: separate;
     border-spacing: 0 0.5rem;
     box-shadow: none;
   }
+
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.report-header-row th {
     background: #901A1E;
     color: white;
@@ -648,18 +616,22 @@
     padding: 0 10px;
     vertical-align: middle;
   }
+
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.report-header-row th:first-child {
     border-radius: 10px 0 0 10px;
     padding-left: 15px;
   }
+
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.report-header-row th:last-child {
     border-radius: 0 10px 10px 0;
     padding-right: 15px;
   }
+
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.bad_influence-table-row {
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.25);
   }
+
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table tr.bad_influence-table-row td {
     font-family: "Patrick Hand", sans-serif;
     border-top: none !important;
@@ -667,6 +639,7 @@
     vertical-align: middle;
     padding: 0 10px;
   }
+
   div.results-container div.report-info div.dropdown-questions div.question-title-question {
     color: #901A1E;
     font-size: 20px;
@@ -737,6 +710,7 @@
     min-height: 300px;
     width: 100%;
   }
+
   .answer-container svg {
     width: 100%;
   }
@@ -750,6 +724,7 @@
     padding-top: 2%;
     font-family: "Patrick Hand", cursive;
   }
+
   #timer-text #timer {
     padding-left: 5px;
   }
@@ -858,11 +833,13 @@
     display: flex;
     font-size: 20px;
   }
+
   .chat #chat, .message #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
     width: 100%;
   }
+
   .chat #message, .message #message {
     font-size: 20px;
     max-width: 90%;
@@ -875,6 +852,7 @@
     justify-content: center;
     display: flex;
   }
+
   .send #send {
     width: 90%;
     height: 50px;
@@ -882,6 +860,7 @@
     font-size: 20px;
     border-color: transparent;
   }
+
   .send #send:hover {
     background-color: #5f861e;
   }
@@ -900,6 +879,7 @@
     display: flex;
     width: 100%;
   }
+
   .choice-button-holder .choice-button {
     width: 45%;
     height: 55px;
@@ -914,20 +894,24 @@
     border: 2px solid #901A1E;
     margin: 5px 5px 10% 5px;
   }
+
   .choice-button-holder .choice-button:hover {
     background-color: #5f861e;
     color: white;
     border-color: transparent;
   }
+
   .choice-button-holder .choice-button:active {
     background-color: #5f861e;
     color: white;
   }
+
   .choice-button-holder .choice-button:focus {
     border-color: #5f861e;
     background-color: #5f861e;
     color: white;
   }
+
   .choice-button-holder .choice-button img {
     width: 40px;
     height: 40px;
@@ -947,6 +931,7 @@
     font-family: "Patrick Hand", cursive;
     height: 100vh;
   }
+
   .intro-title .bad {
     justify-content: center;
     font-weight: bold;
@@ -958,6 +943,7 @@
     margin: 0;
     padding: 0;
   }
+
   .intro-title .influence {
     font-weight: bold;
     font-size: 50px;
@@ -968,12 +954,15 @@
     padding: 0;
     letter-spacing: 7px;
   }
+
   .intro-title * {
     box-sizing: border-box;
   }
+
   .intro-title *::before, .intro-title *::after {
     box-sizing: border-box;
   }
+
   .intro-title button {
     position: relative;
     display: inline-block;
@@ -988,21 +977,26 @@
     font-family: inherit;
     z-index: 2;
   }
+
   .intro-title button.start-game {
     height: auto;
     width: 70%;
     margin-top: 30px;
     font-size: 30px;
   }
+
   .intro-title button.start-game .circle {
     display: none;
   }
+
   .intro-title button.start-game .circle .icon {
     display: none;
   }
+
   .intro-title button.start-game .circle .icon.arrow {
     display: none;
   }
+
   .intro-title button.start-game .button-text {
     transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
     position: absolute;
@@ -1020,6 +1014,7 @@
     border-radius: 20px;
     height: 50px;
   }
+
   .intro-title button.start-game .button-text {
     color: #fff;
   }
@@ -1030,12 +1025,15 @@
   .intro-2 .svg-column h2 {
     font-size: 25px;
   }
+
   .intro-2 * {
     box-sizing: border-box;
   }
+
   .intro-2 *::before, .intro-2 *::after {
     box-sizing: border-box;
   }
+
   .intro-2 button {
     position: relative;
     display: inline-block;
@@ -1050,6 +1048,7 @@
     font-family: inherit;
     z-index: 2;
   }
+
   .intro-2 button.start-game {
     height: auto;
     width: 100%;
@@ -1057,15 +1056,19 @@
     font-size: 30px;
     padding: 40px;
   }
+
   .intro-2 button.start-game .circle {
     display: none;
   }
+
   .intro-2 button.start-game .circle .icon {
     display: none;
   }
+
   .intro-2 button.start-game .circle .icon.arrow {
     display: none;
   }
+
   .intro-2 button.start-game .button-text {
     position: absolute;
     top: -5px;
@@ -1082,9 +1085,11 @@
     border-radius: 20px;
     height: 50px;
   }
+
   .intro-2 button.start-game .button-text {
     color: #fff;
   }
+
   @supports (display: grid) {
     .intro-2 body {
       display: grid;
@@ -1092,46 +1097,21 @@
       grid-gap: 0.625rem;
       grid-template-areas: ". main main ." ". main main .";
     }
+
     .intro-2 #container {
       grid-area: main;
       align-self: center;
       justify-self: center;
     }
   }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio] {
-    -webkit-appearance: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    outline: none;
-    border: 3px solid #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:before {
-    content: "";
-    display: block;
-    width: 60%;
-    height: 60%;
-    margin: 20% auto;
-    border-radius: 50%;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked:before {
-    background: #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked {
-    border-color: #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check label {
-    font-size: 28px;
-    padding: 0 0 0 7.5px;
+  div.results-container div.report-info div.results-title p {
+    font-size: 18px;
   }
 
-  div.results-container div.report-info div.results-title p {
-    font-size: 22px;
-    padding: 0 25px;
-  }
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table th, div.results-container div.report-info div.report-table-container table.bad_influence-results-table td {
     font-size: 18px;
   }
+
   div.results-container div.report-info div.report-table-container table#badInfluenceTableReport th, div.results-container div.report-info div.report-table-container table#badInfluenceTableReport td {
     font-size: 18px;
   }
@@ -1200,6 +1180,7 @@
     min-height: 300px;
     width: 100%;
   }
+
   .answer-container svg {
     width: 100%;
   }
@@ -1213,6 +1194,7 @@
     padding-top: 2%;
     font-family: "Patrick Hand", cursive;
   }
+
   #timer-text #timer {
     padding-left: 5px;
   }
@@ -1320,11 +1302,13 @@
     display: flex;
     font-size: 20px;
   }
+
   .chat #chat, .message #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
     width: 70%;
   }
+
   .chat #message, .message #message {
     font-size: 20px;
     max-width: 70%;
@@ -1337,6 +1321,7 @@
     justify-content: center;
     display: flex;
   }
+
   .send #send {
     width: 70%;
     height: 50px;
@@ -1344,6 +1329,7 @@
     font-size: 20px;
     border-color: transparent;
   }
+
   .send #send:hover {
     background-color: #5f861e;
   }
@@ -1375,20 +1361,24 @@
     border: 2px solid #901A1E;
     margin: 5px 5px 10% 5px;
   }
+
   .choice-button:hover {
     background-color: #5f861e;
     color: white;
     border-color: transparent;
   }
+
   .choice-button:active {
     background-color: #5f861e;
     color: white;
   }
+
   .choice-button:focus {
     border-color: #5f861e;
     background-color: #5f861e;
     color: white;
   }
+
   .choice-button img {
     width: 50px;
     height: 50px;
@@ -1408,6 +1398,7 @@
     font-family: "Patrick Hand", cursive;
     height: 100vh;
   }
+
   .intro-title .bad {
     justify-content: center;
     font-weight: bold;
@@ -1419,6 +1410,7 @@
     margin: 0;
     padding: 0;
   }
+
   .intro-title .influence {
     font-weight: bold;
     font-size: 50px;
@@ -1429,12 +1421,15 @@
     padding: 0;
     letter-spacing: 7px;
   }
+
   .intro-title * {
     box-sizing: border-box;
   }
+
   .intro-title *::before, .intro-title *::after {
     box-sizing: border-box;
   }
+
   .intro-title button {
     position: relative;
     display: inline-block;
@@ -1449,21 +1444,26 @@
     font-family: inherit;
     z-index: 2;
   }
+
   .intro-title button.start-game {
     height: auto;
     width: 40%;
     margin-top: 30px;
     font-size: 30px;
   }
+
   .intro-title button.start-game .circle {
     display: none;
   }
+
   .intro-title button.start-game .circle .icon {
     display: none;
   }
+
   .intro-title button.start-game .circle .icon.arrow {
     display: none;
   }
+
   .intro-title button.start-game .button-text {
     transition: all 0.45s cubic-bezier(0.65, 0, 0.076, 1);
     position: absolute;
@@ -1481,6 +1481,7 @@
     border-radius: 20px;
     height: 50px;
   }
+
   .intro-title button.start-game .button-text {
     color: #fff;
   }
@@ -1491,12 +1492,15 @@
   .intro-2 .svg-column h2 {
     font-size: 30px;
   }
+
   .intro-2 * {
     box-sizing: border-box;
   }
+
   .intro-2 *::before, .intro-2 *::after {
     box-sizing: border-box;
   }
+
   .intro-2 button {
     position: relative;
     display: inline-block;
@@ -1511,6 +1515,7 @@
     font-family: inherit;
     z-index: 2;
   }
+
   .intro-2 button.start-game {
     height: auto;
     width: 60%;
@@ -1521,15 +1526,19 @@
     justify-content: center;
     align-self: center;
   }
+
   .intro-2 button.start-game .circle {
     display: none;
   }
+
   .intro-2 button.start-game .circle .icon {
     display: none;
   }
+
   .intro-2 button.start-game .circle .icon.arrow {
     display: none;
   }
+
   .intro-2 button.start-game .button-text {
     position: absolute;
     top: -5px;
@@ -1546,78 +1555,56 @@
     border-radius: 20px;
     height: 50px;
   }
+
   .intro-2 button.start-game .button-text:hover {
     background-color: #5f861e;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check {
-    padding: 15px 0 15px 180px;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio] {
-    -webkit-appearance: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    outline: none;
-    border: 3px solid #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:before {
-    content: "";
-    display: block;
-    width: 60%;
-    height: 60%;
-    margin: 20% auto;
-    border-radius: 50%;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked:before {
-    background: #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked {
-    border-color: #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check label {
-    font-size: 32px;
-    padding: 0 0 0 7.5px;
-  }
-  .intro-2 div.bad_influence-form-container div.button-container {
-    display: flex;
-    justify-content: center;
   }
 
   .report-info h1.bad_influence-report-title {
     font-size: 35px;
   }
+
   .report-info div.rapport-header {
     width: 100%;
     margin-top: 24px;
   }
+
   .report-info div.dropdown-questions div.report-info-container {
     padding: 10px 30px;
   }
+
   .report-info div.dropdown-questions div.report-info-container div.question-title {
     font-size: 22px;
   }
+
   .report-info div.report-table-container table#badInfluenceTableReport {
     width: 100%;
   }
+
   .report-info div.report-table-container table#badInfluenceTableReport tr.report-header-row th {
     font-size: 18px;
   }
+
   .report-info div.report-table-container table#badInfluenceTableReport tr.bad_influence-table-row td {
     font-size: 22px;
   }
+
   .report-info div.report-table-container div.explanation div.report-info-container {
     padding: 20px 40px;
   }
+
   .report-info div.report-table-container div.explanation div.report-info-container div.question-title {
     font-size: 22px;
   }
 
   div.results-container div.report-info div.results-title p {
-    font-size: 25px;
+    font-size: 18px;
   }
+
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table th, div.results-container div.report-info div.report-table-container table.bad_influence-results-table td {
     font-size: 22px;
   }
+
   div.results-container div.report-info div.report-table-container table#badInfluenceTableReport th, div.results-container div.report-info div.report-table-container table#badInfluenceTableReport td {
     font-size: 22px;
   }
@@ -1644,6 +1631,7 @@
     justify-content: left;
     flex-direction: column;
   }
+
   .round-info h3 {
     font-weight: bold;
   }
@@ -1699,6 +1687,7 @@
     padding-top: 2%;
     font-family: "Patrick Hand", cursive;
   }
+
   #timer-text #timer {
     padding-left: 5px;
   }
@@ -1808,11 +1797,13 @@
     display: flex;
     font-size: 20px;
   }
+
   .chat #chat, .message #chat {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
     margin-bottom: 2%;
     width: 80%;
   }
+
   .chat #message, .message #message {
     font-size: 20px;
     max-width: 50%;
@@ -1825,6 +1816,7 @@
     justify-content: center;
     display: flex;
   }
+
   .send #send {
     width: 50%;
     height: 50px;
@@ -1832,6 +1824,7 @@
     font-size: 20px;
     border-color: transparent;
   }
+
   .send #send:hover {
     background-color: #5f861e;
   }
@@ -1859,20 +1852,24 @@
     margin-bottom: 10%;
     margin-left: 5%;
   }
+
   .choice-button:hover {
     background-color: #5f861e;
     color: white;
     border-color: transparent;
   }
+
   .choice-button:active {
     background-color: #5f861e;
     color: white;
   }
+
   .choice-button:focus {
     border-color: #5f861e;
     background-color: #5f861e;
     color: white;
   }
+
   .choice-button img {
     width: 55px;
     height: 55px;
@@ -1893,6 +1890,7 @@
   .results-container {
     margin-top: 4%;
   }
+
   .results-container .report-info {
     padding-bottom: 30px;
   }
@@ -1918,10 +1916,12 @@
     font-size: 14px;
     font-family: "Roboto Slab", serif;
   }
+
   .d3-results-row #d3consensus {
     display: flex;
     justify-content: center;
   }
+
   .d3-results-row #d3playback {
     display: none;
   }
@@ -1939,10 +1939,12 @@
   .intro-title .bad {
     font-size: 110px;
   }
+
   .intro-title .influence {
     font-size: 80px;
     margin: -55px;
   }
+
   .intro-title button.start-game {
     max-width: 40%;
     margin-top: 40px;
@@ -1955,15 +1957,18 @@
   .intro-2 .round-title {
     font-size: 40px;
   }
+
   .intro-2 .game-introduction {
     display: flex;
     justify-content: center;
     flex-direction: column;
     width: 70%;
   }
+
   .intro-2 .round-info {
     text-align: left;
   }
+
   .intro-2 .text-column {
     display: flex;
     flex-direction: column;
@@ -1971,9 +1976,11 @@
     text-align: left;
     padding-right: 10px;
   }
+
   .intro-2 .full-text-column {
     width: 87%;
   }
+
   .intro-2 .svg-column {
     display: flex;
     justify-content: flex-end;
@@ -1986,10 +1993,12 @@
     border-radius: 2px;
     border-style: solid solid solid solid;
   }
+
   .intro-2 .svg-column h2 {
     font-size: 25px;
     padding: 5px;
   }
+
   .intro-2 .game-row {
     display: flex;
     justify-content: center;
@@ -1997,11 +2006,13 @@
     width: 100%;
     margin-top: 0;
   }
+
   .intro-2 button.start-game {
     display: flex;
     justify-content: flex-start;
     align-self: flex-start;
   }
+
   .intro-2 button .button-text {
     position: absolute;
     top: -5px;
@@ -2018,48 +2029,13 @@
     border-radius: 20px;
     height: 50px;
   }
+
   .intro-2 button .button-text:hover {
     background-color: #5f861e;
   }
+
   .intro-2 button .button-text {
     color: #fff;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check {
-    padding: 30px 15px;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio] {
-    -webkit-appearance: none;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    outline: none;
-    border: 3px solid #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:before {
-    content: "";
-    display: block;
-    width: 60%;
-    height: 60%;
-    margin: 20% auto;
-    border-radius: 50%;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked:before {
-    background: #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check input.form-check-input[type=radio]:checked {
-    border-color: #901A1E;
-  }
-  .intro-2 div.bad_influence-form-container div.form-group div.controls div.form-check label {
-    font-size: 32px;
-    padding: 0 0 0 7.5px;
-  }
-  .intro-2 div.bad_influence-form-container div.button-container button {
-    width: 30%;
   }
 
   .report-table-container-admin {
@@ -2068,17 +2044,21 @@
     align-items: center;
     color: #901A1E;
   }
+
   .report-table-container-admin #badInfluenceTableReport {
     display: inline-table;
     border-collapse: separate;
     border-spacing: 0 0.5rem;
   }
+
   .report-table-container-admin #badInfluenceTableReport .border-corner-left {
     border-radius: 10px 0 0 10px;
   }
+
   .report-table-container-admin #badInfluenceTableReport .border-corner-right {
     border-radius: 0 10px 10px 0;
   }
+
   .report-table-container-admin #badInfluenceTableReport .bad_influence-table-header {
     background: #901A1E;
     color: white;
@@ -2089,6 +2069,7 @@
     text-align: center;
     box-shadow: 0px 0px 20px rgba(157, 52, 55, 0.5);
   }
+
   .report-table-container-admin #badInfluenceTableReport .bad_influence-table-data {
     font-size: 26px;
     font-family: "Patrick Hand", sans-serif;
@@ -2096,67 +2077,78 @@
     text-align: center;
     vertical-align: middle;
   }
+
   .report-table-container-admin #badInfluenceTableReport .bad_influence-table-row {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.25);
     border-radius: 10px;
   }
 
-  div.report-info h1.bad_influence-report-title {
-    margin-top: 0;
-    font-size: 40px;
-  }
   div.report-info div.dropdown-questions {
     display: flex;
     align-items: center;
     width: 70%;
   }
+
   div.report-info div.dropdown-questions div.report-info-container {
     padding: 15px 30px 30px 30px;
   }
+
   div.report-info div.dropdown-questions div.report-info-container div.question-title {
     font-size: 22px;
   }
+
   div.report-info div.report-table-container {
     width: 70%;
   }
+
   div.report-info div.report-table-container table#badInfluenceTableReport {
     display: inline-table;
   }
+
   div.report-info div.report-table-container table#badInfluenceTableReport tr.report-header-row th {
     font-size: 30px;
   }
+
   div.report-info div.report-table-container table#badInfluenceTableReport tr.bad_influence-table-row td {
     font-size: 30px;
   }
+
   div.report-info div.report-table-container div.explanation {
     display: flex;
     align-items: center;
   }
+
   div.report-info div.report-table-container div.explanation div.report-info-container {
     padding: 20px 40px;
   }
+
   div.report-info div.report-table-container div.explanation div.report-info-container div.question-title {
     font-size: 22px;
   }
 
-  div.results-container div.report-info div.button-container {
-    width: 30%;
+  div.results-container div.report-info h1.bad_influence-report-title {
+    margin-top: 2%;
   }
+
   div.results-container div.report-info div.results-title p {
     font-size: 30px;
   }
+
   div.results-container div.report-info div.report-table-container {
     width: 70%;
     display: flex;
     justify-content: center;
   }
+
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table {
     display: inline-table;
     border-spacing: 0 0.6rem;
   }
+
   div.results-container div.report-info div.report-table-container table.bad_influence-results-table th, div.results-container div.report-info div.report-table-container table.bad_influence-results-table td {
     font-size: 24px;
   }
+
   div.results-container div.report-info div.report-table-container table#badInfluenceTableReport td, div.results-container div.report-info div.report-table-container table#badInfluenceTableReport th {
     font-size: 30px;
   }
@@ -2211,5 +2203,6 @@
     font-size: 35px;
   }
 }
+/*# sourceMappingURL=..%5Ccss%5Cstyles.cssstyles.scss.map */
 
-/*# sourceMappingURL=styles.css.map */
+/*# sourceMappingURL=..%5Ccss%5Cstyles.cssstyles.css..%5Ccss%5Cstyles.cssstyles.scss.map */

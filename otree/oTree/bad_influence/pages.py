@@ -89,7 +89,7 @@ class MyResultsWaitPage(WaitPage):
 
 
 class PartResults(Page):
-    timeout_seconds = 10
+    timeout_seconds = 10000
     def is_displayed(self):
         return self.round_number < Constants.num_rounds
 

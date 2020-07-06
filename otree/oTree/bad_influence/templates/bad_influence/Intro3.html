@@ -2,10 +2,10 @@
 {% load staticfiles otree %}
 {% block styles %}
 
-    <style>
-        body {
-            background-color: #901A1E;
-        }
+<style>
+    body {
+        background-color: #901A1E;
+    }
 
     .node {
         stroke: #000;
@@ -27,20 +27,24 @@
         font-size: 20px;
 
     }
-    </style>
+</style>
 {% endblock %}
 {% block content %}
 <div class="game-container container intro-2">
     <div class="game-introduction">
-         <h2 class="round-title">Vælg et navn</h2>
+        <h2 class="round-title">Vælg et navn</h2>
     </div>
 
-
-    <div class="daytrader-form-container">
+    <div class="bad_influence-form-container">
         {% formfield player.navn label=None %}
+        <div class="button-container">
+            <button class="start-game">
+                <span class="button-text">Jeg er klar!</span>
+            </button>
+        </div>
     </div>
 </div>
-<button class="start-game">
-    <span class="button-text">Jeg er klar!</span>
-</button>
+
 {% endblock %}
+
+

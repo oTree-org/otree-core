@@ -15,6 +15,9 @@
     }
 </style>
 
+<!-- Rapport title -->
+<h1 class="bad_influence-report-title">Rapportside</h1>
+
 <!-- Rapport header -->
 <div class="rapport-header">
     <h2>Vælg et spørgsmål for at se hvordan det gik</h2>
@@ -55,7 +58,7 @@
     <h2 class="rapport-header ">Topscorerliste</h2>
     <table class="table-responsive" id="badInfluenceTableReport">
         <tr class="report-header-row">
-            <th class="bad_influence-table-header border-corner-left"></th>
+            <th class="bad_influence-table-header border-corner-left">#</th>
             <th class="bad_influence-table-header"> spiller <br> nr.</th>
             <th class="bad_influence-table-header"> point <br> ialt</th>
             <th class="bad_influence-table-header"> fulgt <br> flertallet</th>
@@ -65,16 +68,16 @@
             <th class="bad_influence-table-header border-corner-right"> # skift</th>
         </tr>
         {% for ranking in rankings %}
-            <tr class="bad_influence-table-row">
-                <td class="bad_influence-table-data border-corner-left">{{ forloop.counter }}</td>
-                <td class="bad_influence-table-data"><strong> {{ ranking.0 }} </strong></td>
-                <td class="bad_influence-table-data">{{ ranking.1 }}</td>
-                <td class="bad_influence-table-data">{{ ranking.2 }}%</td>
-                <td class="bad_influence-table-data">{{ ranking.3 }}%</td>
-                <td class="bad_influence-table-data">{{ ranking.4 }}</td>
-                <td class="bad_influence-table-data">{{ ranking.5 }}</td>
-                <td class="bad_influence-table-data border-corner-right">{{ ranking.6 }}</td>
-            </tr>
+        <tr class="bad_influence-table-row">
+            <td class="bad_influence-table-data border-corner-left">{{ forloop.counter }}</td>
+            <td class="bad_influence-table-data"><strong> {{ ranking.0 }} </strong></td>
+            <td class="bad_influence-table-data">{{ ranking.1 }}</td>
+            <td class="bad_influence-table-data">{{ ranking.2 }}%</td>
+            <td class="bad_influence-table-data">{{ ranking.3 }}%</td>
+            <td class="bad_influence-table-data">{{ ranking.4 }}</td>
+            <td class="bad_influence-table-data">{{ ranking.5 }}</td>
+            <td class="bad_influence-table-data border-corner-right">{{ ranking.6 }}</td>
+        </tr>
         {% endfor %}
     </table>
     <div class="explanation">

@@ -1,28 +1,32 @@
 {% extends "global/Page.html" %}
 {% load otree_internal otree static %}
 {% block styles %}
-    <style>
-        html, body {
-            padding: 0;
-            margin: 0;
-            height: 100%;
-            background-color: #901A1E !important;
-            font-family: "Patrick Hand", cursive;
+<style>
+    html, body {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        background-color: #901A1E !important;
+        font-family: "Patrick Hand", cursive;
 
-        }
+    }
 
-    </style>
+</style>
 {% endblock %}
 {% block content %}
-    <div class="report-container results-container">
-        <div class="report-info">
-            <div class="results-title">
-                <p>Du fik {{ player.points }} point. </p>
-                <p>Du har i alt {{ payoff_ialt }} point og er lige nu på en {{rankings}}. plads.</p>
-            </div>
+<div class="report-container results-container">
+    <div class="report-info">
+        <div class="results-title">
+            <p>Du fik {{ player.points }} point.
+                <br>
+                Du har i alt {{ payoff_ialt }} point og er lige nu på en {{rankings}}. plads.</p>
+        </div>
+        <div class="button-container">
+            <button class="start-game">
+                <span class="button-text">Videre!</span>
+            </button>
         </div>
     </div>
-<button class="start-game">
-    <span class="button-text">Videre!</span>
-</button>
+</div>
+
 {% endblock %}
