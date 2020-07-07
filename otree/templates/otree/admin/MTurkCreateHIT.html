@@ -1,0 +1,105 @@
+{% extends "otree/admin/Session.html" %}
+{% load otree i18n %}
+
+{% block content %}
+
+  {{ block.super }}
+
+  {% if not mturk_ready %}
+    <p>MTurk is currently disabled.
+      If you want to publish your HIT on MTurk please do the following
+      steps:
+    </p>
+
+    <ol>
+      {% if not boto3_installed %}
+        <li>
+          Run <code>pip3 install otree[mturk]</code>
+          and in your <code>requirements_base.txt</code>,
+          replace <code>otree==N.N.N</code> with <code>otree[mturk]==N.N.N</code>.
+          This will install oTree along with extra MTurk-specific packages.
+        </li>
+      {% endif %}
+
+      {% if not is_new_format %}
+        <li>
+          Add <code>template</code> to your MTurk settings,
+          and remove <code>preview_template</code>.
+          Then create a new session.
+          This is a new requirement as of oTree 2.4.
+        </li>
+      {% endif %}
+
+      {% if not is_usd %}
+        <li>
+          Set your <code>REAL_WORLD_CURRENCY_CODE</code> to <code>USD</code>
+        </li>
+      {% endif %}
+
+      {% if not aws_keys_exist %}
+        <li>
+          Set <code>AWS_ACCESS_KEY_ID</code> and
+          <code>AWS_SECRET_ACCESS_KEY</code>
+        </li>
+      {% endif %}
+
+    </ol>
+
+  {% elif session.mturk_is_expired %}
+    <p>This HIT has expired, so workers can no longer accept assignments.</p>
+  {% elif session.mturk_HITId %}
+    <p>
+      You have published HIT for this session on MTurk
+      {% if session.mturk_use_sandbox %}
+        Sandbox
+      {% endif %}
+      .</p>
+    <p>
+      To look at the HIT as a worker
+      follow this <a href="{{ session.mturk_worker_url }}"
+                     target="_blank">link</a>.
+    </p>
+    <form action="{% url 'MTurkExpireHIT' session.code %}" method="post">{% csrf_token %}
+      <button type="submit" id="btn-expire-hit" class="btn">Expire HIT</button>
+    </form>
+    <p>
+      The above button will expire this HIT early.
+      You should click this button before deleting the session.
+      Otherwise, your nonexistent session will still be advertised
+      on the MTurk website, and MTurk workers will get a "page not found" error.
+      (However, it is safe to delete the session if all assignments have been
+      submitted.)
+    </p>
+  {% else %}
+
+    <ul>
+      <li>Number of MTurk assignments: {{ mturk_num_workers }}</li>
+      <li>Participation fee: {{ participation_fee }} USD</li>
+    </ul>
+
+    <form action="" method="post" role="form" class="form"
+          id="form">{% csrf_token %}
+
+      <div class="form-check required">
+        <label class="form-check-label " for="id_f2">
+          <input type="checkbox" name="use_sandbox" checked="checked" id="id_f2" class="form-check-input">
+          Use MTurk Sandbox (for development and testing)
+        </label>
+        <p class="help-block">
+          If this box is checked, your HIT will not be published to the MTurk live site, but rather
+          to the MTurk Sandbox, so you can test how it will look to MTurk workers.
+        </p>
+      </div>
+
+      <p>
+        When you click the below button, your HIT will be immediately published on MTurk.
+      </p>
+      <button type="submit" class="btn btn-primary" id="btn-publish-hit">
+        Publish
+        HIT
+      </button>
+    </form>
+  {% endif %}
+
+  {% include "otree/includes/messages.html" %}
+{% endblock %}
