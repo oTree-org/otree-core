@@ -1,3 +1,15 @@
+# https://github.com/django/asgiref/issues/179
+from asgiref.sync import SyncToAsync
+
+old_init = SyncToAsync.__init__
+
+
+def _thread_sensitive_init(self, func, thread_sensitive=True):
+    return old_init(self, func, thread_sensitive=True)
+
+
+SyncToAsync.__init__ = _thread_sensitive_init
+
 import json
 import logging
 import django.core.management
@@ -23,7 +35,7 @@ from django.utils import autoreload
 # https://docs.python.org/3/reference/import.html#submodules
 from otree_startup.settings import augment_settings
 from otree import __version__
-from . import runzip
+from . import zipserver
 
 # REMEMBER TO ALSO UPDATE THE PROJECT TEMPLATE
 from otree_startup.settings import get_default_settings
@@ -41,9 +53,9 @@ create_session
 devserver
 django_test
 resetdb
-runprodserver
-runprodserver1of2
-runprodserver2of2
+prodserver
+prodserver1of2
+prodserver2of2
 shell
 startapp
 startproject
@@ -84,7 +96,7 @@ def execute_from_command_line(*args, **kwargs):
     subcommand = argv[1]
 
     if subcommand in ['runzip', 'zipserver']:
-        runzip.main(argv[2:])
+        zipserver.main(argv[2:])
         # better to return than sys.exit because testing is complicated
         # with sys.exit -- if you mock it, then the function keeps executing.
         return
@@ -98,15 +110,31 @@ def execute_from_command_line(*args, **kwargs):
     if os.getcwd() not in sys.path:
         sys.path.insert(0, os.getcwd())
 
-    # to match manage.py
-    # make it configurable so i can test it
+    # to match manage.py:
+    # make it configurable so i can test it.
+    # and it must be an env var, because
     # note: we will never get ImproperlyConfigured,
     # because that only happens when DJANGO_SETTINGS_MODULE is not set
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
     DJANGO_SETTINGS_MODULE = os.environ['DJANGO_SETTINGS_MODULE']
 
-    # help and --help must have settings configured, so that otree can be in
-    # INSTALLED_APPS, so those management commands are available.
+    if subcommand in ['help', '--help', '-h'] and len(argv) == 2:
+        sys.stdout.write(MAIN_HELP_TEXT)
+        return
+
+    # this env var is necessary because if the botworker submits a wait page,
+    # it needs to broadcast to redis channel layer, not in-memory.
+    # this caused an obscure bug on 2019-09-21.
+    # prodserver1of2, 2of2, etc
+    # we now require REDIS_URL to be defined even if using default localhost:6379
+    # that is to avoid piling up stuff in redis if it's not being used.
+    if (
+        'prodserver' in subcommand
+        or 'webandworkers' in subcommand
+        or 'timeoutworker' in subcommand
+    ) and os.environ.get('REDIS_URL'):
+        os.environ['OTREE_USE_REDIS'] = '1'
+
     if subcommand in [
         'startproject',
         'version',
@@ -120,13 +148,8 @@ def execute_from_command_line(*args, **kwargs):
     else:
         try:
             configure_settings(DJANGO_SETTINGS_MODULE)
-        except ImportSettingsError:
-            # need to differentiate between an ImportError because settings.py
-            # was not found, vs. ImportError because settings.py imports another
-            # module that is not found.
-            if os.path.isfile('{}.py'.format(DJANGO_SETTINGS_MODULE)):
-                raise
-            else:
+        except ModuleNotFoundError as exc:
+            if exc.name == DJANGO_SETTINGS_MODULE.split('.')[-1]:
                 msg = (
                     "Cannot find oTree settings. "
                     "Please 'cd' to your oTree project folder, "
@@ -134,6 +157,7 @@ def execute_from_command_line(*args, **kwargs):
                 )
                 logger.warning(msg)
                 return
+            raise
         warning = check_update_needed(
             Path('.').resolve().joinpath('requirements_base.txt')
         )
@@ -174,9 +198,7 @@ def execute_from_command_line(*args, **kwargs):
     else:
         do_django_setup()
 
-    if subcommand in ['help', '--help', '-h'] and len(argv) == 2:
-        sys.stdout.write(MAIN_HELP_TEXT)
-    elif subcommand == 'help' and len(argv) >= 3:
+    if subcommand == 'help' and len(argv) >= 3:
         command_to_explain = argv[2]
         fetch_command(command_to_explain).print_help('otree', command_to_explain)
     elif subcommand in ("version", "--version"):
@@ -185,15 +207,8 @@ def execute_from_command_line(*args, **kwargs):
         fetch_command(subcommand).run_from_argv(argv)
 
 
-class ImportSettingsError(ImportError):
-    pass
-
-
 def configure_settings(DJANGO_SETTINGS_MODULE: str = 'settings'):
-    try:
-        user_settings_module = import_module(DJANGO_SETTINGS_MODULE)
-    except ImportError:
-        raise ImportSettingsError
+    user_settings_module = import_module(DJANGO_SETTINGS_MODULE)
     user_settings_dict = {}
     user_settings_dict['BASE_DIR'] = os.path.dirname(
         os.path.abspath(user_settings_module.__file__)
@@ -278,7 +293,7 @@ def check_update_needed(requirements_path: Path) -> Optional[str]:
                 # all we care about is otree.
                 pass
             except pkg.VersionConflict as exc:
-                # can't say to install requirements_base.txt because if they are using runzip,
+                # can't say to install requirements_base.txt because if they are using zipserver,
                 # that file doesn't exist.
                 return f'{exc.report()}. Enter: pip3 install "{exc.req}"'
 
