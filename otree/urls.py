@@ -135,6 +135,9 @@ def extensions_export_urlpatterns():
 class GamesView(vanilla.TemplateView):
     template_name = 'otree/games.html'
 
+class DaytraderIntroView(vanilla.TemplateView):
+    template_name = 'otree/daytrader-introduction.html'
+
 
 def get_urlpatterns():
     urlpatterns = [
@@ -146,6 +149,7 @@ def get_urlpatterns():
             urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
             urls.url(r'^delete/(?P<pk>\d+)/$', DeleteRoom.as_view(), name="delete_view_with_pk"),
             urls.url(r'^edit/(?P<pk>\d+)/$', UpdateRoom.as_view(), name="update_view_with_pk"),
+            urls.url(r'^daytrader-introduction/$', DaytraderIntroView.as_view(), name="daytrader-intro"),
             path('create_room/', CreateRoom.as_view(), name='create_room'),
 
     ]

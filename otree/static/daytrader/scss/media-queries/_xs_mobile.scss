@@ -292,6 +292,38 @@
       h3 {
         font-weight: bold;
       }
+
+       a.tip {
+        border-bottom: 1px dashed;
+        text-decoration: none;
+        color: $ku-dark-blue;
+      }
+
+      a.tip:hover {
+        cursor: help;
+        position: relative
+      }
+
+      a.tip span {
+        display: none
+      }
+
+      a.tip:hover span {
+        border: black 1px solid;
+        padding: 8px 8px 8px 8px;
+        display: block;
+        z-index: 100;
+        background-color: white;
+        color: black;
+        margin: 20px;
+        width: 250px;
+        position: absolute;
+        font-size: 15px;
+        top: 10px;
+        text-decoration: none
+      }
+
+
     }
 
     .round-introduction {
@@ -308,10 +340,10 @@
       justify-content: center;
 
       .daytrader-next-btn {
-        font-size: 18px;
+        font-size: 16px;
         background: $ku-dark-blue;
         font-family: "Patrick Hand", sans-serif;
-        width: 166px;
+        width: 216px;
         height: 40px;
         color: white;
         display: flex;
@@ -1215,4 +1247,5 @@
         }
       }
    }
+
 }

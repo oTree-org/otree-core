@@ -89,14 +89,27 @@
                     class="company-face">ansigter. Du har selv set et<img
                     src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
                     class="company-face">ansigt.</p>
-            <p><b>Hvad vil du gøre? Vil du <u>købe (gå long)</u> eller <u>sælge (gå short)</u>?</b></p>
+            <p><b>Hvad vil du gøre?</b></p>
+            <input type="radio" id="id_choice_of_trade_0" name="stock" value="Køb (Long)" class="form-check-input">
+            <label for="long" class="form-check-label">Køb (Long)</label>
+            <br>
+            <input type="radio" id="id_choice_of_trade_1" name="stock" value="Sælg (Kort)" class="form-check-input">
+            <label for="short" class="form-check-label">Sælg (Kort)</label><br>
+
+
+        </div>
+        <div class="wrong-choice">
+            <p>Prøv igen..</p>
+            <p>Husk på den information du har fra forrige tradere!</p>
+        </div>
+        <div class="correct-choice">
+            <p>Korrekt valg!</p>
             <p>Det mest fornuftige ville være at gætte på, at firmaet er i god stand, og derfor køber du!</p>
         </div>
 
-
         <div class="daytrader-next-btn-container">
             <button class="daytrader-next-btn">
-                Gå long!
+                Forsæt..
             </button>
         </div>
         <div id="shortModal" class="short-modal">

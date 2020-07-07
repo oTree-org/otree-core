@@ -20,24 +20,26 @@
 
     <div class="daytrader-game-container">
     <div class="daytrader-round-info">
-          <p>
+        <p>
             Investorerne ved ofte <b><i>IKKE</i></b>, hvordan det i virkeligheden står til i firmaet. Hvis de er grundige, læser de
             måske en enkel årsrapport, men ellers ser de kun aktiekurserne stige og falde.
         </p>
 
-
         <p>
-            Prøv at forestille dig, at du er en investor, eller endnu bedre: en <b class="daytrader-future">daytrader</b>
-            der tjener
-            penge på at gætte
-            i hvilken retning kursen vil gå.
+            Prøv at forestille dig, at du er en investor, eller endnu bedre: en
+            <a class="tip">
+                daytrader
+                <span>En daytrader er en børsmægler som <b>køber (går ”long”)</b> og <b>sælger (går ”short”)</b>
+                mange aktier hver dag for at tjene penge på prisfluktuationerne i løbet af en enkel dag.</span>
+            </a>
+            der tjener penge på at gætte i hvilken retning kursen vil gå.
         </p>
         <p>
             Du har lånt 10.000 euros af din rige onkel, og vil bruge pengene til at handle futures med.
             I morgen skal du aflevere pengene igen, og alle penge du har tjent ud over de 10.000 euros vil være
             dine.
         </p>
-      <p>
+        <p>
             Men..hvis du taber pengene, bliver nød til at sælge dit kameraudstyr for at betale din onkel
             tilbage.
         </p>
@@ -48,6 +50,32 @@
                 Nu kan du starte med at handle!
             </button>
         </div>
+    </div>
+
+
+
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip()
+    });
+
+{% comment %}
+    let futureModal = document.getElementById("futureModal");
+
+    let futureLink = document.querySelector(".daytrader-future");
+
+    let closeModal = document.getElementsByClassName("close")[0];
+
+    futureLink.onclick = function () {
+        futureModal.style.display = "block";
+    };
+
+    window.onclick = function (event) {
+        if (event.target === futureModal) {
+            futureModal.style.display = "none";
+        }
+    }
+
 
         <div id="futureModal" class="future-modal">
             <div class="future-modal-content">
@@ -55,24 +83,8 @@
             </div>
         </div>
     </div>
+    <b class="daytrader-future">daytrader</b>
+{% endcomment %}
 
-
-    <script>
-        let futureModal = document.getElementById("futureModal");
-
-        let futureLink = document.querySelector(".daytrader-future");
-
-        let closeModal = document.getElementsByClassName("close")[0];
-
-        futureLink.onclick = function () {
-            futureModal.style.display = "block";
-        }
-
-        window.onclick = function (event) {
-            if (event.target === futureModal) {
-                futureModal.style.display = "none";
-            }
-        }
-
-    </script>
+</script>
 {% endblock %}

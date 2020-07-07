@@ -143,6 +143,16 @@
       font-size: 25px;
       width: 100%;
       padding-top: 10px;
+
+
+      a.tip:hover span {
+        padding: 8px 8px 8px 8px;
+        margin: 30px;
+        width: 500px;
+        font-size: 22px;
+        top: 10px;
+        right: 0;
+      }
     }
 
     .daytrader-next-btn-container {
