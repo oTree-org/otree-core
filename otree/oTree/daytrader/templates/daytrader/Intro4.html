@@ -83,10 +83,9 @@
                 <small>(Minus er <i class="short-modal-link">short</i>, plus er <i
                         class="long-modal-link">long</i>)</small>
             </p>
-
-            <p>Med den viden, hvad er mest sandsynligt at de to tradere har set af ansigter?</p>
+             <p>Med den viden, hvad er mest sandsynligt at de to tradere har set af ansigter?</p>
             <input type="radio" id="two-happy-faces" name="faces" value="glade" class="form-check-input">
-            <label for="long" class="form-check-label">
+            <label for="two-happy-faces" class="form-check-label">
                 De har begge set to
                 <img
                     src="{% static 'daytrader/media/happy_face_daytrader.png' %}"
@@ -94,23 +93,30 @@
                     class="company-face">
                 ansigter
             </label>
+
+
             <br>
             <input type="radio" id="two-sad-faces" name="faces" value="kede" class="form-check-input">
-            <label for="short" class="form-check-label">De har begge set to <img
+            <label for="two-sad-faces" class="form-check-label">De har begge set to <img
                     src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
                     class="company-face"> ansigter</label><br>
 
-            <div class="faces-answer">
+            <div id="faces-answer"><!--  JavaScript is appended here --></div>
 
+            <div>
+                <p>Nu er det din tur til at tage en beslutning.</p>
+                <p><b>Hvad vil du gøre som den tredje trader?</b></p>
             </div>
-            <!--
-            <p><b>Hvad vil du gøre?</b></p>
-            <input type="radio" id="id_choice_of_trade_0" name="stock" value="Køb (Long)" class="form-check-input">
-            <label for="long" class="form-check-label">Køb (Long)</label>
+            <div>
+                <input type="radio" id="trader_choice_1" name="choice" value="buy" class="form-check-input">
+            <label for="trader_choice_1" class="form-check-label">Køb (Long)</label>
             <br>
-            <input type="radio" id="id_choice_of_trade_1" name="stock" value="Sælg (Kort)" class="form-check-input">
-            <label for="short" class="form-check-label">Sælg (Kort)</label><br>
+            <input type="radio" id="trader_choice_2" name="choice" value="sell" class="form-check-input">
+            <label for="trader_choice_2" class="form-check-label">Sælg (Kort)</label><br>
+            </div>
 
+            <div id="trader_choice"><!--  JavaScript is appended here --></div>
+            <!--
 
         </div>
         <div class="wrong-choice">
@@ -118,8 +124,8 @@
             <p>Husk på den information du har fra forrige tradere!</p>
         </div>
         <div class="correct-choice">
-            <p>Korrekt valg!</p>
-            <p>Det mest fornuftige ville være at gætte på, at firmaet er i god stand, og derfor køber du!</p>
+            <p>Godt valg!</p>
+            <p>Det mest fornuftige vil være at gætte på, at firmaet er i god stand, og derfor køber du!</p>
         </div>
 
         <div class="daytrader-next-btn-container">
@@ -145,28 +151,63 @@
                     <p> Forskellen på købs- og salgsprisen er ens fortjeneste (eller tab).</p>
                 </div>
             </div>-->
+
         </div>
     </div>
 
     <script>
+    /* JS for second set of radio buttons  */
+        // Get div to use to append new element depending on choosen answer
+        let trader_choice_container = document.getElementById("trader_choice");
+
+        // Create a p tag to go into the trader_choice_container (div)
+        let trader_choice_correct = document.createElement("P");
+        trader_choice_correct.setAttribute("class", "trader_choice");
+
+
+
+    /* JS for first set of radio buttons  */
         // Get div to use to append new element depending on choosen answer
         let faces_answer_container = document.getElementById("faces-answer");
 
         // Create a p tag to go into the faces_answer_container (div)
-        let guess_reply = document.createElement("P");
-        guess_reply.setAttribute("class", "guess_reply");
+        let guess_reply_correct = document.createElement("P");
+        guess_reply_correct.setAttribute("class", "guess_reply");
 
         // Create a text-node for correct answer and append to p tag
-        let correct_guess = document.createTextNode("Korrekt, fordi begge tradere har købt aktier kan der konkluderes at de begge har set glade ansigter");
-        guess_reply.append(correct_guess);
+        let correct_guess = document.createTextNode("Korrekt! Da begge tradere har købt aktier kan der konkluderes at de begge har set glade ansigter.");
+        guess_reply_correct.append(correct_guess);
+
+         // Create a p tag to go into the faces_answer_container (div)
+        let guess_reply_wrong = document.createElement("P");
+        guess_reply_wrong.setAttribute("class", "guess_reply");
+
+         // Create a text-node for wrong answer and append to p tag
+        let wrong_guess = document.createTextNode("Forkert..genlæs teksten foroven, og prøv igen.");
+        guess_reply_wrong.append(wrong_guess);
+
+
 
         // Use variables to check if the answer is correct and show messages accordingly
         $('input:radio[name="faces"]').change(function () {
-              let faces_answer_container = document.getElementById("faces-answer");
+
            if ($(this).val() === "glade") {
-                faces_answer_container.appendChild(guess_reply);
+
+               if (guess_reply_wrong.parentNode) {
+                   guess_reply_wrong.parentNode.removeChild(guess_reply_wrong);
+               }
+
+               faces_answer_container.appendChild(guess_reply_correct);
+               guess_reply_correct.style.color = "#5f861e";
                console.log("Happy faces")
            } else {
+
+               if (guess_reply_correct.parentNode) {
+                   guess_reply_correct.parentNode.removeChild(guess_reply_correct);
+               }
+
+               document.getElementById("faces-answer").appendChild(guess_reply_wrong);
+                guess_reply_wrong.style.color = "#BF0A30";
                console.log("Unhappy faces")
            }
         });
