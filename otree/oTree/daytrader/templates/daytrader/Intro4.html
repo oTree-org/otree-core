@@ -84,11 +84,26 @@
                         class="long-modal-link">long</i>)</small>
             </p>
 
-            <p>De to forrige tradere har begge købt aktier i firmaet. Derfor konluderer du at de begge har set <img
-                    src="{% static 'daytrader/media/happy_face_daytrader.png' %}" alt="happy face"
-                    class="company-face">ansigter. Du har selv set et<img
+            <p>Med den viden, hvad er mest sandsynligt at de to tradere har set af ansigter?</p>
+            <input type="radio" id="two-happy-faces" name="faces" value="glade" class="form-check-input">
+            <label for="long" class="form-check-label">
+                De har begge set to
+                <img
+                    src="{% static 'daytrader/media/happy_face_daytrader.png' %}"
+                    alt="happy face"
+                    class="company-face">
+                ansigter
+            </label>
+            <br>
+            <input type="radio" id="two-sad-faces" name="faces" value="kede" class="form-check-input">
+            <label for="short" class="form-check-label">De har begge set to <img
                     src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
-                    class="company-face">ansigt.</p>
+                    class="company-face"> ansigter</label><br>
+
+            <div class="faces-answer">
+
+            </div>
+            <!--
             <p><b>Hvad vil du gøre?</b></p>
             <input type="radio" id="id_choice_of_trade_0" name="stock" value="Køb (Long)" class="form-check-input">
             <label for="long" class="form-check-label">Køb (Long)</label>
@@ -129,11 +144,33 @@
                         Senere sælger man aktierne igen (man ”lukker sin position”).</p>
                     <p> Forskellen på købs- og salgsprisen er ens fortjeneste (eller tab).</p>
                 </div>
-            </div>
+            </div>-->
         </div>
     </div>
 
     <script>
+        // Get div to use to append new element depending on choosen answer
+        let faces_answer_container = document.getElementById("faces-answer");
+
+        // Create a p tag to go into the faces_answer_container (div)
+        let guess_reply = document.createElement("P");
+        guess_reply.setAttribute("class", "guess_reply");
+
+        // Create a text-node for correct answer and append to p tag
+        let correct_guess = document.createTextNode("Korrekt, fordi begge tradere har købt aktier kan der konkluderes at de begge har set glade ansigter");
+        guess_reply.append(correct_guess);
+
+        // Use variables to check if the answer is correct and show messages accordingly
+        $('input:radio[name="faces"]').change(function () {
+              let faces_answer_container = document.getElementById("faces-answer");
+           if ($(this).val() === "glade") {
+                faces_answer_container.appendChild(guess_reply);
+               console.log("Happy faces")
+           } else {
+               console.log("Unhappy faces")
+           }
+        });
+
 
         let containers = document.getElementsByClassName("faceContainer");
         let drawn_face = {{ player.drawn_face|yesno:"true,false" }};
@@ -150,13 +187,13 @@
         let sackButtons = document.getElementsByClassName("sack-button");
 
         let radioButton = document.getElementsByClassName("form-check-input");
-        let inputContainer = document.querySelector(".daytrader-submit-value");
+        //let inputContainer = document.querySelector(".daytrader-submit-value");
 
-        for (let button = 0; button < radioButton.length; button++) {
-            radioButton[button].onclick = event => {
-                inputContainer.style.display = "block";
-            }
-        }
+        //for (let button = 0; button < radioButton.length; button++) {
+          //  radioButton[button].onclick = event => {
+            //    inputContainer.style.display = "block";
+            //}
+        //}
 
 
         function toggle(className, displayState) {

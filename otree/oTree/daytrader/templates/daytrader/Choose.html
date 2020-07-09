@@ -264,6 +264,7 @@
        $(document).on('keyup', function () {
             let player_actual_value = document.getElementById("myInput").value;
             if (player_max_value < player_actual_value) {
+                // should be error_containeR?
                 document.getElementById("error").appendChild(error_max_value_exceeded);
                 border_color.style.borderColor = "#BF0A30";
 
