@@ -1,5 +1,4 @@
 from pathlib import Path
-
 from otree.models_concrete import RoomToSession, RoomsStorage
 from otree.common import add_params_to_url, make_hash, validate_alphanumeric
 from django.conf import settings

@@ -84,9 +84,17 @@
                         class="long-modal-link">long</i>)</small>
             </p>
              <p>Med den viden, hvad er mest sandsynligt at de to tradere har set af ansigter?</p>
-            <input type="radio" id="two-happy-faces" name="faces" value="glade" class="form-check-input">
+             <div class="radio-choices">
+ <input type="radio" id="two-sad-faces" name="faces" value="kede" class="form-check-input">
+            <label for="two-sad-faces" class="form-check-label">Begge tradere har set to <img
+                    src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
+                    class="company-face"> ansigter</label>
+                 <br>
+
+
+<input type="radio" id="two-happy-faces" name="faces" value="glade" class="form-check-input">
             <label for="two-happy-faces" class="form-check-label">
-                De har begge set to
+                Begge tradere har set to
                 <img
                     src="{% static 'daytrader/media/happy_face_daytrader.png' %}"
                     alt="happy face"
@@ -94,20 +102,16 @@
                 ansigter
             </label>
 
-
             <br>
-            <input type="radio" id="two-sad-faces" name="faces" value="kede" class="form-check-input">
-            <label for="two-sad-faces" class="form-check-label">De har begge set to <img
-                    src="{% static 'daytrader/media/sad_face_daytrader.png' %}" alt="sad face"
-                    class="company-face"> ansigter</label><br>
 
+              </div>
             <div id="faces-answer"><!--  JavaScript is appended here --></div>
-
-            <div>
+    <div id="container-toggle">
+            <div id="trader_next_choice">
                 <p>Nu er det din tur til at tage en beslutning.</p>
                 <p><b>Hvad vil du gøre som den tredje trader?</b></p>
             </div>
-            <div>
+               <div class="radio-choices">
                 <input type="radio" id="trader_choice_1" name="choice" value="buy" class="form-check-input">
             <label for="trader_choice_1" class="form-check-label">Køb (Long)</label>
             <br>
@@ -116,55 +120,75 @@
             </div>
 
             <div id="trader_choice"><!--  JavaScript is appended here --></div>
-            <!--
 
-        </div>
-        <div class="wrong-choice">
-            <p>Prøv igen..</p>
-            <p>Husk på den information du har fra forrige tradere!</p>
-        </div>
-        <div class="correct-choice">
-            <p>Godt valg!</p>
-            <p>Det mest fornuftige vil være at gætte på, at firmaet er i god stand, og derfor køber du!</p>
-        </div>
-
-        <div class="daytrader-next-btn-container">
-            <button class="daytrader-next-btn">
-                Forsæt..
-            </button>
-        </div>
-        <div id="shortModal" class="short-modal">
-            <div class="short-modal-content">
-                <div class="daytrader-round-info">
-                    <p>At gå short betyder at man låner aktier af sin broker for at sælge dem på markedet med det samme,
-                        fordi man tror at aktieprisen vil falde.</p>
-                    <p>Senere køber man aktierne igen og afleverer dem tilbage (man ”lukker sin position”). Forskellen
-                        på salgs- og købsprisen er ens fortjeneste (eller tab).</p>
-                </div>
+            <div class="daytrader-next-btn-container" >
+                <br>
+                <button class="daytrader-next-btn" id="next_button" style="margin-top: 2%;">
+                    Forsæt..
+                </button>
             </div>
         </div>
-        <div id="longModal" class="long-modal">
-            <div class="long-modal-content">
-                <div class="daytrader-round-info">
-                    <p>At gå long betyder at man køber aktier fordi man tror at de vil stige i værdi.
-                        Senere sælger man aktierne igen (man ”lukker sin position”).</p>
-                    <p> Forskellen på købs- og salgsprisen er ens fortjeneste (eller tab).</p>
-                </div>
-            </div>-->
-
         </div>
     </div>
 
     <script>
+    /* Hide next choice until correct answer is chosen
+        let trader_next_choice = document.getElementById("trader_next_choice");
+        trader_next_choice.style.display = "none;";
+*/
+    let toggleShow = document.getElementById("container-toggle");
+    toggleShow.style.display = "none";
+
+    /* Hide next button until correct answer chosen */
+        let next_button = document.getElementById("next_button");
+         next_button.style.display = "none";
+        console.log("next_button");
+
     /* JS for second set of radio buttons  */
         // Get div to use to append new element depending on choosen answer
         let trader_choice_container = document.getElementById("trader_choice");
 
         // Create a p tag to go into the trader_choice_container (div)
         let trader_choice_correct = document.createElement("P");
-        trader_choice_correct.setAttribute("class", "trader_choice");
+        trader_choice_correct.setAttribute("class", "correct_guess");
 
+        // Create a text-node for correct answer and append to p tag
+        let trader_correct_guess = document.createTextNode("Godt valg! Baseret på den information du har fra handlen i firmaet, beslutter du dig for at købe aktier (gå long)");
+        trader_choice_correct.append(trader_correct_guess);
 
+         // Create a p tag to go into the faces_answer_container (div)
+        let trader_choice_wrong = document.createElement("P");
+        trader_choice_wrong.setAttribute("class", "wrong_guess");
+
+         // Create a text-node for wrong answer and append to p tag
+        let trader_wrong_guess = document.createTextNode("Forkert, prøv igen! Tænk " +
+            "over at du som den tredje trader ser begge forrige tradere har valgt at købe aktier, hvad er mest logisk for dig?");
+        trader_choice_wrong.append(trader_wrong_guess);
+
+        // Use variables to check if the answer is correct and show messages accordingly
+        $('input:radio[name="choice"]').change(function () {
+           if ($(this).val() === "buy") {
+               if (trader_choice_wrong.parentNode) {
+                   trader_choice_wrong.parentNode.removeChild(trader_choice_wrong);
+
+               }
+               trader_choice_container.appendChild(trader_choice_correct);
+               trader_choice_correct.style.color = "#5f861e";
+               next_button.style.display = "block";
+           //    toggleShow.style.display = "block";
+               console.log("buy")
+           } else {
+               if (trader_choice_correct.parentNode) {
+                   trader_choice_correct.parentNode.removeChild(trader_choice_correct);
+               }
+              trader_choice_container.appendChild(trader_choice_wrong);
+               trader_choice_wrong.style.color = "#BF0A30";
+               next_button.style.display = "none";
+              // next_button.style.display = "none";
+
+               console.log("sell")
+           }
+        });
 
     /* JS for first set of radio buttons  */
         // Get div to use to append new element depending on choosen answer
@@ -190,7 +214,6 @@
 
         // Use variables to check if the answer is correct and show messages accordingly
         $('input:radio[name="faces"]').change(function () {
-
            if ($(this).val() === "glade") {
 
                if (guess_reply_wrong.parentNode) {
@@ -199,18 +222,25 @@
 
                faces_answer_container.appendChild(guess_reply_correct);
                guess_reply_correct.style.color = "#5f861e";
+               toggleShow.style.display = "block";
                console.log("Happy faces")
            } else {
 
                if (guess_reply_correct.parentNode) {
                    guess_reply_correct.parentNode.removeChild(guess_reply_correct);
+                   toggleShow.style.display = "none";
                }
 
-               document.getElementById("faces-answer").appendChild(guess_reply_wrong);
+               faces_answer_container.appendChild(guess_reply_wrong);
                 guess_reply_wrong.style.color = "#BF0A30";
                console.log("Unhappy faces")
            }
         });
+
+
+
+
+
 
 
         let containers = document.getElementsByClassName("faceContainer");
@@ -329,4 +359,30 @@
             }
         }
     </script>
+
+        <!--
+
+        </div>
+
+
+
+        </div>
+        <div id="shortModal" class="short-modal">
+            <div class="short-modal-content">
+                <div class="daytrader-round-info">
+                    <p>At gå short betyder at man låner aktier af sin broker for at sælge dem på markedet med det samme,
+                        fordi man tror at aktieprisen vil falde.</p>
+                    <p>Senere køber man aktierne igen og afleverer dem tilbage (man ”lukker sin position”). Forskellen
+                        på salgs- og købsprisen er ens fortjeneste (eller tab).</p>
+                </div>
+            </div>
+        </div>
+        <div id="longModal" class="long-modal">
+            <div class="long-modal-content">
+                <div class="daytrader-round-info">
+                    <p>At gå long betyder at man køber aktier fordi man tror at de vil stige i værdi.
+                        Senere sælger man aktierne igen (man ”lukker sin position”).</p>
+                    <p> Forskellen på købs- og salgsprisen er ens fortjeneste (eller tab).</p>
+                </div>
+            </div>-->
 {% endblock %}
