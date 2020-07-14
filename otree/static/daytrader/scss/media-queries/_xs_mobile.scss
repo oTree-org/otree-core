@@ -533,12 +533,14 @@
     }
 
     div.radio-choices {
-
+      display: block;
+      justify-content: center;
+      flex-direction: row;
 
         .form-check-label {
           font-family: "Patrick Hand", sans-serif;
           font-size: 17px;
-          padding: 0 0 0 20px;
+           padding: 0 45px 5px 20px;
 
           :nth-child(2) {
             padding: 0 0 0 15px;
