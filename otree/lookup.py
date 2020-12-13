@@ -1,8 +1,10 @@
-from functools import lru_cache
-from typing import Dict, Tuple
-from otree.models import Session
 from collections import namedtuple
+from functools import lru_cache
+from typing import Dict
+
 from otree.common import get_pages_module, get_models_module
+from otree.database import dbq
+from otree.models import Session
 
 PageLookup = namedtuple(
     'PageInfo',
@@ -20,16 +22,17 @@ PageLookup = namedtuple(
 
 @lru_cache(maxsize=32)
 def _get_session_lookups(session_code) -> Dict[int, PageLookup]:
-    session = Session.objects.get(code=session_code)
+    session = dbq(Session).filter_by(code=session_code).one()
     pages = {}
     idx = 1
     for app_name in session.config['app_sequence']:
         models = get_models_module(app_name)
+        Subsession = models.Subsession
         page_sequence = get_pages_module(app_name).page_sequence
         subsessions = {
-            s['round_number']: s['id']
-            for s in models.Subsession.objects.filter(session=session).values(
-                'id', 'round_number'
+            s[0]: s[1]
+            for s in Subsession.objects_filter(session=session).with_entities(
+                Subsession.round_number, Subsession.id
             )
         }
 
@@ -42,7 +45,7 @@ def _get_session_lookups(session_code) -> Dict[int, PageLookup]:
                     round_number=rd,
                     subsession_id=subsessions[rd],
                     # TODO: remove session ID, just use code everywhere
-                    session_pk=session.pk,
+                    session_pk=session.id,
                     name_in_url=models.Constants.name_in_url,
                     is_first_in_round=is_first_in_round,
                 )
@@ -71,4 +74,3 @@ def url_i_should_be_on(participant_code, session_code, index_in_pages) -> str:
         name_in_url=lookup.name_in_url,
         page_index=idx,
     )
-

@@ -1,7 +1,8 @@
 import re
-from django.core.signing import Signer
+from otree.common import signer_sign, signer_unsign
+
 from otree.channels import utils as channel_utils
-from django.utils.translation import ugettext as _
+from gettext import gettext
 
 
 class ChatTagError(Exception):
@@ -12,7 +13,7 @@ class UNDEFINED:
     pass
 
 
-def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED):
+def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED) -> dict:
     player = context['player']
     group = context['group']
     Constants = context['Constants']
@@ -43,23 +44,25 @@ def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED):
         # Translators: A player's default chat nickname,
         # which is "Player" + their ID in group. For example:
         # "Player 2".
-        nickname = _('Participant {id_in_group}').format(id_in_group=player.id_in_group)
+        nickname = gettext('Participant {id_in_group}').format(
+            id_in_group=player.id_in_group
+        )
     nickname = str(nickname)
-    nickname_signed = Signer().sign(nickname)
+    nickname_signed = signer_sign(nickname)
 
     socket_path = channel_utils.chat_path(prefixed_channel, participant.id)
 
-    chat_vars_for_js = {
-        'socket_path': socket_path,
-        'channel': prefixed_channel,
-        'participant_id': participant.id,
-        'nickname_signed': nickname_signed,
-        # Translators: the name someone sees displayed for themselves in a chat.
-        # It's their nickname followed by "(Me)". For example:
-        # "Michael (Me)" or "Player 1 (Me)".
-        'nickname_i_see_for_myself': _("{nickname} (Me)").format(nickname=nickname),
-    }
-
-    context['chat_vars_for_js'] = chat_vars_for_js
-
-    return context
+    chat_vars_for_js = dict(
+        channel=prefixed_channel,
+        socket_path=socket_path,
+        participant_id=participant.id,
+        nickname_signed=nickname_signed,
+        nickname=nickname,
+        nickname_i_see_for_myself=gettext("{nickname} (Me)").format(nickname=nickname),
+    )
+    return dict(
+        channel=prefixed_channel,
+        # send this as one item so it can be json dumped & loaded into js
+        # in one line.
+        chat_vars_for_js=chat_vars_for_js,
+    )

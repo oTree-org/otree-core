@@ -1,4 +1,5 @@
 import logging
+import json
 import os
 
 import sys
@@ -7,12 +8,12 @@ from enum import Enum
 from subprocess import check_output, Popen
 from urllib.parse import urljoin
 
-from django.conf import settings
-from django.urls import reverse
+from otree import settings
+from otree.asgi import reverse
 
 import otree.channels.utils as channel_utils
 from otree.session import SESSION_CONFIGS_DICT
-from otree.common import random_chars
+from otree.common import get_admin_secret_code
 
 AUTH_FAILURE_MESSAGE = """
 Could not login to the server using your ADMIN_USERNAME
@@ -67,7 +68,6 @@ def windows_mac_or_linux() -> OSEnum:
 
 class URLs:
     create_browser_bots = reverse('CreateBrowserBotsSession')
-    close_browser_bots = reverse('CloseBrowserBotsSession')
 
 
 WEBSOCKET_COMPLETED_MESSAGE = b'closed_by_browser_launcher'
@@ -85,7 +85,7 @@ class OtreeWebSocketClient(WebSocketClient):
         '''
         This is called automatically when the client receives a message
         '''
-        code = message
+        code = json.loads(message)['participant_code']
         if code not in self.seen_participant_codes:
             self.seen_participant_codes.add(code)
             self.participants_finished += 1
@@ -182,9 +182,8 @@ class Launcher:
     def run_session(self, session_config_name, num_participants, case_number):
         self.close_existing_session()
 
-        pre_create_id = random_chars(5)
-
-        browser_process = self.launch_browser(num_participants, pre_create_id)
+        secret_code = get_admin_secret_code()
+        browser_process = self.launch_browser(num_participants, secret_code)
 
         row_fmt = "{:<%d} {:>2} participants..." % (self.max_name_length + 1)
         sys.stdout.write(row_fmt.format(session_config_name, num_participants))
@@ -193,7 +192,6 @@ class Launcher:
             session_config_name=session_config_name,
             num_participants=num_participants,
             case_number=case_number,
-            pre_create_id=pre_create_id,
         )
 
         time_spent = self.websocket_listen(session_code, num_participants)
@@ -277,7 +275,7 @@ class Launcher:
 
     def close_existing_session(self):
         # make sure room is closed
-        resp = self.post(URLs.close_browser_bots)
+        resp = self.post(reverse('CloseBrowserBotsSession'))
         if not resp.ok:
             msg = (
                 'Request to close existing browser bots session failed. '
@@ -285,9 +283,10 @@ class Launcher:
             )
             raise AssertionError(msg)
 
-    def launch_browser(self, num_participants, pre_create_id):
+    def launch_browser(self, num_participants, secret_code):
         wait_room_url = urljoin(
-            self.server_url, reverse('BrowserBotStartLink', args=[pre_create_id])
+            self.server_url,
+            reverse('BrowserBotStartLink', admin_secret_code=secret_code),
         )
 
         for browser_cmd in self.browser_cmds:

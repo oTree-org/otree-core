@@ -1,4 +1,2 @@
-# setup.py imports this module, so this module must not import django
-# or any other 3rd party packages.
-__version__ = '3.3.6'
-default_app_config = 'otree.apps.OtreeConfig'
+__version__ = '5.0.0a1'
+# don't import anything else here because setup.py imports this.

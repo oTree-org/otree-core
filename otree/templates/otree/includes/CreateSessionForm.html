@@ -1,28 +1,34 @@
-{% load otree static %}
-
 <form id="form">
   {% csrf_token %}
 
-  {% formfield form.session_config %}
+  <div class="mb-3">
+    <label class="col-form-label" for="session_config">
+      {# the label and help_text are different for mturk #}
+      {{ form.session_config.label }}
+    </label>
+    {{ form.session_config }}
+  </div>
 
-  <div class="form-group required">
-    <label class="col-form-label" for="id_num_participants">
+  <div class="mb-3">
+    <label class="col-form-label" for="num_participants">
       {# the label and help_text are different for mturk #}
       {{ form.num_participants.label }}
     </label>
-    <div class="controls  field-num_participants">
+    <div class="controls">
       {{ form.num_participants }}
       {% for config in configs %}
         <div id="lcm-{{ config.name }}" class="lcm"
              style="display:none">
-          <p>Must be a multiple of {{ config.get_lcm }}</p></div>
+          <p>Must be a multiple of {{ config.get_lcm() }}</p></div>
       {% endfor %}
-      <p class="help-block">{{ form.num_participants.help_text }}</p>
+      <p class="help-block">{{ form.num_participants.description }}</p>
     </div>
   </div>
 
-  {{ form.is_mturk }}
-  {{ form.room_name }}
+  {% if form.is_mturk.object_data %}
+    <input id="is_mturk" name="is_mturk" type="hidden" value="y">
+  {% endif %}
+  <input id="room_name" name="room_name" type="hidden" value="">
 
   <div>
     <input class="btn btn-primary"
@@ -37,46 +43,49 @@
   <br>
   {% for config in configs %}
 
-    <div class="edit-config"
-         id="edit-config-{{ config.name }}" style="display: none">
-      <h4>
-        <a data-toggle="collapse"
-           href="#edit-config-table-{{ config.name }}"
-           class="btn-block">
-          Configure session
-          <img src='{% static "glyphicons/cogwheel.png" %}'>
-        </a>
-      </h4>
-      <div class="collapse"
-           id="edit-config-table-{{ config.name }}">
-        {% if config.custom_editable_fields %}
-          <h5>Custom</h5>
+    <div class="config" id="config-{{ config.name }}" style="display: none">
+      <div class="edit-config"
+           id="edit-config-{{ config.name }}">
+        <h5>
+          <a data-bs-toggle="collapse"
+             href="#edit-config-table-{{ config.name }}"
+             class="btn-block">
+            Configure session
+            <img src='{% static "glyphicons/cogwheel.png" %}'>
+          </a>
+        </h5>
+        <div class="collapse"
+             id="edit-config-table-{{ config.name }}">
+          {% if config.custom_editable_fields() %}
+            <h5>Custom</h5>
+            <table class="table">
+              {% for field in config.custom_editable_fields_html() %}
+                {{ field|safe }}
+              {% endfor %}
+            </table>
+          {% else %}
+            <p><i>
+              You can make more properties configurable
+              by adding them to your session config in
+              settings.py.
+            </i></p>
+          {% endif %}
+
+          {# we only need to clarify that these are built-in if there are also custom ones #}
+          {% if config.custom_editable_fields() %}
+            <h5>General</h5>{% endif %}
           <table class="table">
-            {% for field in config.custom_editable_fields_html %}
+            {% for field in config.builtin_editable_fields_html() %}
               {{ field|safe }}
             {% endfor %}
           </table>
-        {% else %}
-          <p><i>
-            You can make more properties configurable
-            by adding them to your session config in
-            settings.py.
-          </i></p>
-        {% endif %}
-
-        {# we only need to clarify that these are built-in if there are also custom ones #}
-        {% if config.custom_editable_fields %}
-          <h5>General</h5>{% endif %}
-        <table class="table">
-          {% for field in config.builtin_editable_fields_html %}
-            {{ field|safe }}
-          {% endfor %}
-        </table>
+        </div>
       </div>
+
+      {% with config=config %}
+        {% include "otree/includes/SessionInfo.html" %}
+      {% endwith %}
     </div>
-
-
-    {% include "otree/includes/SessionInfo.html" with config=config config_display="none" %}
 
   {% endfor %}
 </form>
@@ -85,29 +94,29 @@
 
     function showSessionConfigInfo(sessionconfigname) {
         $('.summary').hide();
-        $('.edit-config').hide();
-        $('#session-config-' + sessionconfigname).show();
-        $('#edit-config-' + sessionconfigname).show();
+        $('.config').hide();
+        $('#config-' + sessionconfigname).show();
         $('.lcm').hide();
         $('#lcm-' + sessionconfigname).show();
     }
 
     $(document).ready(function () {
+        let dropdown = $('[name=session_config]')
         $('.summary').hide();
-        $('.edit-config').hide();
+        $('.config').hide();
         $('.lcm').hide();
-        var current_session_config = $('#id_session_config').val();
+        var current_session_config = dropdown.val();
         if (current_session_config) {
             showSessionConfigInfo(current_session_config);
         }
 
-        $('#id_session_config').change(function () {
-            showSessionConfigInfo($(this).val());
+        dropdown.change(function () {
+            showSessionConfigInfo(dropdown.val());
         })
 
         let $createSessionError = $("#create-session-error");
         let $createSessionWait = $("#create-session-wait");
-        let socket = makeReconnectingWebSocket("/create_session/");
+        let socket = makeReconnectingWebSocket("/create_session");
         let $btnCreateSession = $('#btn-create-session');
         $btnCreateSession.click(function (e) {
             $btnCreateSession.prop('disabled', true);

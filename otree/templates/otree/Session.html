@@ -1,0 +1,69 @@
+{% extends "otree/BaseAdmin.html" %}
+
+
+{% block title %}
+  {{ session.config.display_name }}: session '{{ session.code }}'{% if session.is_demo %} (demo) {% endif %}
+{% endblock %}
+
+{% block menus %}
+  <ul class="nav nav-tabs">
+    <li role="presentation">
+      {% if session.is_demo %}
+        <a class="nav-link" href="{% url 'CreateDemoSession' session.config.name %}" data-bs-toggle="popover"
+           data-bs-trigger="hover" data-bs-placement="top"
+           data-bs-content="Recreate session from scratch. You can also copy this link and share with others.">
+          <img src='{% static "glyphicons/refresh.png" %}'> New
+        </a>
+      {% else %}
+        <a class="nav-link SessionEditProperties" href="{% url 'SessionEditProperties' session.code %}"><img
+            src='{% static "glyphicons/pencil.png" %}'>
+          Edit</a>
+      {% endif %}
+    </li>
+    <li class="nav-item">
+      <a class="nav-link SessionStartLinks" href="{% url 'SessionStartLinks' session.code %}"><img
+          src='{% static "glyphicons/link.png" %}'> Links</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link SessionMonitor" href="{% url 'SessionMonitor' session.code %}"><img
+          src='{% static "glyphicons/eye-open.png" %}'> Monitor</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link SessionData" href="{% url 'SessionData' session.code %}"><img
+          src='{% static "glyphicons/list-alt.png" %}'> Data</a>
+    </li>
+    {% if session.is_mturk %}
+      <li class="nav-item">
+        <a class="nav-link MTurkSessionPayments" href="{% url 'MTurkSessionPayments' session.code %}">
+          {% else %}
+      <li class="nav-item">
+      <a class="nav-link SessionPayments" href="{% url 'SessionPayments' session.code %}">
+    {% endif %}
+    <img src='{% static "glyphicons/usd.png" %}'> Payments
+    </a>
+    </li>
+    {% if session.has_admin_report() %}
+      <li class="nav-item">
+      <a class="nav-link AdminReport"
+         href="{% url 'AdminReport' session.code %}"><img src='{% static "glyphicons/stats.png" %}'> Report</a>
+    {% endif %}
+    {% if session.is_mturk %}
+      <li class="nav-item">
+        <a class="nav-link MTurkCreateHIT"
+           href="{% url 'MTurkCreateHIT' session.code %}"><img src='{% static "glyphicons/cloud.png" %}'> MTurk</a>
+      </li>
+    {% endif %}
+    <li class="nav-item">
+      <a class="nav-link SessionDescription"
+         href="{% url 'SessionDescription' session.code %}"><img src='{% static "glyphicons/pushpin.png" %}'>
+        Description</a>
+    </li>
+  </ul>
+
+  <style>
+    .{{ current_page_name }} {
+        border-color: #dee2e6;
+    }
+  </style>
+
+{% endblock %}

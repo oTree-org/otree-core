@@ -6,19 +6,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Dict, Union, Optional
-
-import vanilla
-from django.conf import settings
-from django.contrib import messages
-from django.http import HttpResponseServerError
-from django.shortcuts import get_object_or_404
-from django.shortcuts import redirect
-from django.template.loader import render_to_string
-from django.urls import reverse
-
+from starlette.responses import Response, RedirectResponse
+import otree.views.cbv
+from otree import settings
+from starlette.requests import Request
+from otree.database import values_flat, db
 import otree
 from otree.models import Session, Participant
-from otree.views.abstract import AdminSessionPageMixin
+from otree.views.cbv import AdminSessionPage
+from .cbv import enqueue_admin_message
+from otree.templating import ibis_loader
+
 
 try:
     import boto3
@@ -67,15 +65,15 @@ def MTurkClient(*, use_sandbox=True, request):
         yield get_mturk_client(use_sandbox=use_sandbox)
     except Exception as exc:
         logger.error('MTurk error', exc_info=True)
-        messages.error(request, str(exc), extra_tags='safe')
+        enqueue_admin_message('error', repr(exc))
 
 
-def in_public_domain(request):
+def in_public_domain(request: Request):
     """This method validates if oTree are published on a public domain
     because mturk need it
 
     """
-    host = request.get_host().lower()
+    host = request.url.hostname.lower()
     if ":" in host:
         host = host.split(":", 1)[0]
     if host in ["localhost", '127.0.0.1']:
@@ -85,7 +83,7 @@ def in_public_domain(request):
     return True
 
 
-class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
+class MTurkCreateHIT(AdminSessionPage):
 
     # make these class attributes so they can be mocked
     aws_keys_exist = bool(
@@ -94,8 +92,7 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
     )
     boto3_installed = bool(boto3)
 
-    def get(self, request):
-
+    def vars_for_template(self):
         session = self.session
 
         mturk_settings = session.config['mturk_hit_settings']
@@ -106,7 +103,7 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             self.aws_keys_exist and self.boto3_installed and is_new_format and is_usd
         )
 
-        context = self.get_context_data(
+        return dict(
             mturk_settings=mturk_settings,
             participation_fee=session.config['participation_fee'],
             mturk_num_workers=session.mturk_num_workers(),
@@ -117,35 +114,24 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             is_usd=is_usd,
         )
 
-        return self.render_to_response(context)
-
-    def post(self, request):
+    def post(self, request, code):
         session = self.session
-        use_sandbox = bool(request.POST.get('use_sandbox'))
+        use_sandbox = bool(self.get_post_data().get('use_sandbox'))
         if not in_public_domain(request) and not use_sandbox:
-            msg = (
-                '<h1>Error: '
-                'oTree must run on a public domain for Mechanical Turk'
-                '</h1>'
-            )
-            return HttpResponseServerError(msg)
+            msg = 'oTree must run on a public domain for Mechanical Turk'
+            return Response(msg)
         mturk_settings = MTurkSettings(**session.config['mturk_hit_settings'])
 
-        start_url = self.request.build_absolute_uri(
-            reverse('MTurkStart', args=(session.code,))
-        )
+        start_url = self.request.url_for('MTurkStart', code=session.code)
 
         keywords = mturk_settings.keywords
         if isinstance(keywords, (list, tuple)):
             keywords = ', '.join(keywords)
 
-        html_question = render_to_string(
-            'otree/MTurkHTMLQuestion.html',
-            context=dict(
-                user_template=mturk_settings.template,
-                frame_height=mturk_settings.frame_height,
-                start_url=start_url,
-            ),
+        html_question = ibis_loader('otree/MTurkHTMLQuestion.html').render(
+            user_template=mturk_settings.template,
+            frame_height=mturk_settings.frame_height,
+            start_url=start_url,
         )
 
         mturk_hit_parameters = {
@@ -177,9 +163,8 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
             session.mturk_use_sandbox = use_sandbox
             session.mturk_expiration = hit['Expiration'].timestamp()
             session.mturk_qual_id = mturk_settings.grant_qualification_id or ''
-            session.save()
 
-        return redirect('MTurkCreateHIT', session.code)
+        return self.redirect('MTurkCreateHIT', code=session.code)
 
 
 Assignment = namedtuple(
@@ -226,11 +211,10 @@ def get_workers_by_status(
     return workers_by_status
 
 
-class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
+class MTurkSessionPayments(AdminSessionPage):
     def vars_for_template(self):
         session = self.session
-        published = bool(session.mturk_HITId)
-        if not published:
+        if not session.mturk_HITId:
             return dict(published=False)
 
         with MTurkClient(
@@ -239,9 +223,10 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             all_assignments = get_all_assignments(mturk_client, session.mturk_HITId)
 
             # auto-reject logic
-            assignment_ids_in_db = session.participant_set.exclude(
-                mturk_assignment_id=None
-            ).values_list('mturk_assignment_id', flat=True)
+            assignment_ids_in_db = values_flat(
+                session.pp_set.filter(Participant.mturk_assignment_id != None),
+                'mturk_assignment_id',
+            )
 
             submitted_assignment_ids = [
                 a.assignment_id for a in all_assignments if a.status == 'Submitted'
@@ -256,22 +241,24 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
                 )
 
         workers_by_status = get_workers_by_status(all_assignments)
-        participants_approved = session.participant_set.filter(
-            mturk_worker_id__in=workers_by_status['Approved']
-        )
-        participants_rejected = session.participant_set.filter(
-            mturk_worker_id__in=workers_by_status['Rejected']
-        )
 
-        submitted_worker_ids = workers_by_status['Submitted']
+        def get_participants_by_status(status):
+            return list(
+                session.pp_set.filter(
+                    Participant.mturk_worker_id.in_(workers_by_status[status])
+                )
+            )
 
-        participants_not_reviewed = session.participant_set.filter(
-            mturk_worker_id__in=submitted_worker_ids
-        )
+        participants_approved = get_participants_by_status('Approved')
+        participants_rejected = get_participants_by_status('Rejected')
+        participants_not_reviewed = get_participants_by_status('Submitted')
 
-        add_answers(participants_not_reviewed, all_assignments)
-        add_answers(participants_approved, all_assignments)
-        add_answers(participants_rejected, all_assignments)
+        for lst in [
+            participants_not_reviewed,
+            participants_approved,
+            participants_rejected,
+        ]:
+            add_answers(lst, all_assignments)
 
         return dict(
             published=True,
@@ -309,22 +296,25 @@ def add_answers(participants: List[Participant], all_assignments: List[Assignmen
         p.mturk_answers_formatted = get_completion_code(answers[p.mturk_worker_id])
 
 
-class PayMTurk(vanilla.View):
-    url_pattern = r'^PayMTurk/(?P<session_code>[a-z0-9]+)/$'
+class PayMTurk(AdminSessionPage):
+    """only POST"""
 
-    def post(self, request, session_code):
-        session = get_object_or_404(otree.models.Session, code=session_code)
+    url_pattern = '/PayMTurk/{code}'
+
+    def post(self, request, code):
+        session = db.get_or_404(Session, code=code)
         successful_payments = 0
         failed_payments = 0
+        post_data = self.get_post_data()
         mturk_client = get_mturk_client(use_sandbox=session.mturk_use_sandbox)
-        payment_page_response = redirect('MTurkSessionPayments', session.code)
+        payment_page_response = self.redirect('MTurkSessionPayments', code=session.code)
         # use worker ID instead of assignment ID. Because 2 workers can have
         # the same assignment (if 1 starts it then returns it). we can't really
         # block that.
         # however, we can ensure that 1 worker does not get 2 assignments,
         # by enforcing that the same worker is always assigned to the same participant.
-        participants = session.participant_set.filter(
-            mturk_worker_id__in=request.POST.getlist('workers')
+        participants = session.pp_set.filter(
+            Participant.mturk_worker_id.in_(post_data.getlist('workers'))
         )
 
         for p in participants:
@@ -356,7 +346,7 @@ class PayMTurk(vanilla.View):
                     'Could not pay {} because of an error communicating '
                     'with MTurk: {}'.format(p._numeric_label(), str(e))
                 )
-                messages.error(request, msg)
+                enqueue_admin_message('error', msg)
                 logger.error(msg)
                 failed_payments += 1
                 if failed_payments > 10:
@@ -364,22 +354,24 @@ class PayMTurk(vanilla.View):
         msg = 'Successfully made {} payments.'.format(successful_payments)
         if failed_payments > 0:
             msg += ' {} payments failed.'.format(failed_payments)
-            messages.warning(request, msg)
+            enqueue_admin_message('warning', msg)
         else:
-            messages.success(request, msg)
+            enqueue_admin_message('success', msg)
         return payment_page_response
 
 
-class RejectMTurk(vanilla.View):
-    url_pattern = r'^RejectMTurk/(?P<session_code>[a-z0-9]+)/$'
+class RejectMTurk(AdminSessionPage):
+    """POST only"""
 
-    def post(self, request, session_code):
-        session = get_object_or_404(Session, code=session_code)
+    url_pattern = '/RejectMTurk/{code}'
+
+    def post(self, request, code):
+        session = db.get_or_404(Session, code=code)
         with MTurkClient(
             use_sandbox=session.mturk_use_sandbox, request=request
         ) as mturk_client:
-            for p in session.participant_set.filter(
-                mturk_worker_id__in=request.POST.getlist('workers')
+            for p in session.pp_set.filter(
+                Participant.mturk_worker_id.in_(self.get_post_data().getlist('workers'))
             ):
                 mturk_client.reject_assignment(
                     AssignmentId=p.mturk_assignment_id,
@@ -390,17 +382,17 @@ class RejectMTurk(vanilla.View):
                     RequesterFeedback='',
                 )
 
-            messages.success(
-                request, "You successfully rejected " "selected assignments"
-            )
-        return redirect('MTurkSessionPayments', session_code)
+            enqueue_admin_message('success', "Rejected the selected assignments")
+        return self.redirect('MTurkSessionPayments', code=code)
 
 
-class MTurkExpireHIT(vanilla.View):
-    url_pattern = r'^MTurkExpireHIT/(?P<session_code>[a-z0-9]+)/$'
+class MTurkExpireHIT(AdminSessionPage):
+    """only POST"""
 
-    def post(self, request, session_code):
-        session = get_object_or_404(Session, code=session_code)
+    url_pattern = '/MTurkExpireHIT/{code}'
+
+    def post(self, request, code):
+        session = db.get_or_404(Session, code=code)
         with MTurkClient(
             use_sandbox=session.mturk_use_sandbox, request=request
         ) as mturk_client:
@@ -412,9 +404,6 @@ class MTurkExpireHIT(vanilla.View):
                 ExpireAt=expiration,
             )
             session.mturk_expiration = expiration.timestamp()
-            session.save()
-
-            # don't need a message because the MTurkCreateHIT page will
-            # statically say the HIT has expired.
-
-        return redirect('MTurkCreateHIT', session.code)
+        # don't need a message because the MTurkCreateHIT page will
+        # statically say the HIT has expired.
+        return self.redirect('MTurkCreateHIT', code=code)

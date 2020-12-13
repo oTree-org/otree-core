@@ -1,4 +1,4 @@
-{% load static otree %}
+
 {# spaces to make debug info less distracting #}
 <br/>
 <br/>
@@ -10,22 +10,23 @@
 
     {% include 'otree/includes/hidden_form_errors.html' %}
 
-{% for table in view.debug_tables|default:None %}
-    <div class="card-body">
-        <h6 class="card-title">{{ table.title }}</h6>
-        <div class="scrollable">
-            <table class="table table-hover table-debug">
-                {% for k, v in table.rows %}
-                    <tr>
-                        <td class="debug-var-name">{{ k }}</td>
-                        <td class="debug-var-value">
-                            <code>{{ v }}</code>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
-        </div>
-    </div>
-{% endfor %}
-
+{% if is_defined('view.debug_tables') %}
+  {% for table in view.debug_tables %}
+      <div class="card-body">
+          <h6 class="card-title">{{ table.title }}</h6>
+          <div class="scrollable">
+              <table class="table table-hover table-debug">
+                  {% for k, v in table.rows %}
+                      <tr>
+                          <td class="debug-var-name">{{ k }}</td>
+                          <td class="debug-var-value">
+                              <code>{{ v }}</code>
+                          </td>
+                      </tr>
+                  {% endfor %}
+              </table>
+          </div>
+      </div>
+  {% endfor %}
+{% endif %}
 </div>

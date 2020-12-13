@@ -1,9 +1,9 @@
 {% extends "otree/Base.html" %}
-{% load i18n %}
-{% load otree otree_internal static %}
+
+
 
 {% block internal_styles %}
-    {{ block.super }}
+    {{ super() }}
     <link href="{% static 'otree/css/table.css' %}" rel="stylesheet" />
 
     <style>
@@ -16,10 +16,10 @@
 {% endblock %}
 
 {% block internal_scripts %}
-{{ block.super }}
+{{ super() }}
 <script>
 $(function () {
-    $('[data-toggle="popover"]').popover()
+    $('[data-bs-toggle="popover"]').popover()
 
     // if top menu link is clicked inside iframe
     // we exit full mode
@@ -40,9 +40,10 @@ $(function () {
 {% endblock %}
 {% block body_main %}
     <nav class="navbar navbar-expand-sm navbar-dark bg-dark" id="top_menu">
+    <div class="container-fluid">
         <a class="navbar-brand" href="/">oTree</a>
 
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-target="#navbarSupportedContent">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -51,24 +52,22 @@ $(function () {
                 <li class="nav-item"><a class="nav-link" href="{% url 'DemoIndex' %}">Demo</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'Sessions' %}">Sessions</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'Rooms' %}">Rooms</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'ExportIndex' %}">Data</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'Export' %}">Data</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'ServerCheck' %}">Server Check</a></li>
-
-                {% if request.user.is_authenticated|default:False %}
-                    <li><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
-                {% endif %}
             </ul>
         </div>
+      </div>
     </nav>
 
   <div class="container" id="admin-page-container">
     <div class="page-header">
-      <h2>{% block title %}{% endblock %}</h2>
+      <h2 id="_otree-title">{% block title %}{% endblock %}</h2>
     </div>
     {% block menus %}{% endblock %}
     <div>
       {% block content %}{% endblock %}
     </div>
+    <br/>
   </div>
   {% block no_container_content %}{% endblock %}
   {% comment %}

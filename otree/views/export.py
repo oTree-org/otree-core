@@ -1,32 +1,29 @@
+from io import StringIO
 import csv
 import datetime
 
-from django.http import HttpResponse
-from django.conf import settings
-
-import vanilla
+from starlette.responses import Response
+from starlette.endpoints import HTTPEndpoint
+from . import cbv
 
 import otree.common
 import otree.models
 import otree.export
 from otree.models.participant import Participant
 from otree.models.session import Session
-from otree.extensions import get_extensions_data_export_views
 from otree.models_concrete import ChatMessage
+from otree.database import dbq
 
 
-class ExportIndex(vanilla.TemplateView):
+class Export(cbv.AdminView):
+    url_pattern = '/export'
 
-    template_name = 'otree/admin/Export.html'
+    def vars_for_template(self):
 
-    url_pattern = r"^export/$"
-
-    def get_context_data(self, **kwargs):
-
-        # can't use settings.INSTALLED_OTREE_APPS, because maybe the app
+        # can't use settings.OTREE_APPS, because maybe the app
         # was removed from SESSION_CONFIGS.
         app_names_with_data = set()
-        for session in Session.objects.all():
+        for session in dbq(Session):
             for app_name in session.config['app_sequence']:
                 app_names_with_data.add(app_name)
 
@@ -36,68 +33,84 @@ class ExportIndex(vanilla.TemplateView):
             if getattr(models_module, 'custom_export', None):
                 custom_export_apps.append(app_name)
 
-        return super().get_context_data(
-            db_is_empty=not Participant.objects.exists(),
+        return dict(
+            db_is_empty=not bool(dbq(Participant).first()),
             app_names=app_names_with_data,
-            chat_messages_exist=ChatMessage.objects.exists(),
-            extensions_views=get_extensions_data_export_views(),
+            chat_messages_exist=bool(dbq(ChatMessage).first()),
             custom_export_apps=custom_export_apps,
-            **kwargs,
         )
 
 
-def get_csv_http_response(prefix) -> HttpResponse:
-    response = HttpResponse(content_type='text/csv')
+def get_csv_http_response(buffer: StringIO, filename_prefix) -> Response:
+    buffer.seek(0)
+    response = Response(buffer.read())
     date = datetime.date.today().isoformat()
-    response['Content-Disposition'] = f'attachment; filename="{prefix}-{date}.csv"'
+    response.headers['Content-Type'] = 'text/csv'
+    response.headers[
+        'Content-Disposition'
+    ] = f'attachment; filename="{filename_prefix}-{date}.csv"'
     return response
 
 
-class ExportSessionWide(vanilla.View):
+class ExportSessionWide(HTTPEndpoint):
     '''used by data page'''
 
-    url_pattern = r'^ExportSessionWide/(?P<session_code>[a-z0-9]+)/$'
+    url_pattern = '/ExportSessionWide/{code}'
 
-    def get(self, request, session_code):
-        response = get_csv_http_response('all_apps_wide')
+    def get(self, request):
+        code = request.path_params['code']
+        buf = StringIO()
         if bool(request.GET.get('excel')):
             # BOM
-            response.write('\ufeff')
-        otree.export.export_wide(response, session_code=session_code)
+            buf.write('\ufeff')
+        otree.export.export_wide(buf, session_code=code)
+        return get_csv_http_response(buf, 'all_apps_wide')
+
+
+class ExportPageTimes(HTTPEndpoint):
+
+    url_pattern = '/ExportPageTimes'
+
+    def get(self, request):
+        buf = StringIO()
+        otree.export.export_page_times(buf)
+        response = get_csv_http_response(buf, 'PageTimes')
         return response
 
 
-class ExportPageTimes(vanilla.View):
+class ExportChat(HTTPEndpoint):
 
-    url_pattern = r"^ExportPageTimes/$"
-
-    def get(self, request):
-        response = get_csv_http_response('PageTimes')
-        otree.export.export_page_times(response)
-        return response
-
-
-class ExportChat(vanilla.View):
-
-    url_pattern = '^otreechatcore_export/$'
+    url_pattern = '/chat_export'
 
     def get(self, request):
-        response = get_csv_http_response('ChatMessages')
+        buf = StringIO()
         column_names = [
-            'participant__session__code',
-            'participant__session_id',
-            'participant__id_in_session',
-            'participant__code',
+            'session_code',
+            'id_in_session',
+            'participant_code',
             'channel',
             'nickname',
             'body',
             'timestamp',
         ]
 
-        rows = ChatMessage.objects.order_by('timestamp').values_list(*column_names)
+        rows = (
+            dbq(ChatMessage)
+            .join(Participant)
+            .order_by(ChatMessage.timestamp)
+            .with_entities(
+                Participant._session_code,
+                Participant.id_in_session,
+                Participant.session_id,
+                ChatMessage.channel,
+                ChatMessage.nickname,
+                ChatMessage.body,
+                ChatMessage.timestamp,
+            )
+        )
 
-        writer = csv.writer(response)
+        writer = csv.writer(buf)
         writer.writerows([column_names])
         writer.writerows(rows)
-
+        response = get_csv_http_response(buf, 'ChatMessages')
         return response

@@ -1,20 +1,20 @@
 import datetime
 import logging
 import os
-from collections import OrderedDict, defaultdict
 from pathlib import Path
 from typing import List
 
-from django.conf import settings
 
 import otree.common
 import otree.export
 import otree.session
+from otree import settings
+from otree.common import get_bots_module, get_models_module
 from otree.constants import AUTO_NAME_BOTS_EXPORT_FOLDER
+from otree.database import values_flat, session_scope
 from otree.models import Session, Participant
 from otree.session import SESSION_CONFIGS_DICT
 from .bot import ParticipantBot
-from otree.common import get_bots_module, get_models_module
 
 logger = logging.getLogger(__name__)
 
@@ -39,18 +39,18 @@ class SessionBotRunner:
             # store in a separate list so we don't mutate the iterable
             playable_ids = list(self.bots.keys())
             progress_made = False
-            for pk in playable_ids:
-                bot = self.bots[pk]
+            for id in playable_ids:
+                bot = self.bots[id]
                 if bot.on_wait_page():
                     pass
                 else:
                     try:
-                        submission = next(bot.submits_generator)
+                        submission = bot.get_next_submit()
                     except StopIteration:
                         # this bot is finished
-                        self.bots.pop(pk)
+                        self.bots.pop(id)
                     else:
-                        bot.submit(**submission)
+                        bot.submit(submission)
                     progress_made = True
                     # need to set this so that we only count *consecutive* unsuccessful loops
                     # see Manu's error on 2019-12-19.
@@ -64,38 +64,37 @@ class SessionBotRunner:
 
 
 def make_bots(*, session_pk, case_number, use_browser_bots) -> List[ParticipantBot]:
-    update_kwargs = {'_is_bot': True}
+    update_kwargs = {Participant._is_bot: True}
     if use_browser_bots:
-        update_kwargs['is_browser_bot'] = True
+        update_kwargs[Participant.is_browser_bot] = True
 
-    Participant.objects.filter(session_id=session_pk).update(**update_kwargs)
+    Participant.objects_filter(session_id=session_pk).update(update_kwargs)
     bots = []
 
     # can't use .distinct('player_pk') because it only works on Postgres
     # this implicitly orders by round also
-    session = Session.objects.get(pk=session_pk)
+    session = Session.objects_get(id=session_pk)
 
-    participant_codes = session.participant_set.order_by('id').values_list(
-        'code', flat=True
-    )
+    participant_codes = values_flat(session.pp_set.order_by('id'), Participant.code)
 
     player_bots_dict = {pcode: [] for pcode in participant_codes}
 
     for app_name in session.config['app_sequence']:
         bots_module = get_bots_module(app_name)
         models_module = get_models_module(app_name)
+        Player = models_module.Player
         players = (
-            models_module.Player.objects.filter(session_id=session_pk)
+            Player.objects_filter(session_id=session_pk)
+            .join(Participant)
             .order_by('round_number')
-            .values('id', 'participant_id', 'participant__code', 'subsession_id')
+            .with_entities(Player.id, Participant.code, Player.subsession_id)
         )
-        for player in players:
-            participant_code = player['participant__code']
+        for player_id, participant_code, subsession_id in players:
             player_bot = bots_module.PlayerBot(
                 case_number=case_number,
                 app_name=app_name,
-                player_pk=player['id'],
-                subsession_pk=player['subsession_id'],
+                player_pk=player_id,
+                subsession_pk=subsession_id,
                 participant_code=participant_code,
                 session_pk=session_pk,
             )
@@ -114,13 +113,13 @@ def make_bots(*, session_pk, case_number, use_browser_bots) -> List[ParticipantB
     return bots
 
 
-def run_bots(session: Session, case_number=None):
+def run_bots(session_id, case_number=None):
+    session = Session.objects_get(id=session_id)
     bot_list = make_bots(
-        session_pk=session.pk, case_number=case_number, use_browser_bots=False
+        session_pk=session.id, case_number=case_number, use_browser_bots=False
     )
     if session.get_room() is None:
         session.mock_exogenous_data()
-    session.save()
     runner = SessionBotRunner(bots=bot_list)
     runner.play()
 
@@ -151,9 +150,13 @@ def run_all_bots_for_session_config(session_config_name, num_participants, expor
 
             session = otree.session.create_session(
                 session_config_name=config_name,
-                num_participants=(num_participants or config['num_demo_participants']),
+                num_participants=(
+                    num_participants or config['num_demo_participants']
+                ),
             )
-            run_bots(session, case_number=case_number)
+            session_id = session.id
+
+            run_bots(session_id, case_number=case_number)
 
             logger.info('Bots completed session')
     if export_path:
@@ -166,9 +169,9 @@ def run_all_bots_for_session_config(session_config_name, num_participants, expor
 
         os.makedirs(export_path, exist_ok=True)
 
-        for app in settings.INSTALLED_OTREE_APPS:
+        for app in settings.OTREE_APPS:
             model_module = otree.common.get_models_module(app)
-            if model_module.Player.objects.exists():
+            if model_module.Player.objects_exists():
                 fpath = Path(export_path, "{}.csv".format(app))
                 with fpath.open("w", encoding="utf8") as fp:
                     otree.export.export_app(app, fp)

@@ -1,29 +1,57 @@
-from django import forms
-from otree.currency import to_dec
-from . import widgets
+from . import widgets as wg
+import wtforms.fields as wtfields
+from otree.currency import Currency, RealWorldCurrency, to_dec
 
 
-__all__ = ('CurrencyField', 'CurrencyChoiceField', 'RealWorldCurrencyField')
+class StringField(wtfields.StringField):
+    widget = wg.TextInput()
 
 
-class BaseCurrencyField(forms.DecimalField):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault('widget', self.widget)
-        super().__init__(*args, **kwargs)
+class IntegerField(wtfields.IntegerField):
+    widget = wg.NumberWidget(step='1')
 
 
-class CurrencyField(BaseCurrencyField):
-    widget = widgets._CurrencyInput
+class FloatField(wtfields.FloatField):
+    widget = wg.NumberWidget(step='0.0001')
 
 
-class RealWorldCurrencyField(BaseCurrencyField):
-    widget = widgets._RealWorldCurrencyInput
+class RadioField(wtfields.RadioField):
+    widget = wg.RadioSelect()
+    option_widget = wg.RadioOption()
 
 
-class CurrencyChoiceField(forms.TypedChoiceField):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.choices = [(to_dec(k), v) for k, v in self.choices]
+class RadioFieldHorizontal(wtfields.RadioField):
+    widget = wg.RadioSelectHorizontal()
+    option_widget = wg.RadioOption()
 
-    def prepare_value(self, value):
-        return to_dec(value)
+
+class DropdownField(wtfields.SelectField):
+    widget = wg.Dropdown()
+    option_widget = wg.DropdownOption()
+
+
+class CurrencyField(wtfields.Field):
+    widget = wg.CurrencyWidget()
+
+    def process_formdata(self, valuelist):
+        if valuelist and valuelist[0]:
+            data = Currency(valuelist[0])
+        else:
+            data = None
+        self.data = data
+
+    def _value(self):
+        if self.data is None:
+            return ''
+        return str(to_dec(self.data))
+
+
+class TextAreaField(StringField):
+    """
+    This field represents an HTML ``<textarea>`` and can be used to take
+    multi-line input.
+    """
+
+    widget = wg.TextArea()
+
+

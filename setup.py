@@ -19,9 +19,6 @@ Error: This version of oTree requires Python 3.7 or higher.
 if sys.version_info < (3, 7):
     sys.exit(MSG_PY_VERSION)
 
-if sys.version_info >= (3, 9):
-    sys.exit('This version of oTree is not compatible with Python 3.9.')
-
 
 def clean_requirements(requirements_text):
     required_raw = requirements_text.splitlines()
@@ -77,7 +74,7 @@ setup(
     author='chris@otree.org',
     author_email='chris@otree.org',
     install_requires=required,
-    entry_points={'console_scripts': ['otree=otree_startup:execute_from_command_line']},
+    entry_points={'console_scripts': ['otree=otree.main:execute_from_command_line']},
     zip_safe=False,
     extras_require={'mturk': required_mturk},
 )

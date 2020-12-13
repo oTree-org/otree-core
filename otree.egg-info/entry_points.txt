@@ -1,0 +1,3 @@
+[console_scripts]
+otree = otree.main:execute_from_command_line
+

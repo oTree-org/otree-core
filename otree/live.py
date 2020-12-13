@@ -1,18 +1,16 @@
 import otree.common
-import otree.db
 from otree.channels import utils as channel_utils
-from otree.models import Participant
+from otree.models import Participant, BasePlayer, BaseGroup
 from otree.lookup import get_page_lookup
 import logging
-from otree.db import idmap
 
 
 logger = logging.getLogger(__name__)
 
 
-def live_payload_function(participant_code, page_name, payload):
+async def live_payload_function(participant_code, page_name, payload):
 
-    participant = Participant.objects.get(code=participant_code)
+    participant = Participant.objects_get(code=participant_code)
     lookup = get_page_lookup(participant._session_code, participant._index_in_pages)
     app_name = lookup.app_name
     models_module = otree.common.get_models_module(app_name)
@@ -28,24 +26,23 @@ def live_payload_function(participant_code, page_name, payload):
         return
     live_method_name = PageClass.live_method
 
-    with idmap.use_cache():
-        player = models_module.Player.objects.get(
-            round_number=lookup.round_number, participant=participant
-        )
+    player = models_module.Player.objects_get(
+        round_number=lookup.round_number, participant=participant
+    )
 
-        # it makes sense to check the group first because
-        # if the player forgot to define it on the Player,
-        # we shouldn't fall back to checking the group. you could get an error like
-        # 'Group' has no attribute 'live_auction' which would be confusing.
-        # also, we need this 'group' object anyway.
-        # and this is a good place to show the deprecation warning.
-        group = player.group
-        if hasattr(group, live_method_name):
-            method = getattr(group, live_method_name)
-            retval = method(player.id_in_group, payload)
-        else:
-            method = getattr(player, live_method_name)
-            retval = method(payload)
+    # it makes sense to check the group first because
+    # if the player forgot to define it on the Player,
+    # we shouldn't fall back to checking the group. you could get an error like
+    # 'Group' has no attribute 'live_auction' which would be confusing.
+    # also, we need this 'group' object anyway.
+    # and this is a good place to show the deprecation warning.
+    group = player.group
+    if hasattr(group, live_method_name):
+        method = getattr(group, live_method_name)
+        retval = method(player.id_in_group, payload)
+    else:
+        method = getattr(player, live_method_name)
+        retval = method(payload)
 
     if not retval:
         return
@@ -53,11 +50,12 @@ def live_payload_function(participant_code, page_name, payload):
         msg = f'{live_method_name} must return a dict'
         raise LiveMethodBadReturnValue(msg)
 
+    Player: BasePlayer = models_module.Player
     pcodes_dict = {
-        d['id_in_group']: d['participant__code']
-        for d in models_module.Player.objects.filter(group=group).values(
-            'participant__code', 'id_in_group'
-        )
+        d[0]: d[1]
+        for d in Player.objects_filter(group=group)
+        .join(Participant)
+        .with_entities(Player.id_in_group, Participant.code,)
     }
 
     if 0 in retval:
@@ -77,7 +75,7 @@ def live_payload_function(participant_code, page_name, payload):
         if payload is not None:
             pcode_retval[pcode] = payload
 
-    _live_send_back(
+    await _live_send_back(
         participant._session_code, participant._index_in_pages, pcode_retval
     )
 
@@ -86,9 +84,11 @@ class LiveMethodBadReturnValue(Exception):
     pass
 
 
-def _live_send_back(session_code, page_index, pcode_retval):
+async def _live_send_back(session_code, page_index, pcode_retval):
     '''separate function for easier patching'''
-    group_name = channel_utils.live_group(session_code, page_index)
-    channel_utils.sync_group_send_wrapper(
-        group=group_name, type='send_back_to_client', event=pcode_retval
-    )
+
+    for pcode, retval in pcode_retval.items():
+        group_name = channel_utils.live_group(session_code, page_index, pcode)
+        await channel_utils.group_send(
+            group=group_name, data=retval,
+        )

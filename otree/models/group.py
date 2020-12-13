@@ -1,55 +1,48 @@
-from otree.db import models
+from sqlalchemy import Column as C, ForeignKey
+from sqlalchemy.ext.declarative import declared_attr
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.sql import sqltypes as st
+
+import otree.database
 from otree.common import (
     get_models_module,
     in_round,
     in_rounds,
     InvalidRoundError,
 )
-from otree import common
-import django.core.exceptions
-from django.db import models as djmodels
 from otree.constants import BaseConstants, get_role, get_roles
-from otree.db.idmap import GroupIDMapMixin
+from otree.database import db, NoResultFound, MixinSessionFK, SSPPGModel
 
 
-class BaseGroup(models.OTreeModel, GroupIDMapMixin):
-    class Meta:
-        abstract = True
-        index_together = ['session', 'id_in_subsession']
-        ordering = ['pk']
+class BaseGroup(SSPPGModel, MixinSessionFK):
+    __abstract__ = True
 
-    id_in_subsession = models.PositiveIntegerField(db_index=True)
+    id_in_subsession = C(st.Integer, index=True)
 
-    session = djmodels.ForeignKey(
-        'otree.Session',
-        related_name='%(app_label)s_%(class)s',
-        on_delete=models.CASCADE,
-    )
-
-    round_number = models.PositiveIntegerField(db_index=True)
+    round_number = C(st.Integer, index=True)
 
     @property
     def _Constants(self) -> BaseConstants:
-        return get_models_module(self._meta.app_config.name).Constants
+        return get_models_module(self.get_folder_name()).Constants
 
     def __unicode__(self):
-        return str(self.pk)
+        return str(self.id)
 
     def get_players(self):
         return list(self.player_set.order_by('id_in_group'))
 
     def get_player_by_id(self, id_in_group):
         try:
-            return self.player_set.get(id_in_group=id_in_group)
-        except django.core.exceptions.ObjectDoesNotExist:
+            return self.player_set.filter_by(id_in_group=id_in_group).one()
+        except NoResultFound:
             msg = 'No player with id_in_group {}'.format(id_in_group)
             raise ValueError(msg) from None
 
     def get_player_by_role(self, role):
         if get_roles(self._Constants):
             try:
-                return self.player_set.get(_role=role)
-            except django.core.exceptions.ObjectDoesNotExist:
+                return self.player_set.filter_by(_role=role).one()
+            except NoResultFound:
                 pass
         else:
             for p in self.get_players():
@@ -65,7 +58,7 @@ class BaseGroup(models.OTreeModel, GroupIDMapMixin):
             player.group = self
             player.id_in_group = i
             player._role = get_role(roles, i)
-            player.save()
+        db.commit()
 
     def in_round(self, round_number):
         try:
@@ -114,16 +107,15 @@ class BaseGroup(models.OTreeModel, GroupIDMapMixin):
     def in_all_rounds(self):
         return self.in_previous_rounds() + [self]
 
-    @classmethod
-    def _ensure_required_fields(cls):
-        """
-        Every ``Group`` model requires a foreign key to the ``Subsession``
-        model of the same app.
-        """
-        subsession_model = '{app_label}.Subsession'.format(
-            app_label=cls._meta.app_label
-        )
-        subsession_field = djmodels.ForeignKey(
-            subsession_model, on_delete=models.CASCADE
-        )
-        subsession_field.contribute_to_class(cls, 'subsession')
+    @declared_attr
+    def subsession_id(cls):
+        app_name = cls.get_folder_name()
+        return C(st.Integer, ForeignKey(f'{app_name}_subsession.id'))
+
+    @declared_attr
+    def subsession(cls):
+        return relationship(f'{cls.__module__}.Subsession', back_populates='group_set')
+
+    @declared_attr
+    def player_set(cls):
+        return relationship(f'{cls.__module__}.Player', back_populates="group", lazy='dynamic')

@@ -1,33 +1,8 @@
-from django.utils import numberformat, formats
-from otree.currency.locale import CURRENCY_SYMBOLS, get_currency_format
-
-
-_original_number_format = numberformat.format
-
-
-def otree_number_format(number, *args, **kwargs):
-    if isinstance(number, BaseCurrency):
-        return str(number)
-    return _original_number_format(number, *args, **kwargs)
-
-
 from decimal import Decimal, ROUND_HALF_UP
+from gettext import ngettext
 
-
-from django.conf import settings
-from django.utils import formats, numberformat
-from django.utils.translation import ungettext
-
-# Black Magic: The original number format of django used inside templates don't
-# work if the currency code contains non-ascii characters. This ugly hack
-# remplace the original number format and when you has a easy_money instance
-# simple use the old unicode casting.
-
-# =============================================================================
-# MONKEY PATCH - fix for https://github.com/oTree-org/otree-core/issues/387
-# =============================================================================
-
-numberformat.format = otree_number_format
+from otree import settings
+from otree.currency.locale import CURRENCY_SYMBOLS, get_currency_format
 
 
 # Set up money arithmetic
@@ -207,10 +182,9 @@ class Currency(BaseCurrency):
     def _format_currency(cls, number):
         if settings.USE_POINTS:
 
-            formatted_number = formats.number_format(number)
-
-            if hasattr(settings, 'POINTS_CUSTOM_NAME'):
-                return '{} {}'.format(formatted_number, settings.POINTS_CUSTOM_NAME)
+            formatted_number = f'{number:n}'
+            if getattr(settings, 'POINTS_CUSTOM_NAME', None):
+                return f'{formatted_number} {settings.POINTS_CUSTOM_NAME}'
 
             # Translators: display a number of points,
             # like "1 point", "2 points", ...
@@ -221,7 +195,7 @@ class Currency(BaseCurrency):
             # and msgstr[1] is plural
             # the {} represents the number;
             # don't forget to include it in your translation
-            return ungettext('{} point', '{} points', number).format(formatted_number)
+            return ngettext('{} point', '{} points', number).format(formatted_number)
         else:
             return super()._format_currency(number)
 
@@ -248,7 +222,7 @@ def format_currency(number, lc, LO, CUR):
 
     symbol = CURRENCY_SYMBOLS.get(CUR, CUR)
     c_format = get_currency_format(lc, LO, CUR)
-    formatted_abs = formats.number_format(abs(number))
+    formatted_abs = f'{abs(number):n}'
     retval = c_format.replace('¤', symbol).replace('#', formatted_abs)
     if number < 0:
         retval = '-{}'.format(retval)

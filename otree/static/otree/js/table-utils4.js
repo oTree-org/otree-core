@@ -152,34 +152,3 @@ function updateDataTable($table, new_json, old_json, field_headers) {
     }
     return changeDescriptions;
 }
-
-
-function makeTableDraggable($table) {
-    var mouseX, mouseY;
-    $table.mousedown(function (e) {
-        e.preventDefault();
-        $table.addClass('grabbing');
-        mouseX = e.pageX;
-        mouseY = e.pageY;
-    }).on('scroll', function () {
-        $table.find('> thead, > tbody').width($table.width() + $table.scrollLeft());
-    });
-    $(document)
-        .mousemove(function (e) {
-            if (!$table.hasClass('grabbing')) {
-                return;
-            }
-            e.preventDefault();
-            $table.scrollLeft($table.scrollLeft() - (e.pageX - mouseX));
-            var $tableBody = $table.find('tbody');
-            $tableBody.scrollTop($tableBody.scrollTop() - (e.pageY - mouseY));
-            mouseX = e.pageX;
-            mouseY = e.pageY;
-        }).mouseup(function (e) {
-        if (!$table.hasClass('grabbing')) {
-            return;
-        }
-        e.preventDefault();
-        $table.removeClass('grabbing');
-    });
-}

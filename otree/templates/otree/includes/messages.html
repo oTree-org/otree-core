@@ -1,6 +1,7 @@
-{% for message in messages %}
-    <div class="alert alert-{{ message.tags.split|last }}">
-        <a href="#" class="close" data-dismiss="alert">&times;</a>
-        {% if 'safe' in message.tags %}{{ message|safe }}{% else %}{{ message }}{% endif %}
+{% for ele in admin_message_queue %}
+    <div class="alert alert-{{ ele.alert_type }}">
+        {{ ele.msg }}
     </div>
 {% endfor %}
+{# .clear() returns None so we convert that to empty string #}
+{{ admin_message_queue.clear() || "" }}

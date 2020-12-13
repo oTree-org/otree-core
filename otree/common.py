@@ -1,25 +1,18 @@
-import contextlib
+import asyncio
 import hashlib
-import importlib.util
 import sys
-import sqlite3
 import itertools
-import logging
+import json
+import os
 import random
 import re
 import string
+import urllib.parse
 from collections import OrderedDict
 from importlib import import_module
-from pathlib import Path
 from typing import Iterable, Tuple
-from django.apps import apps
-from django.db import connection
-from django.db import transaction
-import urllib
-import os
-import json
-from django.conf import settings
-from django.utils.safestring import mark_safe
+
+from otree import settings
 
 # until 2016, otree apps imported currency from otree.common.
 from otree.currency import Currency, RealWorldCurrency, currency_range  # noqa
@@ -44,7 +37,8 @@ def json_dumps(obj):
 
 
 def safe_json(obj):
-    return mark_safe(json_dumps(obj))
+    # todo: mark_safe
+    return json_dumps(obj)
 
 
 def add_params_to_url(url, params):
@@ -85,13 +79,14 @@ def get_bots_module(app_name):
 
 
 def get_pages_module(app_name):
-    '''views.py is deprecated, remove it soon'''
-    for module_name in ['pages', 'views']:
-        dotted = '{}.{}'.format(app_name, module_name)
-        if importlib.util.find_spec(dotted):
-            return import_module(dotted)
-    msg = 'No pages module found for app {}'.format(app_name)
-    raise ImportError(msg)
+    try:
+        return import_module(f'{app_name}.pages')
+    except Exception as exc:
+        # to give a smaller traceback on startup
+        import traceback
+
+        traceback.print_exc()
+        sys.exit(1)
 
 
 def get_app_constants(app_name):
@@ -124,43 +119,29 @@ def expand_choice_tuples(choices):
     return choices
 
 
-def missing_db_tables():
-    """Try to execute a simple select * for every model registered
-    """
-
-    # need to normalize to lowercase because MySQL converts DB names to lower
-    expected_table_names_dict = {
-        Model._meta.db_table.lower(): '{}.{}'.format(
-            Model._meta.app_label, Model.__name__
-        )
-        for Model in apps.get_models()
-    }
-
-    expected_table_names = set(expected_table_names_dict.keys())
-
-    # again, normalize to lowercase
-    actual_table_names = set(
-        tn.lower() for tn in connection.introspection.table_names()
-    )
-
-    missing_table_names = expected_table_names - actual_table_names
-
-    # don't use the SQL table name because it could be uppercase or lowercase,
-    # depending on whether it's MySQL
-    return [
-        expected_table_names_dict[missing_table]
-        for missing_table in missing_table_names
-    ]
+_SECRET = settings.SECRET_KEY + (settings.ADMIN_PASSWORD or '')
 
 
 def make_hash(s):
-    s += settings.SECRET_KEY
+    s += _SECRET
     return hashlib.sha224(s.encode()).hexdigest()[:8]
 
 
 def get_admin_secret_code():
-    s = settings.SECRET_KEY
+    s = _SECRET
     return hashlib.sha224(s.encode()).hexdigest()[:8]
+
+
+# TODO: use itsdangerous instead
+def signer_sign(s, sep=':'):
+    return s + sep + make_hash(s)[:8]
+
+
+def signer_unsign(sh, sep=':'):
+    s, _ = sh.rsplit(sep, maxsplit=1)
+    if sh != signer_sign(s, sep=sep):
+        raise ValueError(f'bad signature: {sh}')
+    return s
 
 
 def validate_alphanumeric(identifier, identifier_description):
@@ -170,35 +151,6 @@ def validate_alphanumeric(identifier, identifier_description):
         identifier_description, identifier
     )
     raise ValueError(msg)
-
-
-EMPTY_ADMIN_USERNAME_MSG = 'ADMIN_USERNAME is undefined'
-EMPTY_ADMIN_PASSWORD_MSG = 'ADMIN_PASSWORD is undefined'
-
-
-def ensure_superuser_exists(*args, **kwargs) -> str:
-    """
-    Creates our default superuser.
-    If it fails, it returns a failure message
-    The weakness of this is that if you change your password, you need to resetdb.
-    but that doesn't affect many people. we could show a warning saying that
-    ADMIN_PASSWORD doesn't match the hashed password, but i could not find a trivial way
-    to do that. the make_password function is nondeterministic.
-    """
-    username = settings.ADMIN_USERNAME
-    password = settings.ADMIN_PASSWORD
-    if not username:
-        return EMPTY_ADMIN_USERNAME_MSG
-    if not password:
-        return EMPTY_ADMIN_PASSWORD_MSG
-    from django.contrib.auth.models import User
-
-    if User.objects.filter(username=username).exists():
-        return ''
-    User.objects.create_superuser(username, email='', password=password)
-    msg = 'Created superuser "{}"'.format(username)
-    logging.getLogger('otree').info(msg)
-    return ''
 
 
 def has_group_by_arrival_time(app_name):
@@ -213,21 +165,6 @@ def is_sqlite():
     return settings.DATABASES['default']['ENGINE'].endswith('sqlite3')
 
 
-@contextlib.contextmanager
-def transaction_except_for_sqlite():
-    '''
-    On SQLite, transactions tend to result in "database locked" errors.
-    So, skip the transaction on SQLite, to allow local dev.
-    Should only be used if omitting the transaction rarely causes problems.
-    2020-10-13: maybe not needed now that we are single threaded
-    '''
-    if is_sqlite():
-        yield
-    else:
-        with transaction.atomic():
-            yield
-
-
 class DebugTable:
     def __init__(self, title, rows: Iterable[Tuple]):
         self.title = title
@@ -235,7 +172,8 @@ class DebugTable:
         for k, v in rows:
             if isinstance(v, str):
                 v = v.strip().replace("\n", "<br>")
-                v = mark_safe(v)
+                # TODO:
+                # v = mark_safe(v)
             self.rows.append((k, v))
 
 
@@ -248,23 +186,27 @@ def in_round(ModelClass, round_number, **kwargs):
         msg = 'Invalid round number: {}'.format(round_number)
         raise InvalidRoundError(msg)
     try:
-        return ModelClass.objects.get(round_number=round_number, **kwargs)
-    except ModelClass.DoesNotExist:
-        msg = 'No corresponding {} found with round_number={}'.format(
-            ModelClass.__name__, round_number
-        )
-        raise InvalidRoundError(msg) from None
+        return ModelClass.objects_filter(round_number=round_number, **kwargs).one()
+    except Exception as exc:
+        from otree.database import NoResultFound
+
+        if isinstance(exc, NoResultFound):
+            msg = 'No corresponding {} found with round_number={}'.format(
+                ModelClass.__name__, round_number
+            )
+            raise InvalidRoundError(msg) from None
+        raise
 
 
 def in_rounds(ModelClass, first, last, **kwargs):
     if first < 1:
         msg = 'Invalid round number: {}'.format(first)
         raise InvalidRoundError(msg)
-    qs = ModelClass.objects.filter(
-        round_number__range=(first, last), **kwargs
-    ).order_by('round_number')
-
-    ret = list(qs)
+    ret = list(
+        ModelClass.objects_filter(
+            ModelClass.round_number >= first, ModelClass.round_number <= last, **kwargs
+        ).order_by('round_number')
+    )
     num_results = len(ret)
     expected_num_results = last - first + 1
     if num_results != expected_num_results:
@@ -279,28 +221,8 @@ class BotError(AssertionError):
     pass
 
 
-def _get_all_configs():
-    return [
-        app
-        for app in apps.get_app_configs()
-        if app.name in settings.INSTALLED_OTREE_APPS
-    ]
-
-
 def participant_start_url(code):
     return '/InitializeParticipant/{}'.format(code)
-
-
-def patch_migrations_module():
-    from django.db.migrations.loader import MigrationLoader
-
-    def migrations_module(*args, **kwargs):
-        # need to return None so that load_disk() considers it
-        # unmigrated, and False so that load_disk() considers it
-        # non-explicit
-        return None, False
-
-    MigrationLoader.migrations_module = migrations_module
 
 
 class ResponseForException(Exception):
@@ -340,59 +262,14 @@ def _group_randomly(group_matrix, fixed_id_in_group=False):
         return _group_by_rank(players, players_per_group)
 
 
-_dumped = False
+class GlobalState:
+    browser_bots_launcher_session_code = ''
 
 
-def dump_db_and_exit(*args, code=0):
-    # https://stackoverflow.com/a/17729312/10460916
-
-    global _dumped
-    if _dumped:
-        return
-
-    dump_db()
-
-    sys.exit(code)
+NON_FIELD_ERROR_KEY = None
+CSRF_TOKEN_NAME = 'csrftoken'
+AUTH_COOKIE_NAME = 'otreeadminauth'
+AUTH_COOKIE_VALUE = make_hash('otreeadminauth')
 
 
-def dump_db(*args):
-
-    # return
-    global _dumped
-    if _dumped:
-        return
-    from django.db import connection
-
-    dest = sqlite3.connect('db.sqlite3')
-    # when i called dump_db() from a view, the connection was None
-    # until I made a query
-    from otree.models import Session
-
-    try:
-        Session.objects.first()
-    except Exception as exc:
-        # if dump_db is called before migrate is finished, we get:
-        # OperationalError: no such table: otree_session
-        return
-    connection.connection.backup(dest)
-    _dumped = True
-    sys.stdout.write('Database saved\n')
-
-
-class NoOp:
-    def __enter__(self):
-        pass
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-
-def load_db():
-    db_path = Path('db.sqlite3')
-    if db_path.exists():
-        from django.db import connection
-
-        src = sqlite3.connect('db.sqlite3')
-        src.backup(connection.connection)
-    else:
-        sys.stdout.write('Creating new database\n')
+lock = asyncio.Lock()

@@ -4,7 +4,7 @@ function initWebSocket(socketUrl, $tbody, visitedParticipants, $msgRefreshed) {
     monitorSocket = makeReconnectingWebSocket(socketUrl);
     monitorSocket.onmessage = function (e) {
         var data = JSON.parse(e.data);
-
+        console.log('received', data);
         if (data.type === 'update_notes') {
             updateNotes($tbody[0], data.ids, data.note);
         } else {
@@ -38,26 +38,16 @@ function recentlyActiveParticipantsMsg(newIds) {
 
 // ajax request for advance session button
 function setup_ajax_advance(ajaxUrl) {
-    var csrftoken = $("[name=csrfmiddlewaretoken]").val();
-
-    function csrfSafeMethod(method) {
-        // these HTTP methods do not require CSRF protection
-        return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-    }
-
-    $.ajaxSetup({
-        beforeSend: function (xhr, settings) {
-            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken);
-            }
-        }
-    });
+    var csrftoken = $("[name=csrftoken]").val();
 
     $('#advance_users').on('click', function () {
         $('#advance_users').attr("disabled", true);
         $.ajax({
             url: ajaxUrl,
             type: 'POST',
+            data: {
+                csrftoken: csrftoken
+            },
             error: function (jqXHR, textStatus) {
                 $("#auto_advance_server_error").show();
                 // enable the button so they can try again?

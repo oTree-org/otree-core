@@ -22,6 +22,8 @@ function makeReconnectingWebSocket(path) {
     'use strict';
 
     $(document).ready(function () {
+        $('title').text($('#_otree-title').text());
+
         var selector = '[data-slider] input[type="range"]';
         var setSliderValue = function () {
             var $input = $(this),
@@ -51,4 +53,5 @@ function makeReconnectingWebSocket(path) {
             });
         });
     });
+
 })();

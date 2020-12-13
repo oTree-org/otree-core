@@ -1,15 +1,20 @@
+from sqlalchemy.ext.declarative import declared_attr
+import copy
 import time
-from django.db.models import Prefetch
-from django.db.models import Max
+from collections import defaultdict
+
+from sqlalchemy import Column as C, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import sqltypes as st
+from sqlalchemy.sql.functions import func
+
 
 import otree.common
-from otree.db import models
+import otree.database
+
 from otree.common import get_models_module, in_round, in_rounds, ResponseForException
-import copy
 from otree.common import has_group_by_arrival_time
-from django.apps import apps
-from django.db import models as djmodels
-from otree.db.idmap import SubsessionIDMapMixin
+from otree.database import db, dbq, values_flat, SSPPGModel, MixinSessionFK
 
 
 class GroupMatrixError(ValueError):
@@ -20,29 +25,10 @@ class RoundMismatchError(GroupMatrixError):
     pass
 
 
-class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
-    """Base class for all Subsessions.
-    """
+class BaseSubsession(SSPPGModel, MixinSessionFK):
+    __abstract__ = True
 
-    class Meta:
-        abstract = True
-        ordering = ['pk']
-        index_together = ['session', 'round_number']
-
-    session = djmodels.ForeignKey(
-        'otree.Session',
-        related_name='%(app_label)s_%(class)s',
-        null=True,
-        on_delete=models.CASCADE,
-    )
-
-    round_number = models.PositiveIntegerField(
-        db_index=True,
-        doc='''If this subsession is repeated (i.e. has multiple rounds), this
-        field stores the position of this subsession, among subsessions
-        in the same app.
-        ''',
-    )
+    round_number = C(st.Integer, index=True,)
 
     def in_round(self, round_number):
         return in_round(type(self), round_number, session=self.session)
@@ -57,31 +43,37 @@ class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
         return self.in_previous_rounds() + [self]
 
     def __unicode__(self):
-        return str(self.pk)
+        return str(self.id)
 
     def get_groups(self):
         return list(self.group_set.order_by('id_in_subsession'))
 
     def get_players(self):
-        return list(self.player_set.order_by('pk'))
+        return list(self.player_set.order_by('id'))
+
+    def _get_group_matrix(self, ids_only=False):
+        Player = self._PlayerClass()
+        Group = self._GroupClass()
+        players = (
+            dbq(Player)
+            .join(Group)
+            .filter(Player.subsession == self)
+            .order_by(Group.id_in_subsession, 'id_in_group')
+        )
+        d = defaultdict(list)
+        for p in players:
+            d[p.group.id_in_subsession].append(p.id_in_subsession if ids_only else p)
+        return list(d.values())
 
     def get_group_matrix(self):
-        players_prefetch = Prefetch(
-            'player_set',
-            queryset=self._PlayerClass().objects.order_by('id_in_group'),
-            to_attr='_ordered_players',
-        )
-        return [
-            group._ordered_players
-            for group in self.group_set.order_by('id_in_subsession').prefetch_related(
-                players_prefetch
-            )
-        ]
+        return self._get_group_matrix()
+
+    def get_group_matrix_ids(self):
+        return self._get_group_matrix(ids_only=True)
 
     def set_group_matrix(self, matrix):
         """
         warning: this deletes the groups and any data stored on them
-        TODO: we should indicate this in docs
         """
 
         try:
@@ -89,7 +81,7 @@ class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
         except TypeError:
             raise GroupMatrixError('Group matrix must be a list of lists.') from None
         try:
-            matrix_pks = sorted(p.pk for p in players_flat)
+            matrix_pks = sorted(p.id for p in players_flat)
         except AttributeError:
             # if integers, it's OK
             if isinstance(players_flat[0], int):
@@ -115,9 +107,7 @@ class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
                 )
                 raise GroupMatrixError(msg) from None
         else:
-            existing_pks = list(
-                self.player_set.values_list('pk', flat=True).order_by('pk')
-            )
+            existing_pks = values_flat(self.player_set.order_by('id'), 'id')
             if matrix_pks != existing_pks:
                 wrong_round_numbers = [
                     p.round_number
@@ -138,16 +128,12 @@ class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
                 )
                 raise GroupMatrixError(msg)
 
-        # Before deleting groups, Need to set the foreignkeys to None
-        # 2016-11-8: does this need to be in a transaction?
-        # because what if a player refreshes their page while this is going
-        # on?
-        self.player_set.update(group=None)
-        self.group_set.all().delete()
+        self.player_set.update({self._PlayerClass().group_id: None})
+        self.group_set.delete()
 
         GroupClass = self._GroupClass()
         for i, row in enumerate(matrix, start=1):
-            group = GroupClass.objects.create(
+            group = GroupClass.objects_create(
                 subsession=self,
                 id_in_subsession=i,
                 session=self.session,
@@ -156,40 +142,24 @@ class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
             group.set_players(row)
 
     def group_like_round(self, round_number):
-        previous_round = self.in_round(round_number)
-        group_matrix = [
-            group._ordered_players
-            for group in previous_round.group_set.order_by(
-                'id_in_subsession'
-            ).prefetch_related(
-                Prefetch(
-                    'player_set',
-                    queryset=self._PlayerClass().objects.order_by('id_in_group'),
-                    to_attr='_ordered_players',
-                )
-            )
-        ]
-        for i, group_list in enumerate(group_matrix):
-            for j, player in enumerate(group_list):
-                # for every entry (i,j) in the matrix, follow the pointer
-                # to the same person in the next round
-                group_matrix[i][j] = player.in_round(self.round_number)
-
+        previous_round: BaseSubsession = self.in_round(round_number)
+        group_matrix = previous_round._get_group_matrix(ids_only=True)
         self.set_group_matrix(group_matrix)
 
     @property
     def _Constants(self):
-        return get_models_module(self._meta.app_config.name).Constants
+        return get_models_module(self.get_folder_name()).Constants
 
     def _GroupClass(self):
-        return apps.get_model(self._meta.app_config.label, 'Group')
+        return get_models_module(self.get_folder_name()).Group
 
     def _PlayerClass(self):
-        return apps.get_model(self._meta.app_config.label, 'Player')
+        return get_models_module(self.get_folder_name()).Player
 
     @classmethod
     def _has_group_by_arrival_time(cls):
-        return has_group_by_arrival_time(cls._meta.app_config.name)
+        app_name = cls.get_folder_name()
+        return has_group_by_arrival_time(app_name)
 
     def group_randomly(self, *, fixed_id_in_group=False):
         group_matrix = self.get_group_matrix()
@@ -204,24 +174,27 @@ class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
 
     def _gbat_try_to_make_new_group(self, page_index):
         '''Returns the group ID of the participants who were regrouped'''
+        from otree.models import Participant
 
-        STALE_THRESHOLD_SECONDS = 20
+        Player = self._PlayerClass()
+        STALE_THRESHOLD_SECONDS = 70
 
         # count how many are re-grouped
         waiting_players = list(
-            self.player_set.filter(
-                participant___gbat_is_waiting=True,
-                participant___index_in_pages=page_index,
-                participant___gbat_grouped=False,
-                participant___last_request_timestamp__gte=time.time()
-                - STALE_THRESHOLD_SECONDS,
+            self.player_set.join(Participant).filter(
+                Participant._gbat_is_waiting == True,
+                Participant._index_in_pages == page_index,
+                Participant._gbat_grouped == False,
+                # this is just a failsafe
+                Participant._last_request_timestamp
+                >= time.time() - STALE_THRESHOLD_SECONDS,
             )
         )
 
         try:
             players_for_group = self.group_by_arrival_time_method(waiting_players)
         except:
-            raise ResponseForException
+            raise  #  ResponseForException
 
         if not players_for_group:
             return None
@@ -233,38 +206,39 @@ class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
         Constants = self._Constants
 
         this_round_new_group = None
-        with otree.common.transaction_except_for_sqlite():
-            for round_number in range(self.round_number, Constants.num_rounds + 1):
-                subsession = self.in_round(round_number)
+        for round_number in range(self.round_number, Constants.num_rounds + 1):
+            subsession = self.in_round(round_number)
 
-                unordered_players = subsession.player_set.filter(
-                    participant__in=participants
-                )
+            unordered_players = subsession.player_set.filter(
+                Player.participant_id.in_([pp.id for pp in participants])
+            )
 
-                participant_ids_to_players = {
-                    player.participant: player for player in unordered_players
-                }
+            participant_ids_to_players = {
+                player.participant: player for player in unordered_players
+            }
 
-                ordered_players_for_group = [
-                    participant_ids_to_players[participant]
-                    for participant in participants
-                ]
+            ordered_players_for_group = [
+                participant_ids_to_players[participant] for participant in participants
+            ]
 
-                group = self._GroupClass().objects.create(
-                    subsession=subsession,
-                    id_in_subsession=group_id_in_subsession,
-                    session=self.session,
-                    round_number=round_number,
-                )
-                group.set_players(ordered_players_for_group)
+            group = self._GroupClass()(
+                subsession=subsession,
+                id_in_subsession=group_id_in_subsession,
+                session=self.session,
+                round_number=round_number,
+            )
+            db.add(group)
+            group.set_players(ordered_players_for_group)
 
-                if round_number == self.round_number:
-                    this_round_new_group = group
+            if round_number == self.round_number:
+                this_round_new_group = group
 
-                # prune groups without players
-                # apparently player__isnull=True works, didn't know you could
-                # use this in a reverse direction.
-                subsession.group_set.filter(player__isnull=True).delete()
+            # prune groups without players
+            # https://stackoverflow.com/a/21115972/
+            for group_to_delete in subsession.group_set.outerjoin(Player).filter(
+                Player.id == None
+            ):
+                db.delete(group_to_delete)
 
         for participant in participants:
             participant._gbat_grouped = True
@@ -277,12 +251,13 @@ class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
         # doesn't start from 1.
         # especially if you do group_by_arrival_time in every round
         # is that a problem?
-        res = (
-            self._GroupClass()
-            .objects.filter(session=self.session)
-            .aggregate(Max('id_in_subsession'))
+        Group = self._GroupClass()
+        return (
+            dbq(func.max(Group.id_in_subsession))
+            .filter_by(session=self.session)
+            .scalar()
+            + 1
         )
-        return res['id_in_subsession__max'] + 1
 
     def group_by_arrival_time_method(self, waiting_players):
         Constants = self._Constants
@@ -299,3 +274,15 @@ class BaseSubsession(models.OTreeModel, SubsessionIDMapMixin):
 
         if len(waiting_players) >= Constants.players_per_group:
             return waiting_players[: Constants.players_per_group]
+
+    @declared_attr
+    def group_set(cls):
+        return relationship(
+            f'{cls.__module__}.Group', back_populates="subsession", lazy='dynamic'
+        )
+
+    @declared_attr
+    def player_set(cls):
+        return relationship(
+            f'{cls.__module__}.Player', back_populates="subsession", lazy='dynamic'
+        )

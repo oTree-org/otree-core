@@ -8,7 +8,6 @@ $(document).ready(function () {
 
     var socketUrl = $currentScript.data('socketUrl');
     var isBrowserBot = $currentScript.data('isBrowserBot');
-    var redirectUrl = $currentScript.data('redirectUrl');
     var isDebug = $currentScript.data('isDebug');
 
     /*
@@ -27,8 +26,7 @@ $(document).ready(function () {
             }
 
             if (data.auto_advanced) {
-                console.log('Received redirect message', e.data);
-                window.location.href = redirectUrl;
+                window.location.reload();
             }
         };
 

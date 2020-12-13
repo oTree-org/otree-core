@@ -1,32 +1,25 @@
 import time
-
-import django.utils.timezone
-import vanilla
-from django.http import (
-    HttpResponse,
-    HttpResponseRedirect,
-    HttpResponseNotFound,
-)
-from django.shortcuts import get_object_or_404, render
-from django.template.response import TemplateResponse
-from django.utils.translation import ugettext as _
-
+from gettext import gettext as _
+from starlette.endpoints import HTTPEndpoint
+from starlette.responses import HTMLResponse, Response, RedirectResponse
+from starlette.requests import Request
+import datetime
 import otree.bots.browser as browser_bots
 import otree.channels.utils as channel_utils
 import otree.common
 import otree.constants
 import otree.models
 import otree.views.admin
+import otree.views.cbv
 import otree.views.mturk
-from otree.common import make_hash, BotError
-from otree.db import idmap
+from otree import settings
+from otree.common import make_hash, BotError, GlobalState
+from otree.database import NoResultFound
+from otree.database import db, dbq
 from otree.models import Participant, Session
-from otree.models_concrete import (
-    ParticipantRoomVisit,
-    BrowserBotsLauncherSessionCode,
-    ParticipantVarsFromREST,
-)
+from otree.models_concrete import ParticipantVarsFromREST
 from otree.room import ROOM_DICT
+from otree.templating import ibis_loader, render
 from otree.views.abstract import GenericWaitPageMixin
 
 
@@ -35,15 +28,15 @@ def no_participants_left_http_response():
     this function exists because i'm not sure if Http response objects can be reused
     better to return 404 so browser bot client & tests can recognize it
     '''
-    return HttpResponseNotFound(_("Session is full."))
+    return Response(_("Session is full."), status_code=404)
 
 
-class OutOfRangeNotification(vanilla.View):
-    name_in_url = 'shared'
-    url_pattern = r'^OutOfRangeNotification/(?P<participant_code>[a-z0-9]+)/$'
+class OutOfRangeNotification(HTTPEndpoint):
+    url_pattern = '/OutOfRangeNotification/{code}'
 
-    def dispatch(self, request, participant_code):
-        participant = get_object_or_404(Participant, code=participant_code)
+    def get(self, request):
+        code = request.path_params['code']
+        participant = db.get_or_404(Participant, code=code)
         if participant.is_browser_bot:
             session = participant.session
             has_next_submission = browser_bots.enqueue_next_post_data(
@@ -59,70 +52,63 @@ class OutOfRangeNotification(vanilla.View):
                 raise BotError(msg)
 
             browser_bots.send_completion_message(
-                session_code=session.code, participant_code=participant.code
+                session_code=session.code, participant_code=code
             )
 
-        return TemplateResponse(request, 'otree/OutOfRangeNotification.html')
+        return render('otree/OutOfRangeNotification.html', {})
 
 
-class InitializeParticipant(vanilla.UpdateView):
+class InitializeParticipant(HTTPEndpoint):
 
-    url_pattern = r'^InitializeParticipant/(?P<participant_code>[a-z0-9]+)/$'
+    url_pattern = '/InitializeParticipant/{code}'
 
-    def get(self, request, participant_code):
-        participant = get_object_or_404(Participant, code=participant_code)
+    def get(self, request: Request):
+        """anything essential should be done in """
+        code = request.path_params['code']
+        pp = db.get_or_404(Participant, code=code)
+        label = request.query_params.get(otree.constants.participant_label)
 
-        if participant._index_in_pages == 0:
-            participant._index_in_pages = 1
-            participant.visited = True
+        pp.initialize(label)
 
-            # participant.label might already have been set
-            participant.label = participant.label or self.request.GET.get(
-                otree.constants.participant_label
-            )
-
-            now = django.utils.timezone.now()
-            participant.time_started = now
-            participant._last_page_timestamp = time.time()
-            participant.save()
-            with idmap.use_cache():
-                player = participant._get_current_player()
-                player.start()
-
-        first_url = participant._url_i_should_be_on()
-        return HttpResponseRedirect(first_url)
+        first_url = pp._url_i_should_be_on()
+        return RedirectResponse(first_url)
 
 
-class MTurkStart(vanilla.View):
+class MTurkStart(HTTPEndpoint):
 
-    url_pattern = r"^MTurkStart/(?P<session_code>[a-z0-9]+)/$"
+    url_pattern = r"/MTurkStart/{code}"
 
-    def dispatch(self, request, session_code):
-        self.session = get_object_or_404(otree.models.Session, code=session_code)
-        return super().dispatch(request)
-
-    def get(self, request):
-        GET = request.GET
+    def get(self, request: Request):
+        code = request.path_params['code']
+        session = self.session = db.get_or_404(Session, code=code)
+        GET = request.query_params
         try:
             assignment_id = GET['assignmentId']
             worker_id = GET['workerId']
-        except Exception:
-            return HttpResponseNotFound(
-                'URL is missing assignmentId or workerId parameter'
+        except KeyError:
+            return Response(
+                'URL is missing assignmentId or workerId parameter', status_code=404
             )
-        qual_id = self.session.config['mturk_hit_settings'].get(
-            'grant_qualification_id'
-        )
-        use_sandbox = self.session.mturk_use_sandbox
+        qual_id = session.config['mturk_hit_settings'].get('grant_qualification_id')
+        use_sandbox = session.mturk_use_sandbox
         if qual_id and not use_sandbox:
             # this is necessary because MTurk's qualification requirements
             # don't prevent 100% of duplicate participation. See:
             # https://groups.google.com/forum/#!topic/otree/B66HhbFE9ck
-            previous_participation = Participant.objects.exclude(
-                session=self.session
-            ).filter(mturk_worker_id=worker_id, session__mturk_qual_id=qual_id)
-            if previous_participation.exists():
-                return HttpResponse('You have already accepted a related HIT')
+
+            previous_participation = (
+                dbq(Participant)
+                .join(Session)
+                .filter(
+                    Participant.session != session,
+                    Session.mturk_qual_id == qual_id,
+                    Participant.mturk_worker_id == worker_id,
+                )
+                .scalar()
+                is not None
+            )
+            if previous_participation:
+                return Response('You have already accepted a related HIT')
 
             # if using sandbox, there is no point in granting quals.
             # https://groups.google.com/forum/#!topic/otree/aAmqTUF-b60
@@ -130,6 +116,7 @@ class MTurkStart(vanilla.View):
             # don't pass request arg, because we don't want to show a message.
             # using the fully qualified name because that seems to make mock.patch work
             mturk_client = otree.views.mturk.get_mturk_client(use_sandbox=use_sandbox)
+
             # seems OK to assign this multiple times
             mturk_client.associate_qualification_with_worker(
                 QualificationTypeId=qual_id,
@@ -145,44 +132,41 @@ class MTurkStart(vanilla.View):
             # in this case, we should assign back to the same participant
             # so that we don't get duplicates in the DB, and so people
             # can't snoop and try the HIT first, then re-try to get a bigger bonus
-            participant = self.session.participant_set.get(mturk_worker_id=worker_id)
-        except Participant.DoesNotExist:
-            try:
-                participant = self.session.participant_set.filter(
-                    visited=False
-                ).order_by('id')[0]
-            except IndexError:
+            pp = self.session.pp_set.filter_by(mturk_worker_id=worker_id).one()
+        except NoResultFound:
+            pp = self.session.pp_set.filter_by(visited=False).order_by('id').first()
+            if not pp:
                 return no_participants_left_http_response()
 
             # 2014-10-17: needs to be here even if it's also set in
             # the next view to prevent race conditions
             # this needs to be inside the lock
-            participant.visited = True
-            participant.mturk_worker_id = worker_id
+            pp.visited = True
+            pp.mturk_worker_id = worker_id
         # reassign assignment_id, even if they are returning, because maybe they accepted
         # and then returned, then re-accepted with a different assignment ID
         # if it's their second time
-        participant.mturk_assignment_id = assignment_id
-        participant.save()
-        return HttpResponseRedirect(participant._start_url())
+        pp.mturk_assignment_id = assignment_id
+        return RedirectResponse(pp._start_url(), status_code=302)
 
 
 def get_existing_or_new_participant(session, label):
+    q = session.pp_set
     if label:
         try:
-            return session.participant_set.get(label=label)
-        except Participant.DoesNotExist:
+            return q.filter_by(label=label).one()
+        except NoResultFound:
             pass
-    return session.participant_set.filter(visited=False).order_by('id').first()
+    return q.filter_by(visited=False).order_by('id').first()
 
 
 def get_participant_with_cookie_check(session, cookies):
     cookie_name = 'session_{}_participant'.format(session.code)
-    participant_code = cookies.get(cookie_name)
+    code = cookies.get(cookie_name)
     # this could return None
-    if participant_code:
-        return Participant.objects.filter(code=participant_code).first()
-    participant = session.participant_set.filter(visited=False).order_by('id').first()
+    if code:
+        return Participant.objects_filter(code=code).first()
+    participant = session.pp_set.filter_by(visited=False).order_by('id').first()
     if participant:
         cookies[cookie_name] = participant.code
         return participant
@@ -203,40 +187,38 @@ def participant_or_none_if_exceeded(session, *, label, cookies=None):
     if label:
         participant.label = label
 
-    participant.save()
-
     return participant
 
 
-class JoinSessionAnonymously(vanilla.View):
+class JoinSessionAnonymously(HTTPEndpoint):
 
-    url_pattern = r'^join/(?P<anonymous_code>[a-z0-9]+)/$'
+    url_pattern = '/join/{anonymous_code}'
 
-    def get(self, request, anonymous_code):
-        session = get_object_or_404(
-            otree.models.Session, _anonymous_code=anonymous_code
-        )
-        label = self.request.GET.get('participant_label')
+    def get(self, request: Request):
+        anonymous_code = request.path_params['anonymous_code']
+        session = db.get_or_404(Session, _anonymous_code=anonymous_code)
+        label = request.query_params.get('participant_label')
         participant = participant_or_none_if_exceeded(session, label=label)
         if not participant:
             return no_participants_left_http_response()
-        return HttpResponseRedirect(participant._start_url())
+        return RedirectResponse(participant._start_url())
 
 
-class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
+class AssignVisitorToRoom(GenericWaitPageMixin, HTTPEndpoint):
 
-    url_pattern = r'^room/(?P<room>\w+)/$'
+    url_pattern = '/room/{room_name}'
 
-    def dispatch(self, request, room):
-        self.room_name = room
+    def get(self, request: Request):
+        room_name = request.path_params['room_name']
+        self.room_name = room_name
         try:
             room = ROOM_DICT[self.room_name]
         except KeyError:
-            return HttpResponseNotFound('Invalid room specified in url')
+            return Response('Invalid room specified in url', status_code=404)
 
-        label = self.request.GET.get('participant_label', '')
+        label = request.query_params.get('participant_label', '')
 
-        if room.has_participant_labels():
+        if room.has_participant_labels:
             if label:
                 missing_label = False
                 invalid_label = label not in room.get_participant_labels()
@@ -248,17 +230,16 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
             # mode
             if missing_label or invalid_label and not room.use_secure_urls:
                 return render(
-                    request,
-                    "otree/RoomInputLabel.html",
-                    {'invalid_label': invalid_label},
+                    "otree/RoomInputLabel.html", {'invalid_label': invalid_label},
                 )
 
             if room.use_secure_urls:
-                hash = self.request.GET.get('hash')
+                hash = request.query_params.get('hash')
                 if hash != make_hash(label):
-                    return HttpResponseNotFound(
+                    return Response(
                         'Invalid hash parameter. use_secure_urls is True, '
-                        'so you must use the participant-specific URL.'
+                        'so you must use the participant-specific URL.',
+                        status_code=404,
                     )
 
         session = room.get_session()
@@ -271,13 +252,13 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
                 tab_unique_id=self.tab_unique_id,
             )
             return render(
-                request,
                 "otree/WaitPageRoom.html",
-                {
-                    'view': self,
-                    'title_text': _('Please wait'),
-                    'body_text': _('Waiting for your session to begin'),
-                },
+                dict(
+                    view=self,
+                    title_text=_('Please wait'),
+                    body_text=_('Waiting for your session to begin'),
+                    http_request=request,
+                ),
             )
 
         if label:
@@ -295,14 +276,13 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
         if not participant:
             return no_participants_left_http_response()
         if label:  # whether the room has participant labels or not
-            passed_vars = ParticipantVarsFromREST.objects.filter(
+            passed_vars = ParticipantVarsFromREST.objects_filter(
                 room_name=self.room_name, participant_label=label
             ).first()
             if passed_vars:
                 participant.vars.update(passed_vars.vars)
-                participant.save()
-                passed_vars.delete()
-        return HttpResponseRedirect(participant._start_url())
+                db.delete(passed_vars)
+        return RedirectResponse(participant._start_url())
 
     def get_context_data(self, **kwargs):
         return {'room': self.room_name}
@@ -310,67 +290,43 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
     def socket_url(self):
         return self._socket_url
 
-    def redirect_url(self):
-        return self.request.get_full_path()
 
-
-class ParticipantRoomHeartbeat(vanilla.View):
-
-    url_pattern = r'^ParticipantRoomHeartbeat/(?P<tab_unique_id>\w+)/$'
-
-    def get(self, request, tab_unique_id):
-        # better not to return 404, because in practice, on Firefox,
-        # this was still being requested after the session started.
-        ParticipantRoomVisit.objects.filter(tab_unique_id=tab_unique_id).update(
-            last_updated=time.time()
-        )
-        return HttpResponse('')
-
-
-class ParticipantHeartbeatGBAT(vanilla.View):
-    url_pattern = r'^ParticipantHeartbeatGBAT/(?P<participant_code>\w+)/$'
-
-    def get(self, request, participant_code):
-        Participant.objects.filter(code=participant_code).update(
-            _last_request_timestamp=time.time()
-        )
-        return HttpResponse('')
-
-
-class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
+class BrowserBotStartLink(GenericWaitPageMixin, HTTPEndpoint):
     '''should i move this to another module?
     because the rest of these views are accessible without password login.
     '''
 
-    url_pattern = r'^browser_bot_start/(?P<pre_create_id>\w+)/$'
+    url_pattern = '/browser_bot_start/{admin_secret_code}'
 
-    def dispatch(self, request, pre_create_id):
-        session_info = BrowserBotsLauncherSessionCode.objects.first()
-        if session_info:
-            if pre_create_id != session_info.pre_create_id:
-                return HttpResponseNotFound('Incorrect pre_create_id')
-            session = Session.objects.get(code=session_info.code)
-            participant = (
-                session.participant_set.filter(visited=False).order_by('id').first()
-            )
-            if not participant:
-                return no_participants_left_http_response()
+    def get(self, request):
+        admin_secret_code = request.path_params['admin_secret_code']
+        if admin_secret_code != otree.common.get_admin_secret_code():
+            return Response('Incorrect code', status_code=404)
 
-            # 2014-10-17: needs to be here even if it's also set in
-            # the next view to prevent race conditions
-            participant.visited = True
-            participant.save()
-            return HttpResponseRedirect(participant._start_url())
-        else:
-            ctx = {
-                'view': self,
-                'title_text': 'Please wait',
-                'body_text': 'Waiting for browser bots session to begin',
-            }
-            return render(request, "otree/WaitPage.html", ctx)
+        session_code = GlobalState.browser_bots_launcher_session_code
+        if session_code:
+            try:
+                session = Session.objects_get(code=session_code)
+            except NoResultFound:
+                # maybe it's an old session
+                pass
+            else:
+                participant = (
+                    session.pp_set.filter_by(visited=False).order_by('id').first()
+                )
+                if not participant:
+                    return no_participants_left_http_response()
+
+                # 2014-10-17: needs to be here even if it's also set in
+                # the next view to prevent race conditions
+                participant.visited = True
+                return RedirectResponse(participant._start_url(), status_code=302)
+        ctx = dict(
+            view=self,
+            title_text='Please wait',
+            body_text='Waiting for browser bots session to begin',
+        )
+        return render("otree/WaitPage.html", ctx)
 
     def socket_url(self):
         return '/browser_bot_wait/'
-
-    def redirect_url(self):
-        return self.request.get_full_path()

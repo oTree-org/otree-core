@@ -1,4 +1,4 @@
-{% load otree %}
+
 
 
 <table class="table table-striped">
@@ -28,23 +28,23 @@
 
   {% for p in participants %}
     <tr>
-      <td>{{ forloop.counter }}</td>
+      <td>{{ loop.count }}</td>
       <td class="codes">{{ p.code }}</td>
-      <td class="codes">{{ p.mturk_assignment_id|default_if_none:"" }}</td>
-      <td class="codes">{{ p.mturk_worker_id|default_if_none:"" }}</td>
-      <td>{{ p.current_page_ }}</td>
+      <td class="codes">{{ p.mturk_assignment_id || "" }}</td>
+      <td class="codes">{{ p.mturk_worker_id || "" }}</td>
+      <td>{{ p.current_page_() }}</td>
       <td>{{ p.mturk_answers_formatted }}</td>
       <td>
-        {{ p.payoff_in_real_world_currency }}
+        {{ p.payoff_in_real_world_currency() }}
       </td>
-      <td>{{ p.payoff_plus_participation_fee }}</td>
+      <td>{{ p.payoff_plus_participation_fee() }}</td>
       {% if reviewable %}
       <td>
         <div class="checkbox-inline">
           <label>
             <input type="checkbox"
                    name="workers"
-                   data-value="{{ p.payoff_plus_participation_fee|json }}"
+                   data-value="{{ p.payoff_plus_participation_fee()|json }}"
                    value="{{ p.mturk_worker_id }}">
           </label>
         </div>

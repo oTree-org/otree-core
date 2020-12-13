@@ -3,7 +3,7 @@ import random
 from collections import OrderedDict
 from typing import Dict
 from otree.models import Session
-from .bot import ParticipantBot
+from .bot import ParticipantBot, Submission
 from .runner import make_bots
 import otree.channels.utils as channel_utils
 
@@ -39,13 +39,13 @@ class BotWorker:
     def __init__(self):
         self.participants_by_session = OrderedDict()
         self.browser_bots: Dict[str, ParticipantBot] = {}
-        self.queued_post_data: Dict[str, Dict] = {}
+        self.queued_post_data: Dict[str, Submission] = {}
 
     def initialize_session(self, session_pk, case_number):
         self.prune()
         self.participants_by_session[session_pk] = []
 
-        session = Session.objects.get(pk=session_pk)
+        session = Session.objects_get(id=session_pk)
         if case_number is None:
             # choose one randomly
             from otree.session import SessionConfig
@@ -84,7 +84,7 @@ class BotWorker:
             return True
         bot = self.get_bot(participant_code)
         try:
-            qpd[participant_code] = next(bot.submits_generator)
+            qpd[participant_code] = bot.get_next_submit()
         except StopIteration:
             # don't prune it because can cause flakiness if
             # there are other GET requests coming in. it will be pruned
@@ -101,9 +101,7 @@ class BotWorker:
         # because we are returning it through Redis, need to pop it
         # here
         submission = self.queued_post_data.pop(participant_code)
-        # 2020-03-16: why do we remove page_class when we are only going to use post_data anyway?
-        submission.pop('page_class')
-        return submission['post_data']
+        return submission.post_data
 
     def set_attributes(self, participant_code, request_path, html):
         bot = self.get_bot(participant_code)
@@ -135,8 +133,6 @@ def initialize_session(**kwargs):
 def send_completion_message(*, session_code, participant_code):
     group_name = channel_utils.browser_bots_launcher_group(session_code)
 
-    channel_utils.sync_group_send_wrapper(
-        group=group_name,
-        type='send_completion_message',
-        event={'text': participant_code},
+    channel_utils.sync_group_send(
+        group=group_name, data=dict(participant_code=participant_code),
     )

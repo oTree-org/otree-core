@@ -1,130 +1,164 @@
 from decimal import Decimal
+from markupsafe import escape, Markup
+from wtforms.compat import text_type
+from wtforms.widgets import html_params
+from otree import settings
+from otree.currency import CURRENCY_SYMBOLS
+from gettext import gettext
 
-from django.conf import settings
-from django.utils.encoding import force_text
-from django.utils.translation import ugettext_lazy
-from otree.currency import Currency, RealWorldCurrency
-from django import forms
-
-# TextInput could be useful if someone wants to set choices= but doesn't
-# want a dropdown. Same for NumberInput actually. But they could also
-# just use FOO_error_message, so they don't need to know the name of each input.
-from django.forms.widgets import (
-    CheckboxInput,
-    HiddenInput,
-    RadioSelect,
-    TextInput,
-    Textarea,
-)  # noqa
+# the below code is adapted from wtforms
 
 
-def make_deprecated_widget(WidgetName):
-    def DeprecatedWidget(*args, **kwargs):
-        # putting the msg on a separate line gives better tracebacks
-        msg = (
-            f'{WidgetName} does not exist in oTree. You should either delete it, '
-            f'or import it from Django directly.'
-        )
-        raise Exception(msg)
+class BaseWidget:
+    has_value = True
 
-    return DeprecatedWidget
+    def __call__(self, field, **render_kw):
 
+        self.field = field
+        self.render_kw = render_kw
+        render_kw.setdefault('id', field.id)
+        if self.has_value and 'value' not in render_kw:
+            render_kw['value'] = field._value()
+        if 'required' not in render_kw and 'required' in getattr(field, 'flags', []):
+            render_kw['required'] = True
+        return Markup(''.join(self.get_html_fragments()))
 
-Media = make_deprecated_widget('Media')
-MediaDefiningClass = make_deprecated_widget('MediaDefiningClass')
-Widget = make_deprecated_widget('Widget')
-NumberInput = make_deprecated_widget('NumberInput')
-EmailInput = make_deprecated_widget('EmailInput')
-URLInput = make_deprecated_widget('URLInput')
-PasswordInput = make_deprecated_widget('PasswordInput')
-MultipleHiddenInput = make_deprecated_widget('MultipleHiddenInput')
-FileInput = make_deprecated_widget('FileInput')
-ClearableFileInput = make_deprecated_widget('ClearableFileInput')
-DateInput = make_deprecated_widget('DateInput')
-DateTimeInput = make_deprecated_widget('DateTimeInput')
-TimeInput = make_deprecated_widget('TimeInput')
-Select = make_deprecated_widget('Select')
-NullBooleanSelect = make_deprecated_widget('NullBooleanSelect')
-SelectMultiple = make_deprecated_widget('SelectMultiple')
-CheckboxSelectMultiple = make_deprecated_widget('CheckboxSelectMultiple')
-MultiWidget = make_deprecated_widget('MultiWidget')
-SplitDateTimeWidget = make_deprecated_widget('SplitDateTimeWidget')
-SplitHiddenDateTimeWidget = make_deprecated_widget('SplitHiddenDateTimeWidget')
-SelectDateWidget = make_deprecated_widget('SelectDateWidget')
+    def get_html_fragments(self):
+        raise NotImplementedError
 
-from otree.currency.locale import CURRENCY_SYMBOLS
+    def attrs(self):
+        return html_params(name=self.field.name, **self.render_kw)
 
 
-class _BaseMoneyInput(forms.NumberInput):
-    # step = 0.01
-    template_name = 'otree/forms/moneyinput.html'
+class NumberWidget(BaseWidget):
+    def __init__(self, step):
+        self.step = step
 
-    def get_context(self, *args, **kwargs):
-        context = super().get_context(*args, **kwargs)
-        context['currency_symbol'] = self.CURRENCY_SYMBOL
-        return context
-
-    def format_value(self, value):
-        if value == '' or value is None:
-            return None
-        if isinstance(value, (Currency, RealWorldCurrency)):
-            value = Decimal(value)
-        return str(value)
+    def get_html_fragments(self):
+        yield f'<input type="number" class="form-control" step="{self.step}" %s>' % self.attrs()
 
 
-class _RealWorldCurrencyInput(_BaseMoneyInput):
-    '''it's a class attribute so take care with patching it in tests'''
-
-    CURRENCY_SYMBOL = CURRENCY_SYMBOLS.get(
-        settings.REAL_WORLD_CURRENCY_CODE, settings.REAL_WORLD_CURRENCY_CODE
-    )
-
-
-class _CurrencyInput(_RealWorldCurrencyInput):
-    '''it's a class attribute so take care with patching it in tests'''
-
-    if settings.USE_POINTS:
-        if hasattr(settings, 'POINTS_CUSTOM_NAME'):
-            CURRENCY_SYMBOL = settings.POINTS_CUSTOM_NAME
+class CurrencyWidget(BaseWidget):
+    def __init__(self):
+        if settings.USE_POINTS:
+            if getattr(settings, 'POINTS_CUSTOM_NAME', None):
+                CURRENCY_SYMBOL = settings.POINTS_CUSTOM_NAME
+                places = settings.POINTS_DECIMAL_PLACES
+            else:
+                # Translators: the label next to a "points" input field
+                CURRENCY_SYMBOL = gettext('points')
+                places = settings.REAL_WORLD_CURRENCY_DECIMAL_PLACES
         else:
-            # Translators: the label next to a "points" input field
-            CURRENCY_SYMBOL = ugettext_lazy('points')
+            CURRENCY_SYMBOL = CURRENCY_SYMBOLS.get(
+                settings.REAL_WORLD_CURRENCY_CODE, settings.REAL_WORLD_CURRENCY_CODE
+            )
+            places = settings.REAL_WORLD_CURRENCY_DECIMAL_PLACES
+        self.symbol = CURRENCY_SYMBOL
+        self.step = str(10 ** -places)
+
+    def get_html_fragments(self):
+        yield '''<div class="input-group input-group-narrow">'''
+        yield f'<input type="number" class="form-control" step="{self.step}" {self.attrs()}>'
+        yield f'''
+            <div class="input-group-append">
+                <span class="input-group-text">{self.symbol}</span>
+            </div>
+        </div> 
+        '''
 
 
-class RadioSelectHorizontal(forms.RadioSelect):
-    template_name = 'otree/forms/radio_select_horizontal.html'
+class TextInput(BaseWidget):
+    def get_html_fragments(self):
+        yield '<input type="text" class="form-control" %s>' % self.attrs()
 
 
-class Slider(forms.NumberInput):
-    input_type = 'range'
-    template_name = 'otree/forms/slider.html'
-    show_value = True
+class TextArea(BaseWidget):
+    """
+    Renders a multi-line text area.
 
-    def __init__(self, *args, show_value=None, **kwargs):
-        try:
-            # fix bug where currency "step" values were ignored.
-            step = kwargs['attrs']['step']
-            kwargs['attrs']['step'] = self.format_value(step)
-        except KeyError:
-            pass
-        if show_value is not None:
-            self.show_value = show_value
-        super().__init__(*args, **kwargs)
+    `rows` and `cols` ought to be passed as keyword args when rendering.
+    """
 
-    def format_value(self, value):
-        if value == '' or value is None:
-            return None
-        if isinstance(value, (Currency, RealWorldCurrency)):
-            value = Decimal(value)
-        return str(value)
-
-    def get_context(self, *args, **kwargs):
-        context = super().get_context(*args, **kwargs)
-        context['show_value'] = self.show_value
-        return context
+    def get_html_fragments(self):
+        yield (
+            '<textarea class="form-control" %s>\r\n%s</textarea>'
+            % (self.attrs(), escape(self.field._value()))
+        )
 
 
-class SliderInput(Slider):
-    '''old name for Slider widget'''
+class Dropdown(BaseWidget):
+    """
+    Renders a select field.
 
-    pass
+    The field must provide an `iter_choices()` method which the widget will
+    call on rendering; this method must yield tuples of
+    `(value, label, selected)`.
+    """
+
+    has_value = False
+
+    def get_html_fragments(self):
+        yield '<select class="form-select" %s>' % self.attrs()
+        yield '<option value="">--------</option>'
+        for val, label, selected in self.field.iter_choices():
+            yield self.render_option(val, label, selected)
+        yield '</select>'
+
+    @classmethod
+    def render_option(cls, value, label, selected, **kwargs):
+        if value is True:
+            # Handle the special case of a 'True' value.
+            value = text_type(value)
+        options = dict(kwargs, value=value)
+        if selected:
+            options['selected'] = True
+        return Markup(
+            '<option %s>%s</option>' % (html_params(**options), escape(label))
+        )
+
+
+class DropdownOption(object):
+    """
+    Renders the individual option from a select field.
+
+    This is just a convenience for various custom rendering situations, and an
+    option by itself does not constitute an entire field.
+    """
+
+    def __call__(self, field, **kwargs):
+        return Dropdown.render_option(
+            field._value(), field.label.text, field.checked, **kwargs
+        )
+
+
+class RadioSelect(BaseWidget):
+    has_value = False
+
+    def get_html_fragments(self):
+        yield '<div %s>' % html_params(**self.render_kw)
+        for subfield in self.field:
+            yield '<div class="form-check">%s %s</div>' % (subfield(), subfield.label)
+        yield '</div>'
+
+
+class RadioSelectHorizontal(BaseWidget):
+    has_value = False
+
+    def get_html_fragments(self):
+        for subfield in self.field:
+            yield f'''
+            <div class="form-check form-check-inline">
+                {subfield()}
+                <label for="{subfield.id}" class="form-check-label">{subfield.label.text}</label>
+            </div>
+            '''
+
+
+class RadioOption(BaseWidget):
+    def __call__(self, field, **kwargs):
+        if field.checked:
+            kwargs['checked'] = True
+        return super().__call__(field, **kwargs)
+
+    def get_html_fragments(self):
+        yield '<input class="form-check-input" type="radio" %s>' % self.attrs()

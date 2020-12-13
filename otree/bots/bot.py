@@ -1,3 +1,4 @@
+import sys
 from typing import List, Set, Tuple
 import re
 import decimal
@@ -8,18 +9,16 @@ from urllib.parse import unquote, urlsplit
 from html.parser import HTMLParser
 
 import otree.constants
-from django.urls import resolve
-from django.conf import settings
+from otree import settings
 from otree.currency import Currency
 from otree.models import Participant, Session
 from otree import common
 from otree.common import (
     get_dotted_name,
-    get_bots_module,
     get_admin_secret_code,
     get_models_module,
 )
-from otree.db import idmap
+from otree.database import db, session_scope
 
 ADMIN_SECRET_CODE = get_admin_secret_code()
 
@@ -39,7 +38,7 @@ Checking the HTML may not find all form fields and buttons
 so you can disable this check by yielding a Submission
 with check_html=False, e.g.:
 
-yield Submission(views.PageName, {{...}}, check_html=False)
+yield Submission(pages.PageName, {{...}}, check_html=False)
 '''
 
 HTML_MISSING_BUTTON_WARNING = (
@@ -67,6 +66,75 @@ but these form fields were not found in the HTML of the page
     .replace('\n', ' ')
     .strip()
 )
+
+
+class BOTS_CHECK_HTML:
+    pass
+
+
+class Submission:
+    def __init__(
+        self,
+        PageClass,
+        post_data=None,
+        *,
+        check_html=BOTS_CHECK_HTML,
+        timeout_happened=False,
+    ):
+
+        post_data = post_data or {}
+
+        # don't mutate the input
+        post_data = post_data.copy()
+
+        if check_html == BOTS_CHECK_HTML:
+            check_html = settings.BOTS_CHECK_HTML
+
+        if timeout_happened:
+            post_data[otree.constants.timeout_happened] = True
+            post_data[otree.constants.admin_secret_code] = ADMIN_SECRET_CODE
+
+        # easy way to check if it's a wait page, without any messy imports
+        if hasattr(PageClass, 'wait_for_all_groups'):
+            msg = (
+                "Your bot yielded '{}', which is a wait page. "
+                "You should delete this line, because bots handle wait pages "
+                "automatically.".format(PageClass)
+            )
+            raise AssertionError(msg)
+
+        # todo: this might not be necessary anymore now that we don't use redis
+        for key in post_data:
+            if isinstance(post_data[key], Currency):
+                # because must be json serializable for Huey
+                post_data[key] = str(decimal.Decimal(post_data[key]))
+
+        self.page_class = PageClass
+        self.page_class_dotted: str = get_dotted_name(PageClass)
+        self.post_data: dict = post_data
+        self.check_html = check_html
+
+
+class SubmissionMustFail(Submission):
+    '''lets you intentionally submit with invalid
+    input to ensure it's correctly rejected'''
+
+    def __init__(
+        self,
+        PageClass,
+        post_data=None,
+        *,
+        check_html=BOTS_CHECK_HTML,
+        error_fields=None,
+    ):
+        post_data = post_data or {}
+        super().__init__(PageClass, post_data, check_html=check_html)
+        # must_fail needs to go in post_data rather than being a separate
+        # dict key, because CLI bots and browser bots need to work the same way.
+        # CLI bots can only talk to server through post data
+        self.post_data['must_fail'] = True
+        if error_fields:
+            post_data['error_fields'] = error_fields
 
 
 class ExpectError(AssertionError):
@@ -114,14 +182,13 @@ def expect(*args):
 
 class ParticipantBot:
     def __init__(self, participant_or_code, *, player_bots, executed_live_methods=None):
-        from django.test import Client  # expensive import
 
         if isinstance(participant_or_code, Participant):
             self.participant_code = participant_or_code.code
         else:
             self.participant_code = participant_or_code
 
-        self._client = Client()
+        self._client = None
         self.url = None
         self._response = None
         self._html = None
@@ -136,75 +203,99 @@ class ParticipantBot:
         self.player_bots: List[PlayerBot] = player_bots
         self.submits_generator = self.get_submits()
 
+    @property
+    def client(self):
+        if not self._client:
+            self.load_client()
+        return self._client
+
+    def load_client(self):
+        # expensive since it requires requests import and dependency.
+        # i think this is only needed for CLI bots
+        # eventually they will move to httpx which is a bit smaller
+        try:
+            import requests
+        except ModuleNotFoundError:
+            sys.exit(
+                'You need to install requests to run bots ("pip3 install requests")'
+            )
+
+        from starlette.testclient import TestClient
+        from otree.asgi import app
+
+        self._client: TestClient = TestClient(app)
+
     def open_start_url(self):
         start_url = common.participant_start_url(self.participant_code)
-        self.response = self._client.get(start_url, follow=True)
+        self.response = self.client.get(start_url, allow_redirects=True)
+
+    def get_next_submit(self):
+        return next(self.submits_generator)
 
     def get_submits(self):
         for player_bot in self.player_bots:
             generator = player_bot.play_round()
             if generator is None:
                 continue
-            try:
-                for submission in generator:
-                    # Submission or SubmissionMustFail returns a dict
-                    # so, we normalize to a dict
-                    if not isinstance(submission, dict):
-                        submission = BareYieldToSubmission(submission)
-                    self.assert_correct_page(submission)
-                    self.assert_html_ok(submission)
-                    self.live_method_stuff(player_bot, submission)
-                    yield submission
-            except ExpectError as exc:
-                # the point is to re-raise so that i can reference the original
-                # exception as exc.__cause__ or exc.__context__, since that exception
-                # is much smaller and doesn't have all the extra layers.
-                # pass it to response_for_exception.
-                # this results in much nicer output for browser bots (devserver and runprodserver)
-                # but keep the original message, which is needed for CLI bots
-                raise ExpectError(str(exc))
+            # try:
+            for submission in generator:
+                if not isinstance(submission, Submission):
+                    submission = BareYieldToSubmission(submission)
+                self.assert_correct_page(submission)
+                self.assert_html_ok(submission)
+                self.live_method_stuff(player_bot, submission)
+                yield submission
+            # except ExpectError as exc:
+            #     # the point is to re-raise so that i can reference the original
+            #     # exception as exc.__cause__ or exc.__context__, since that exception
+            #     # is much smaller and doesn't have all the extra layers.
+            #     # pass it to response_for_exception.
+            #     # this results in much nicer output for browser bots (devserver and runprodserver)
+            #     # but keep the original message, which is needed for CLI bots
+            #     raise ExpectError(str(exc)).with_traceback(exc)
 
     def live_method_stuff(self, player_bot, submission):
-        PageClass = submission['page_class']
+        PageClass = submission.page_class
         live_method_name = PageClass.live_method
         if live_method_name:
             record = (player_bot.player.group_id, PageClass)
             if record not in self.executed_live_methods:
-                with idmap.use_cache():
-                    bots_module = inspect.getmodule(player_bot)
-                    method_calls_fn = getattr(bots_module, 'call_live_method', None)
-                    if method_calls_fn:
-                        players = {
-                            p.id_in_group: p for p in player_bot.group.get_players()
-                        }
+                bots_module = inspect.getmodule(player_bot)
+                method_calls_fn = getattr(bots_module, 'call_live_method', None)
+                if method_calls_fn:
+                    players = {p.id_in_group: p for p in player_bot.group.get_players()}
 
-                        def method(id_in_group, data):
-                            return getattr(players[id_in_group], live_method_name)(data)
+                    def method(id_in_group, data):
+                        return getattr(players[id_in_group], live_method_name)(data)
 
-                        method_calls_fn(
-                            method=method,
-                            case=player_bot.case,
-                            round_number=player_bot.round_number,
-                            page_class=PageClass,
-                        )
-
+                    method_calls_fn(
+                        method=method,
+                        case=player_bot.case,
+                        round_number=player_bot.round_number,
+                        page_class=PageClass,
+                    )
+                    db.commit()
                 self.executed_live_methods.add(record)
 
     def _play_individually(self):
         '''convenience method for testing'''
         self.open_start_url()
-        for submission in self.submits_generator:
-            self.submit(**submission)
+        try:
+            while True:
+                submission = self.get_next_submit()
+                self.submit(submission)
+        except StopIteration:
+            return
 
-    def assert_html_ok(self, submission):
-        if submission['check_html']:
+    def assert_html_ok(self, submission: Submission):
+        if submission.check_html:
             fields_to_check = [
-                f for f in submission['post_data'] if f not in INTERNAL_FORM_FIELDS
+                f for f in submission.post_data if f not in INTERNAL_FORM_FIELDS
             ]
             checker = PageHtmlChecker(fields_to_check)
             missing_fields = checker.get_missing_fields(self.html)
             if missing_fields:
-                page_name = submission['page_class'].url_name()
+                page_name = submission.page_class.url_name()
                 raise MissingHtmlFormFieldError(
                     HTML_MISSING_FIELD_WARNING.format(
                         page_name=page_name,
@@ -215,20 +306,17 @@ class ParticipantBot:
                     )
                 )
             if not checker.submit_button_found:
-                page_name = submission['page_class'].url_name()
+                page_name = submission.page_class.url_name()
                 raise MissingHtmlButtonError(
                     HTML_MISSING_BUTTON_WARNING.format(page_name=page_name)
                 )
 
     def assert_correct_page(self, submission):
-        PageClass = submission['page_class']
-        expected_url = PageClass.url_name()
-        actual_url = resolve(self.path).url_name
-
-        if not expected_url == actual_url:
+        ClassName = submission.page_class.__name__
+        if not f'/{ClassName}/' in self.path:
             msg = (
-                f"Bot expects to be on page {expected_url} "
-                f"but current page is {actual_url}. "
+                f"Bot expects to be on page {ClassName} "
+                f"but current page is {self.path}. "
                 "Check your bot code, "
                 "then create a new session."
             )
@@ -240,17 +328,9 @@ class ParticipantBot:
 
     @response.setter
     def response(self, response):
-        try:
-            # have to use unquote in case the name_in_url or PageClass
-            # contains non-ascii characters. playing the games in the browser
-            # works generally, so we should also support non-ascii in bots.
-            self.url = unquote(response.redirect_chain[-1][0])
-        except IndexError as exc:
-            # this happens e.g. if you use SubmissionMustFail
-            # and it returns the same URL
-            pass
-        else:
-            self.path = urlsplit(self.url).path
+        self.url = unquote(response.url)
+        self.path = urlsplit(self.url).path
+
         self._response = response
         self.html = response.content.decode('utf-8')
 
@@ -269,20 +349,21 @@ class ParticipantBot:
             return False
 
         # however, wait pages can turn into regular pages, so let's try again
-        self.response = self._client.get(self.url, follow=True)
+        self.response = self.client.get(self.url, allow_redirects=True)
         return is_wait_page(self.response)
 
-    def submit(self, *, post_data, must_fail=False, timeout_happened=False, **kwargs):
+    def submit(self, submission: Submission):
+        post_data = submission.post_data
         pretty_post_data = bot_prettify_post_data(post_data)
-        log_string = self.path
+        log_string = 'Submit ' + self.path
         if pretty_post_data:
             log_string += ', {}'.format(pretty_post_data)
-        if must_fail:
+        if post_data.get('must_fail'):
             log_string += ', SubmissionMustFail'
-        if timeout_happened:
+        if post_data.get('timeout_happened'):
             log_string += ', timeout_happened'
         logger.info(log_string)
-        self.response = self._client.post(self.url, post_data, follow=True)
+        self.response = self.client.post(self.url, post_data, allow_redirects=True)
 
 
 class PlayerBot:
@@ -324,7 +405,7 @@ class PlayerBot:
 
     @property
     def player(self):
-        return self.PlayerClass.objects.get(pk=self._player_pk)
+        return self.PlayerClass.objects_get(id=self._player_pk)
 
     @property
     def group(self):
@@ -333,7 +414,7 @@ class PlayerBot:
 
     @property
     def subsession(self):
-        return self.SubsessionClass.objects.get(pk=self._subsession_pk)
+        return self.SubsessionClass.objects_get(id=self._subsession_pk)
 
     @property
     def round_number(self):
@@ -341,11 +422,11 @@ class PlayerBot:
 
     @property
     def participant(self):
-        return Participant.objects.get(code=self._participant_code)
+        return Participant.objects_get(code=self._participant_code)
 
     @property
     def session(self):
-        return Session.objects.get(pk=self._session_pk)
+        return Session.objects_get(id=self._session_pk)
 
     @property
     def html(self):
@@ -358,87 +439,6 @@ class MissingHtmlButtonError(AssertionError):
 
 class MissingHtmlFormFieldError(AssertionError):
     pass
-
-
-class BOTS_CHECK_HTML:
-    pass
-
-
-def _Submission(
-    PageClass,
-    post_data=None,
-    *,
-    check_html=BOTS_CHECK_HTML,
-    must_fail=False,
-    error_fields=None,
-    timeout_happened=False,
-):
-
-    post_data = post_data or {}
-
-    # don't mutate the input
-    post_data = post_data.copy()
-
-    if check_html == BOTS_CHECK_HTML:
-        check_html = settings.BOTS_CHECK_HTML
-
-    if must_fail:
-        # must_fail needs to go in post_data rather than being a separate
-        # dict key, because CLI bots and browser bots need to work the same way.
-        # CLI bots can only talk to server through post data
-        post_data['must_fail'] = True
-
-    if error_fields:
-        post_data['error_fields'] = error_fields
-
-    if timeout_happened:
-        post_data[otree.constants.timeout_happened] = True
-        post_data[otree.constants.admin_secret_code] = ADMIN_SECRET_CODE
-
-    # easy way to check if it's a wait page, without any messy imports
-    if hasattr(PageClass, 'wait_for_all_groups'):
-        msg = (
-            "Your bot yielded '{}', which is a wait page. "
-            "You should delete this line, because bots handle wait pages "
-            "automatically.".format(PageClass)
-        )
-        raise AssertionError(msg)
-
-    # todo: this might not be necessary anymore now that we don't use redis
-    for key in post_data:
-        if isinstance(post_data[key], Currency):
-            # because must be json serializable for Huey
-            post_data[key] = str(decimal.Decimal(post_data[key]))
-
-    return {
-        'page_class': PageClass,
-        'page_class_dotted': get_dotted_name(PageClass),
-        'post_data': post_data,
-        'check_html': check_html,
-    }
-
-
-def Submission(
-    PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML, timeout_happened=False
-):
-    return _Submission(
-        PageClass, post_data, check_html=check_html, timeout_happened=timeout_happened
-    )
-
-
-def SubmissionMustFail(
-    PageClass, post_data=None, *, check_html=BOTS_CHECK_HTML, error_fields=None
-):
-    '''lets you intentionally submit with invalid
-    input to ensure it's correctly rejected'''
-
-    return _Submission(
-        PageClass,
-        post_data=post_data,
-        check_html=check_html,
-        must_fail=True,
-        error_fields=error_fields,
-    )
 
 
 def BareYieldToSubmission(yielded_value):
@@ -519,7 +519,7 @@ class PageHtmlChecker(HTMLParser, object):
 
 def is_wait_page(response):
     return (
-        response.get(otree.constants.wait_page_http_header)
+        response.headers.get(otree.constants.wait_page_http_header)
         == otree.constants.get_param_truth_value
     )
 

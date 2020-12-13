@@ -1,7 +1,7 @@
 # like common, but can import models
 from otree.models_concrete import PageTimeBatch
 import time
-import otree.channels.utils as channel_utils
+from otree.database import db, dbq
 
 TIME_SPENT_COLUMNS = [
     'session_code',
@@ -57,6 +57,6 @@ def make_page_completion_row(
 
 def write_page_completion_buffer():
     global page_completion_last_write
-    PageTimeBatch.objects.create(text=''.join(page_completion_buffer))
+    db.add(PageTimeBatch(text=''.join(page_completion_buffer)))
     page_completion_last_write = time.time()
     page_completion_buffer.clear()
