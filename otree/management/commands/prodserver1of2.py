@@ -1,46 +1,92 @@
-import os
-import re
-import daphne.cli
+import asyncio
 import logging
-from django.conf import settings
+import os
+from otree.common import dump_db
 from django.core.management.base import BaseCommand
-from django.core.management.base import CommandError
-import otree
+from otree_startup.asgi import application
+import sys
+import subprocess
 
 logger = logging.getLogger(__name__)
 
-naiveip_re = re.compile(
-    r"""^(?:
-(?P<addr>
-    (?P<ipv4>\d{1,3}(?:\.\d{1,3}){3}) |         # IPv4 address
-    (?P<ipv6>\[[a-fA-F0-9:]+\]) |               # IPv6 address
-    (?P<fqdn>[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*) # FQDN
-):)?(?P<port>\d+)$""",
-    re.X,
-)
 
-DEFAULT_PORT = "8000"
-DEFAULT_ADDR = '0.0.0.0'
+def run_asgi_server(addr, port, *, is_devserver=False):
+    run_hypercorn(addr, port, is_devserver=is_devserver)
 
 
-def get_addr_port(cli_addrport):
-    if cli_addrport:
-        m = re.match(naiveip_re, cli_addrport)
-        if m is None:
-            msg = (
-                '"%s" is not a valid port number '
-                'or address:port pair.' % cli_addrport
-            )
-            raise CommandError(msg)
-        addr, _, _, _, port = m.groups()
+def run_hypercorn(addr, port, *, is_devserver=False):
+
+    from hypercorn_otree import Config as HypercornConfig
+    from hypercorn_otree.asyncio import serve
+
+    config = HypercornConfig()
+    config.bind = f'{addr}:{port}'
+    if is_devserver:
+        # We want to hide "Running on 127.0.0.1 over https (CTRL + C to quit)")
+        # and show our localhost message instead.
+        # hypercorn doesn't seem to log anything important to .info anyway.
+        config.loglevel = 'warning'
     else:
-        addr = None
-        port = None
+        config.accesslog = '-'  # go to stdout
+        # for some reason access_log_format works with hypercorn 0.9.2 but not 0.11
+        config.access_log_format = '%(h)s %(S)s "%(r)s" %(s)s'
 
-    addr = addr or DEFAULT_ADDR
-    # Heroku uses PORT env var
-    port = port or os.environ.get('PORT') or DEFAULT_PORT
-    return addr, port
+    loop = asyncio.get_event_loop()
+
+    # i have alternated between using shutdown_trigger and sys.exit().
+    # originally when i was doing sys.exit() in the TerminateServer view,
+    # it kept printing out the SystemExit traceback but not actually terminating the server
+    # but now it works (not sure what changed).
+    # and shutdown_trigger sometimes caused the app to hang.
+    loop.run_until_complete(serve(application, config))
+
+
+def run_uvicorn(addr, port, *, is_devserver):
+    from uvicorn.main import Config, ChangeReload, Multiprocess, Server
+
+    class OTreeUvicornServer(Server):
+        def __init__(self, config, *, is_devserver):
+            self.is_devserver = is_devserver
+            super().__init__(config)
+
+        def handle_exit(self, sig, frame):
+            if self.is_devserver:
+                dump_db()
+            return super().handle_exit(sig, frame)
+
+    '''modified uvicorn.main.run to use our custom subclasses'''
+
+    config = Config(
+        'otree_startup.asgi:application',
+        host=addr,
+        port=int(port),
+        log_level='warning' if is_devserver else "info",
+        # i suspect it was defaulting to something else
+        workers=1,
+        # on heroku, need websockets to avoid H15, but locally want to avoid
+        # https://github.com/encode/uvicorn/issues/757
+        ws='wsproto',
+    )
+    server = OTreeUvicornServer(config=config, is_devserver=is_devserver)
+
+    assert config.workers == 1
+    if config.should_reload:
+        sock = config.bind_socket()
+        supervisor = ChangeReload(config, target=server.run, sockets=[sock])
+        supervisor.run()
+    else:
+        server.run()
+
+
+def get_addr_port(cli_addrport, is_devserver=False):
+    default_addr = '127.0.0.1' if is_devserver else '0.0.0.0'
+    default_port = os.environ.get('PORT') or 8000
+    if not cli_addrport:
+        return default_addr, default_port
+    parts = cli_addrport.split(':')
+    if len(parts) == 1:
+        return default_addr, parts[0]
+    return parts
 
 
 class Command(BaseCommand):
@@ -51,17 +97,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, addrport=None, verbosity=1, **kwargs):
         addr, port = get_addr_port(addrport)
-
-        # uvicorn isn't actually faster even with 3 processes
-        # if os.environ.get('USE_UVICORN'):
-        #     import uvicorn, sys
-        #     uvicorn.run(
-        #         'otree_startup.asgi:application',
-        #         host=addr,
-        #         port=port,
-        #         log_level="info",
-        #         workers=1 if sys.platform.startswith("win") else 3,
-        #     )
-        daphne.cli.CommandLineInterface().run(
-            ['-b', addr, '-p', port, 'otree_startup.asgi:application']
-        )
+        subprocess.Popen([sys.executable, 'manage.py', 'timeoutsubprocess', str(port)])
+        run_asgi_server(addr, port)

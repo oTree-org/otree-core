@@ -19,20 +19,6 @@ $(document).ready(function () {
 
     function initWebSocket() {
         socket = makeReconnectingWebSocket(socketUrl);
-
-        // <disconnected-alert>
-        var alertStyle = document.querySelector('#disconnected-alert').style;
-        socket.onopen = function (e) {
-            alertStyle.visibility = 'hidden';
-        };
-
-        socket.onclose = function (e) {
-            if (isDebug === 'True') {
-                alertStyle.visibility = 'visible';
-            }
-        };
-        // </disconnected-alert>
-
         socket.onmessage = function (e) {
             var data = JSON.parse(e.data);
 

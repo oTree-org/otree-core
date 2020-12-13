@@ -77,7 +77,6 @@ class _OTreeAsyncJsonWebsocketConsumer(AsyncJsonWebsocketConsumer):
     # so we need to make our own
     # https://github.com/django/channels/issues/1241
     async def connect(self):
-
         AUTH_LEVEL = settings.AUTH_LEVEL
 
         auth_required = (
@@ -91,7 +90,6 @@ class _OTreeAsyncJsonWebsocketConsumer(AsyncJsonWebsocketConsumer):
             msg = 'rejected un-authenticated access to websocket path {}'.format(
                 self.scope['path']
             )
-            # print(msg)
             logger.error(msg)
             # consider also self.accept() then send error message then self.close(code=1008)
             # this only affects otree core websockets.
@@ -115,6 +113,16 @@ class _OTreeAsyncJsonWebsocketConsumer(AsyncJsonWebsocketConsumer):
 
     async def post_receive_json(self, content, **kwargs):
         pass
+
+    # can't override send(), because send_json calls super().send.
+    # this override causes another error:
+    # TypeError: An asyncio.Future, a coroutine or an awaitable is required
+    # async def send_json(self, content, close=False):
+    #     # https://github.com/encode/uvicorn/issues/757
+    #     try:
+    #         await super().send_json(content, close)
+    #     except websockets.exceptions.ConnectionClosedError:
+    #         pass
 
 
 class BaseWaitPage(_OTreeAsyncJsonWebsocketConsumer):
@@ -175,12 +183,15 @@ class LiveConsumer(_OTreeAsyncJsonWebsocketConsumer):
     def clean_kwargs(self):
         return parse_querystring(self.scope['query_string'])
 
-    async def post_receive_json(self, content, participant_code, page_name, **kwargs):
+    def browser_bot_exists(self, participant_code):
         # for browser bots, block liveSend calls that get triggered on page load.
         # instead, everything must happen through call_live_method in a controlled way.
-        if Participant.objects.filter(
+        return Participant.objects.filter(
             code=participant_code, is_browser_bot=True
-        ).exists():
+        ).exists()
+
+    async def post_receive_json(self, content, participant_code, page_name, **kwargs):
+        if await database_sync_to_async(self.browser_bot_exists)(participant_code):
             return
         await database_sync_to_async(live_payload_function)(
             participant_code=participant_code, page_name=page_name, payload=content
@@ -232,8 +243,7 @@ class GroupByArrivalTime(_OTreeAsyncJsonWebsocketConsumer):
         ).exists()
 
     def mark_ready_status(self, is_ready):
-        models_module = get_models_module(self.app_name)
-        models_module.Player.objects.filter(id=self.player_id).update(
+        Participant.objects.filter(id=self.participant_id).update(
             _gbat_is_waiting=is_ready
         )
 
@@ -242,6 +252,7 @@ class GroupByArrivalTime(_OTreeAsyncJsonWebsocketConsumer):
     ):
         self.app_name = app_name
         self.player_id = player_id
+        self.participant_id = participant_id
         await database_sync_to_async(self.mark_ready_status)(True)
         if await database_sync_to_async(self.is_ready)(
             app_name=app_name,
@@ -308,25 +319,31 @@ class BaseCreateSession(_OTreeAsyncJsonWebsocketConsumer):
     async def create_session_then_send_start_link(
         self, use_browser_bots, **session_kwargs
     ):
-
         try:
-            session = await database_sync_to_async(otree.session.create_session)(
-                **session_kwargs
-            )
+            session = await database_sync_to_async(
+                otree.session.create_session_traceback_wrapper
+            )(**session_kwargs)
+
             if use_browser_bots:
                 await database_sync_to_async(otree.bots.browser.initialize_session)(
                     session_pk=session.pk, case_number=None
                 )
             # the "elif" is because if it uses browser bots, then exogenous data is mocked
             # as part of run_bots.
+            # 2020-07-07: this queries the DB, shouldn't i use database_sync_to_async?
+            # i don't get any error
             elif session.is_demo:
-                session.mock_exogenous_data()
+                await database_sync_to_async(session.mock_exogenous_data)()
         except Exception as e:
-            error_message = 'Failed to create session: "{}"'.format(e)
-            traceback_str = traceback.format_exc()
-            await self.send_response_to_browser(
-                dict(error=error_message, traceback=traceback_str)
+            if isinstance(e, otree.session.CreateSessionError):
+                e = e.__cause__
+            traceback_str = ''.join(
+                traceback.format_exception(type(e), e, e.__traceback__)
             )
+            await self.send_response_to_browser(
+                dict(error=f'Failed to create session: {e}', traceback=traceback_str)
+            )
+
             # i used to do "raise" here.
             # if I raise, then in non-demo sessions, the traceback is not displayed
             # as it should be.
@@ -337,6 +354,7 @@ class BaseCreateSession(_OTreeAsyncJsonWebsocketConsumer):
             # was it just so the traceback would go to the console or Sentry?
             # if we show it in the browser, there's no need to show it anywhere else, right?
             # maybe it was just a fallback in case the TB was truncated?
+            # or because the traceback should not be shown outside of DEBUG mode
         else:
             session_home_view = (
                 'MTurkCreateHIT' if session.is_mturk else 'SessionStartLinks'
@@ -465,6 +483,27 @@ class CreateSession(BaseCreateSession):
         )
 
     async def session_created(self, event):
+        await self.send_json(event)
+
+
+class SessionMonitor(_OTreeAsyncJsonWebsocketConsumer):
+    unrestricted_when = UNRESTRICTED_IN_DEMO_MODE
+
+    def group_name(self, code):
+        return channel_utils.session_monitor_group_name(code)
+
+    def get_initial_data(self, code):
+        participants = Participant.objects.filter(_session_code=code, visited=True)
+        return otree.export.get_rows_for_monitor(participants)
+
+    async def post_connect(self, code):
+        initial_data = await database_sync_to_async(self.get_initial_data)(code=code)
+        await self.send_json(dict(rows=initial_data))
+
+    async def monitor_table_delta(self, event):
+        await self.send_json(event)
+
+    async def update_notes(self, event):
         await self.send_json(event)
 
 
@@ -711,7 +750,7 @@ class DeleteSessions(_OTreeAsyncJsonWebsocketConsumer):
 class ExportData(_OTreeAsyncJsonWebsocketConsumer):
 
     '''
-    I load tested this locally with sqlite/redis and:
+    I load tested this locally with sqlite and:
     - large files up to 22MB (by putting long text in LongStringFields)
     - thousands of participants/rounds, 111000 rows and 20 cols in excel file.
     '''
@@ -725,43 +764,29 @@ class ExportData(_OTreeAsyncJsonWebsocketConsumer):
         don't need time_spent or chat yet, they are quick enough
         '''
 
-        file_extension = content['file_extension']
         app_name = content.get('app_name')
         is_custom = content.get('is_custom')
 
-        if file_extension == 'xlsx':
-            mime_type = (
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-            IOClass = io.BytesIO
-        else:
-            mime_type = 'text/csv'
-            IOClass = io.StringIO
-
         iso_date = datetime.date.today().isoformat()
-        with IOClass() as fp:
+        with io.StringIO() as fp:
+            # Excel requires BOM; otherwise non-english characters are garbled
+            if content.get('for_excel'):
+                fp.write('\ufeff')
             if app_name:
                 if is_custom:
                     fxn = custom_export_app
                 else:
                     fxn = export_app
-                await database_sync_to_async(fxn)(
-                    app_name, fp, file_extension=file_extension
-                )
+                await database_sync_to_async(fxn)(app_name, fp)
                 file_name_prefix = app_name
             else:
-                await database_sync_to_async(export_wide)(
-                    fp, file_extension=file_extension
-                )
+                await database_sync_to_async(export_wide)(fp)
                 file_name_prefix = 'all_apps_wide'
             data = fp.getvalue()
 
-        file_name = f'{file_name_prefix}_{iso_date}.{file_extension}'
+        file_name = f'{file_name_prefix}_{iso_date}.csv'
 
-        if file_extension == 'xlsx':
-            data = base64.b64encode(data).decode('utf-8')
-
-        content.update(file_name=file_name, data=data, mime_type=mime_type)
+        content.update(file_name=file_name, data=data, mime_type='text/csv')
         # this doesn't go through channel layer, so it is probably safer
         # in terms of sending large data
         await self.send_json(content)
@@ -771,9 +796,32 @@ class ExportData(_OTreeAsyncJsonWebsocketConsumer):
 
 
 class NoOp(WebsocketConsumer):
+    '''keep this in for a few months'''
+
     pass
 
 
 def parse_querystring(query_string) -> dict:
     '''it seems parse_qs omits keys with empty values'''
     return {k: v[0] for k, v in urllib.parse.parse_qs(query_string.decode()).items()}
+
+
+class LifespanApp:
+    '''
+    temporary shim for https://github.com/django/channels/issues/1216
+    needed so that hypercorn doesn't display an error.
+    this uses ASGI 2.0 format, not the newer 3.0 single callable
+    '''
+
+    def __init__(self, scope):
+        self.scope = scope
+
+    async def __call__(self, receive, send):
+        if self.scope['type'] == 'lifespan':
+            while True:
+                message = await receive()
+                if message['type'] == 'lifespan.startup':
+                    await send({'type': 'lifespan.startup.complete'})
+                elif message['type'] == 'lifespan.shutdown':
+                    await send({'type': 'lifespan.shutdown.complete'})
+                    return

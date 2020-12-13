@@ -1,5 +1,6 @@
 import logging
 import time
+import random
 
 from django.template import TemplateDoesNotExist
 from django.template.loader import select_template
@@ -13,11 +14,11 @@ from otree.common import (
     random_chars_10,
     get_admin_secret_code,
     get_app_label_from_name,
-    FieldTrackerWithVarsSupport,
 )
 from otree.db import models
 from otree.models_concrete import RoomToSession
-import otree.db.idmap
+from otree.db import idmap
+from otree.db.idmap import SessionIDMapMixin
 
 logger = logging.getLogger('otree')
 
@@ -25,13 +26,12 @@ logger = logging.getLogger('otree')
 ADMIN_SECRET_CODE = get_admin_secret_code()
 
 
-class Session(models.OTreeModel):
+class Session(models.OTreeModel, models.VarsMixin, SessionIDMapMixin):
     class Meta:
         app_label = "otree"
         # if i don't set this, it could be in an unpredictable order
         ordering = ['pk']
 
-    _ft = FieldTrackerWithVarsSupport()
     vars: dict = models._PickleField(default=dict)
     config: dict = models._PickleField(default=dict, null=True)
 
@@ -127,9 +127,11 @@ class Session(models.OTreeModel):
         if self.config.get('mock_exogenous_data'):
             import shared_out as user_utils
 
-            with otree.db.idmap.use_cache():
+            with idmap.use_cache():
                 user_utils.mock_exogenous_data(self)
-                otree.db.idmap.save_objects()
+
+                # need to save self because it's not in the idmap cache
+                self.save()
 
     def get_subsessions(self):
         lst = []
@@ -172,6 +174,7 @@ class Session(models.OTreeModel):
         return self.mturk_expiration and self.mturk_expiration < time.time()
 
     def mturk_is_active(self):
+
         return self.mturk_HITId and not self.mturk_is_expired()
 
     def advance_last_place_participants(self):

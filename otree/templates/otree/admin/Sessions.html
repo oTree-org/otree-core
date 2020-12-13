@@ -13,7 +13,8 @@
   {{ block.super }}
 
   <form action="{% url 'CreateSession' %}">
-    <div class="btn-group" style="float: right;">
+    <p>&nbsp;</p>{# this is just here for ergonomics so that after you click 'create session' you are in the same spot #}
+    <div class="btn-group">
       <button class="btn btn-primary">
         Create new session
       </button>
@@ -76,8 +77,9 @@
           <input name="checkAll" type="checkbox" value="">
         </th>
         <th>Code</th>
-        <th>Label</th>
+        <th>Size</th>
         <th>Config</th>
+        <th>Label</th>
         <th></th>
         </thead>
         <tbody>
@@ -86,31 +88,15 @@
             <td>
               <input name="session" type="checkbox" value="{{ s.code }}">
             </td>
-            <td><a href="{% url 'SessionDescription' s.code %}">{{ s.code }}</a></td>
-            <td>{{ s.label }}</td>
+            <td><a href="{% url 'SessionStartLinks' s.code %}">{{ s.code }}</a></td>
+            <td>{{ s.num_participants }}</td>
             <td>{{ s.config.name }}</td>
+            <td>{{ s.label }}</td>
             <td>
-              <a href="{% url 'SessionStartLinks' s.code %}" class="btn btn-sm" role="button">
-                <img src='{% static "glyphicons/link.png" %}'> Links
-              </a>
-              <a href="{% url 'SessionEditProperties' s.code %}" class="btn btn-sm" role="button">
-                <img src='{% static "glyphicons/pencil.png" %}'> Edit
-              </a>
-              <a href="{% url 'SessionMonitor' s.code %}" class="btn btn-sm" role="button">
-                <img src='{% static "glyphicons/eye-open.png" %}'> Monitor
-              </a>
-              <a href="{% url 'SessionData' s.code %}" class="btn btn-sm" role="button">
-                <img src='{% static "glyphicons/list-alt.png" %}'> Data
-              </a>
-              <a href="
-                  {% if s.is_mturk %}{% url 'MTurkSessionPayments' s.code %}{% else %}{% url 'SessionPayments' s.code %}{% endif %}"
-                 class="btn btn-sm" role="button">
-                <img src='{% static "glyphicons/usd.png" %}'> Payments
-              </a>
-              {% if s.is_mturk %}
+              {% if s.mturk_is_active %}
                 <a href="{% url 'MTurkCreateHIT' s.code %}"
-                   class="btn btn-sm {% if s.mturk_is_active %}btn-success{% endif %}" role="button">
-                  <img src='{% static "glyphicons/cloud.png" %}'> MTurk&nbsp;&nbsp;&nbsp;
+                   class="btn btn-sm btn-success" role="button">
+                MTurk Live
                 </a>
               {% endif %}
             </td>
@@ -162,7 +148,6 @@
           $('input[name=session]').change(function () {
               var actionButtons = $('.action-on-selected-sessions');
               var numCheckedSessions = $('input[name=session]:checked').length;
-              console.log(numCheckedSessions);
               if (numCheckedSessions === 0) {
                   actionButtons.attr('disabled', true);
               } else {
@@ -190,13 +175,12 @@
               e.preventDefault();
           });
 
-        socket.onmessage = function (message) {
-            location.reload();
-        }
+          socket.onmessage = function (message) {
+              location.reload();
+          }
 
       });
-
-
+  
   </script>
 
 {% endblock %}

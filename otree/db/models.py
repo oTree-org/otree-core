@@ -1,22 +1,23 @@
 import logging
 from decimal import Decimal
 
-from django.core import exceptions
 from django.db import models
+from django.db.models import QuerySet, Manager
+from django.db.models.base import ModelBase
+from django.db.models.manager import BaseManager
+from django.db.models.query import ModelIterable
+from django.forms import widgets as dj_widgets
 from django.utils.translation import ugettext_lazy
-from idmap.models import IdMapModelBase
 
 from otree.common import expand_choice_tuples, get_app_label_from_import_path
-from otree.constants import field_required_msg
 from otree.currency import Currency, RealWorldCurrency
-from .idmap import IdMapModel
-from django.forms import widgets as dj_widgets
-from .serializedfields import _PickleField  # noqa
+from . import idmap
+from .vars import _PickleField, VarsMixin  # noqa
 
 logger = logging.getLogger(__name__)
 
 
-class OTreeModelBase(IdMapModelBase):
+class OTreeModelBase(ModelBase):
     def __new__(mcs, name, bases, attrs):
         meta = attrs.get("Meta")
         module = attrs.get("__module__")
@@ -29,14 +30,9 @@ class OTreeModelBase(IdMapModelBase):
             app_label = get_app_label_from_import_path(module)
             meta.app_label = app_label
             meta.db_table = "{}_{}".format(app_label, name.lower())
-            # i think needs to be here even though it's set on base model,
-            # because meta is not inherited (but not tested this)
-            meta.use_strong_refs = True
             attrs["Meta"] = meta
 
         new_class = super().__new__(mcs, name, bases, attrs)
-        if not hasattr(new_class._meta, 'use_strong_refs'):
-            new_class._meta.use_strong_refs = False
 
         for f in new_class._meta.fields:
             if hasattr(new_class, f.name + '_choices'):
@@ -58,9 +54,58 @@ def make_get_display(field):
     return get_FIELD_display
 
 
-class OTreeModel(IdMapModel, metaclass=OTreeModelBase):
+class IdMapQuerySet(QuerySet):
+    model = None  # type: OTreeModel
+
+    def _idmap_clone(self):
+        '''TODO: what is the purpose of this?'''
+        clone = self._clone()
+        clone.__dict__.update({'_fields': None, '_iterable_class': ModelIterable})
+        return clone
+
+    def get(self, *args, **kwargs):
+        if not (idmap.is_active and self._iterable_class is ModelIterable):
+            return super().get(*args, **kwargs)
+        cache_kwargs = kwargs
+        if len(args) == 1:
+            # from django.db.models.query_utils import Q
+            [q] = args
+            cache_kwargs = dict(q.children)
+        is_unsupported_lookup = bool(
+            set(cache_kwargs.keys())
+            - idmap.SUPPORTED_CACHE_LOOKUP_FIELDS[self.model.__name__]
+        )
+
+        instance = None
+        if not is_unsupported_lookup:
+            instance = self.model.get_cached_instance(**cache_kwargs)
+
+        if instance is None:
+            clone = self._idmap_clone()
+            clone.query.clear_select_fields()
+            clone.query.default_cols = True
+            instance = super(IdMapQuerySet, clone).get(*args, **kwargs)
+            if is_unsupported_lookup:
+                # check if it already exists in cache
+                cached_instance = self.model.get_cached_instance(id=instance.id)
+                if cached_instance:
+                    instance = cached_instance
+            self.model.cache_if_necessary(instance)
+        return instance
+
+
+class IdMapManager(BaseManager.from_queryset(IdMapQuerySet), Manager):
+    pass
+
+
+class OTreeModel(models.Model, metaclass=OTreeModelBase):
+    ####### IDMAP STUFF #######
+    objects = IdMapManager()
+
     class Meta:
         abstract = True
+        base_manager_name = 'objects'
+        default_manager_name = 'objects'
 
     def __repr__(self):
         return '<{} pk={}>'.format(self.__class__.__name__, self.pk)
@@ -100,6 +145,9 @@ class OTreeModel(IdMapModel, metaclass=OTreeModelBase):
         # originally I had:
         # self._dir_attributes = set(dir(self))
         # but this tripled memory usage when creating a session
+        # we still need some kind of 'save the change' logic because we don't want .update() queries
+        # to be overwritten when the player model is saved.
+        self._update_fields = set()
         self._is_frozen = True
 
     def __setattr__(self, field_name: str, value):
@@ -149,17 +197,51 @@ class OTreeModel(IdMapModel, metaclass=OTreeModelBase):
                     self.__class__.__name__, field_name
                 )
                 raise AttributeError(msg)
-
+            if field_name in self._setattr_fields and field_name not in ['id']:
+                self._update_fields.add(field_name)
             self._super_setattr(field_name, value)
         else:
             # super() is a bit slower but only gets run during __init__
             super().__setattr__(field_name, value)
 
     def save(self, *args, **kwargs):
-        # Use with FieldTracker
-        if self.pk and hasattr(self, '_ft') and 'update_fields' not in kwargs:
-            kwargs['update_fields'] = [k for k in self._ft.changed()]
+        if not self._state.adding:
+            update_fields = self._update_fields
+            if hasattr(self, '_vars_changed') and self._vars_changed():
+                update_fields.add('vars')
+            kwargs.setdefault('update_fields', list(self._update_fields))
         super().save(*args, **kwargs)
+        # needed when we create a new group
+        self.cache_if_necessary()
+
+    def cache_if_necessary(self):
+        if idmap.is_active:
+            self.cache_instance(self)
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        '''i should figure out exactly when this is used. it apparently is required. maybe for FKs'''
+        instance_id = dict(zip(field_names, values))['id']
+        instance = cls.get_cached_instance(id=instance_id)
+        if not instance:
+            instance = super().from_db(db, field_names, values)
+            cls.cache_if_necessary(instance)
+        return instance
+
+    def refresh_from_db(self, using=None, fields=None):
+        self.flush_cached_instance(self)
+        super().refresh_from_db(using, fields)
+        self.cache_if_necessary()
+
+    @classmethod
+    def _get_cache_key(cls, id, **kwargs):
+        return id
+
+    @classmethod
+    def get_cached_instance(cls, **kwargs):
+        if 'pk' in kwargs:
+            kwargs['id'] = kwargs.pop('pk')
+        return cls._get_cached_instance(**kwargs)
 
 
 def fix_choices_arg(kwargs):
@@ -295,6 +377,7 @@ class RealWorldCurrencyField(BaseCurrencyField):
 class BooleanField(_OtreeModelFieldMixin, models.BooleanField):
     def __init__(self, **kwargs):
         # usually checkbox is not required, except for consent forms.
+        kwargs.setdefault('widget', dj_widgets.RadioSelect)
         widget = kwargs.get('widget')
         if isinstance(widget, dj_widgets.CheckboxInput):
             kwargs.setdefault('blank', True)
@@ -388,9 +471,8 @@ class LongStringField(_OtreeModelFieldMixin, models.TextField):
 
 
 MSG_DEPRECATED_FIELD = """
-{FieldName} does not exist in oTree. 
+{} does not exist in oTree. 
 You should either replace it with one of oTree's field types, or import it from Django directly.
-Note that Django model fields do not accept oTree-specific arguments like label= and widget=.
 """.replace(
     '\n', ' '
 )

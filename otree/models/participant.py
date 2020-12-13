@@ -2,22 +2,20 @@ from django.db import models as djmodels
 from django.urls import reverse
 
 import otree.common
-from otree.common import random_chars_8, FieldTrackerWithVarsSupport
+from otree.common import random_chars_8
 from otree.db import models
 from otree.lookup import url_i_should_be_on, get_page_lookup
+from otree.db.idmap import ParticipantIDMapMixin
 
-
-class Participant(models.OTreeModel):
+class Participant(models.OTreeModel, models.VarsMixin, ParticipantIDMapMixin):
     class Meta:
         ordering = ['pk']
         app_label = "otree"
         index_together = ['session', 'mturk_worker_id', 'mturk_assignment_id']
 
-    _ft = FieldTrackerWithVarsSupport()
-    vars: dict = models._PickleField(default=dict)
-
     session = djmodels.ForeignKey('otree.Session', on_delete=models.CASCADE)
 
+    vars: dict = models._PickleField(default=dict)
     label = models.CharField(
         max_length=50,
         null=True,
@@ -38,11 +36,11 @@ class Participant(models.OTreeModel):
 
     _index_in_pages = models.PositiveIntegerField(default=0, db_index=True)
 
-    def _id_in_session(self):
+    def _numeric_label(self):
         """the human-readable version."""
         return 'P{}'.format(self.id_in_session)
 
-    _waiting_for_ids = models.CharField(null=True, max_length=300)
+    _monitor_note = models.CharField(null=True, max_length=300)
 
     code = models.CharField(
         default=random_chars_8,
@@ -89,8 +87,14 @@ class Participant(models.OTreeModel):
     _timeout_expiration_time = models.FloatField()
     _timeout_page_index = models.PositiveIntegerField()
 
+    _gbat_is_waiting = models.BooleanField(default=False)
+    _gbat_page_index = models.PositiveIntegerField()
+    _gbat_grouped = models.BooleanField()
+
     def _current_page(self):
-        return '{}/{} pages'.format(self._index_in_pages, self._max_page_index)
+        # don't put 'pages' because that causes wrapping which takes more space
+        # since it's longer than the header
+        return f'{self._index_in_pages}/{self._max_page_index}'
 
     # because variables used in templates can't start with an underscore
     def current_page_(self):
@@ -107,16 +111,6 @@ class Participant(models.OTreeModel):
             )
             lst.extend(list(players))
         return lst
-
-    def status(self):
-        # TODO: status could be a field that gets set imperatively
-        if not self.visited:
-            return 'Not started'
-        if self.is_on_wait_page:
-            if self._waiting_for_ids:
-                return 'Waiting for {}'.format(self._waiting_for_ids)
-            return 'Waiting'
-        return 'Playing'
 
     def _url_i_should_be_on(self):
         if not self.visited:

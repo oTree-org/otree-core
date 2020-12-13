@@ -48,6 +48,13 @@ def room_participant_path(**kwargs):
     return '/wait_for_session_in_room/?' + urlencode(kwargs)
 
 
+def session_monitor_group_name(session_code):
+    return f'session-monitor-{session_code}'
+
+def session_monitor_path(session_code):
+    return f'/session_monitor/{session_code}/'
+
+
 def room_admin_group_name(room_name):
     return f'room-admin-{room_name}'
 

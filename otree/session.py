@@ -1,5 +1,3 @@
-import json
-from collections import OrderedDict
 from collections import defaultdict
 from decimal import Decimal
 from functools import reduce
@@ -7,9 +5,7 @@ from typing import List, Dict
 from django.conf import settings
 from django.db import transaction
 
-import otree.bots.browser
-import otree.common
-import otree.db.idmap
+from otree.db import idmap
 from otree import common
 from otree.common import (
     get_models_module,
@@ -19,6 +15,7 @@ from otree.common import (
 )
 from otree.currency import RealWorldCurrency
 from otree.models import Participant, Session
+from otree.constants import BaseConstants, get_roles, get_role
 
 
 def gcd(a, b):
@@ -313,7 +310,7 @@ def create_session(
 
             views_module = common.get_pages_module(app_name)
             models_module = get_models_module(app_name)
-            Constants = models_module.Constants
+            Constants: BaseConstants = models_module.Constants
             num_subsessions += Constants.num_rounds
 
             round_numbers = list(range(1, Constants.num_rounds + 1))
@@ -372,6 +369,7 @@ def create_session(
             players_to_create = []
 
             for subsession in subsessions:
+                roles = get_roles(Constants)
                 subsession_id = subsession['id']
                 round_number = subsession['round_number']
                 participant_index = 0
@@ -386,6 +384,7 @@ def create_session(
                                 participant_id=participant['id'],
                                 group_id=group_id,
                                 id_in_group=id_in_group,
+                                _role=get_role(roles, id_in_group),
                             )
                         )
                         participant_index += 1
@@ -395,15 +394,13 @@ def create_session(
 
         session.participant_set.update(_max_page_index=num_pages)
 
-        with otree.db.idmap.use_cache():
-            # possible optimization: check if
-            # Subsession.creating_session == BaseSubsession.creating_session
-            # if so, skip it.
-            # but this will only help people who didn't override creating_session
-            # in that case, the session usually creates quickly, anyway.
+        with idmap.use_cache():
+            # make creating_session use the current session,
+            # so that session.save() below doesn't overwrite everything
+            # set earlier
+            Session.cache_instance(session)
             for subsession in session.get_subsessions():
                 subsession.creating_session()
-            otree.db.idmap.save_objects()
 
         # 2017-09-27: moving this inside the transaction
         session._set_admin_report_app_names()
@@ -419,6 +416,18 @@ def create_session(
         room.set_session(session)
 
     return session
+
+
+class CreateSessionError(Exception):
+    pass
+
+
+def create_session_traceback_wrapper(**kwargs):
+    '''so we can give smaller tracebacks on 'creating session' page'''
+    try:
+        return create_session(**kwargs)
+    except Exception as exc:
+        raise CreateSessionError from exc
 
 
 # 2020-06-11: is this needed?

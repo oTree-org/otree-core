@@ -136,6 +136,12 @@ def model_classes(helper: AppCheckHelper, **kwargs):
             "because it is already defined on BasePlayer."
         )
         helper.add_error(msg, numeric_id=114)
+    if any(f.name == 'role' for f in Player._meta.fields):
+        msg = (
+            'You must remove the field "role" from Player, '
+            "because it is already defined on BasePlayer."
+        )
+        helper.add_error(msg, numeric_id=114)
 
     for Model in [Player, Group, Subsession]:
         for attr_name in dir(Model):

@@ -15,8 +15,8 @@ class Room:
         )
         if use_secure_urls and not participant_label_file:
             msg = (
-                'Room "{}": you must either set "participant_label_file", '
-                'or set "use_secure_urls": False'.format(name)
+                'Room "{}": you must either set participant_label_file, '
+                'or set use_secure_urls=False'.format(name)
             )
             raise ValueError(msg)
         self.participant_label_file = participant_label_file
@@ -47,15 +47,9 @@ class Room:
         return bool(self.participant_label_file)
 
     def get_participant_labels(self):
-        lines = (
-            Path(self.participant_label_file).read_text(encoding='utf8').splitlines()
-        )
-        labels = []
-        for line in lines:
-            label = line.strip()
-            if label:
-                validate_alphanumeric(label, identifier_description='participant label')
-                labels.append(label)
+        labels = Path(self.participant_label_file).read_text(encoding='utf8').split()
+        for label in labels:
+            validate_alphanumeric(label, identifier_description='participant label')
         # eliminate duplicates
         return list(dict.fromkeys(labels))
 

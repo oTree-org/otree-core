@@ -1,20 +1,21 @@
 import collections
+from typing import List
 import csv
 import logging
 import numbers
 from collections import OrderedDict
+from collections import defaultdict
 from decimal import Decimal
-from importlib import import_module
 
-import xlsxwriter
 from django.db.models import BinaryField, ForeignKey
 from django.db.models import Max
 from django.utils.encoding import force_text
+from django.utils.html import escape
 
 import otree
-from otree.currency import Currency, RealWorldCurrency
 from otree.common import get_models_module
-from otree.common2 import TIME_SPENT_COLUMNS
+from otree.common2 import TIME_SPENT_COLUMNS, write_page_completion_buffer
+from otree.currency import Currency, RealWorldCurrency
 from otree.models.group import BaseGroup
 from otree.models.participant import Participant
 from otree.models.player import BasePlayer
@@ -43,11 +44,17 @@ def inspect_field_names(Model):
     return field_names
 
 
-def get_field_names_for_live_update(Model):
-    return _get_table_fields(Model, for_export=False)
+def get_fields_for_data_tab(app_name):
+    models_module = get_models_module(app_name)
+    for Model in [models_module.Player, models_module.Group, models_module.Subsession]:
+        yield _get_table_fields(Model, for_export=False)
 
 
-def get_field_names_for_csv(Model):
+def get_fields_for_monitor():
+    return _get_table_fields(Participant, for_export=False)
+
+
+def get_fields_for_csv(Model):
     return _get_table_fields(Model, for_export=True)
 
 
@@ -87,14 +94,14 @@ def _get_table_fields(Model, for_export=False):
             ]
         else:
             return [
-                '_id_in_session',
+                '_numeric_label',
                 'code',
                 'label',
                 '_current_page',
                 '_current_app_name',
                 '_round_number',
                 '_current_page_name',
-                'status',
+                '_monitor_note',
                 '_last_page_timestamp',
             ]
 
@@ -106,10 +113,10 @@ def _get_table_fields(Model, for_export=False):
             and f not in ['id', 'group_id', 'subsession_id']
         ]
 
+        fields = ['id_in_group', 'role', 'payoff'] + subclass_fields
         if for_export:
-            return ['id_in_group'] + subclass_fields + ['payoff']
-        else:
-            return ['id_in_group', 'role'] + subclass_fields + ['payoff']
+            return fields
+        return ['group'] + fields
 
     if issubclass(Model, BaseGroup):
         subclass_fields = [
@@ -128,7 +135,9 @@ def _get_table_fields(Model, for_export=False):
             if f not in inspect_field_names(BaseGroup) and f != 'id'
         ]
 
-        return ['round_number'] + subclass_fields
+        if for_export:
+            return ['round_number'] + subclass_fields
+        return subclass_fields
 
 
 def sanitize_for_csv(value) -> str:
@@ -149,19 +158,48 @@ def sanitize_for_csv(value) -> str:
     return value.replace('\n', ' ').replace('\r', ' ')
 
 
+def tweak_player_values_dict(player: dict, group_id_in_subsession=None):
+    '''because these are actually properties, the DB field starts with _.'''
+    player['payoff'] = player['_payoff']
+    player['role'] = player['_role']
+    if group_id_in_subsession:
+        player['group'] = group_id_in_subsession
+
+
 def sanitize_for_live_update(value):
-    # force_text is necessary e.g. for CountryField, which is otherwise
-    # not Json serializable
-    value = str(sanitize_for_csv(value))
+    value = escape(sanitize_for_csv(value))
     MAX_LENGTH = 30
     if len(value) > MAX_LENGTH:
-        return value[:MAX_LENGTH] + '...'
+        return value[:MAX_LENGTH] + '…'
     return value
 
 
 def get_payoff_plus_participation_fee(session, participant_values_dict):
     payoff = Currency(participant_values_dict['payoff'])
     return session._get_payoff_plus_participation_fee(payoff)
+
+
+def _get_best_app_order(sessions):
+    # heuristic to get the most relevant order of apps
+    app_sequences = collections.Counter()
+    for session in sessions:
+        # we loaded the config earlier
+        app_sequence = session.config['app_sequence']
+        app_sequences[tuple(app_sequence)] += session.num_participants
+    most_common_app_sequence = app_sequences.most_common(1)[0][0]
+
+    # can't use settings.INSTALLED_OTREE_APPS, because maybe the app
+    # was removed from SESSION_CONFIGS.
+    app_names_with_data = set()
+    for session in sessions:
+        for app_name in session.config['app_sequence']:
+            app_names_with_data.add(app_name)
+
+    apps_not_in_popular_sequence = [
+        app for app in app_names_with_data if app not in most_common_app_sequence
+    ]
+
+    return list(most_common_app_sequence) + apps_not_in_popular_sequence
 
 
 def get_rows_for_wide_csv(session_code):
@@ -184,47 +222,20 @@ def get_rows_for_wide_csv(session_code):
         # 1 empty row
         return [[]]
 
-    session_fields = get_field_names_for_csv(Session)
-    participant_fields = get_field_names_for_csv(Participant)
-    participant_fields.append('payoff_plus_participation_fee')
-    header_row = ['participant.{}'.format(fname) for fname in participant_fields]
-    header_row += ['session.{}'.format(fname) for fname in session_fields]
-    header_row += ['session.config.{}'.format(fname) for fname in session_config_fields]
+    session_fields = get_fields_for_csv(Session)
+    participant_fields = get_fields_for_csv(Participant)
+    header_row = [f'participant.{fname}' for fname in participant_fields]
+    header_row += [f'session.{fname}' for fname in session_fields]
+    header_row += [f'session.config.{fname}' for fname in session_config_fields]
     rows = [header_row]
     for participant in participants:
         session = session_cache[participant['session_id']]
-        participant[
-            'payoff_plus_participation_fee'
-        ] = get_payoff_plus_participation_fee(session, participant)
-        row = [sanitize_for_csv(participant[fname]) for fname in participant_fields]
-
-        row += [sanitize_for_csv(getattr(session, fname)) for fname in session_fields]
-        row += [
-            sanitize_for_csv(session.config.get(fname))
-            for fname in session_config_fields
-        ]
+        row = [participant[fname] for fname in participant_fields]
+        row += [getattr(session, fname) for fname in session_fields]
+        row += [session.config.get(fname) for fname in session_config_fields]
         rows.append(row)
 
-    # heuristic to get the most relevant order of apps
-    app_sequences = collections.Counter()
-    for session in sessions:
-        # we loaded the config earlier
-        app_sequence = session.config['app_sequence']
-        app_sequences[tuple(app_sequence)] += session.num_participants
-    most_common_app_sequence = app_sequences.most_common(1)[0][0]
-
-    # can't use settings.INSTALLED_OTREE_APPS, because maybe the app
-    # was removed from SESSION_CONFIGS.
-    app_names_with_data = set()
-    for session in sessions:
-        for app_name in session.config['app_sequence']:
-            app_names_with_data.add(app_name)
-
-    apps_not_in_popular_sequence = [
-        app for app in app_names_with_data if app not in most_common_app_sequence
-    ]
-
-    order_of_apps = list(most_common_app_sequence) + apps_not_in_popular_sequence
+    order_of_apps = _get_best_app_order(sessions)
 
     rounds_per_app = OrderedDict()
     for app_name in order_of_apps:
@@ -248,10 +259,11 @@ def get_rows_for_wide_csv(session_code):
             new_rows = get_rows_for_wide_csv_round(app_name, round_number, sessions)
             for i in range(len(rows)):
                 rows[i].extend(new_rows[i])
-    return rows
+
+    return [[sanitize_for_csv(v) for v in row] for row in rows]
 
 
-def get_rows_for_wide_csv_round(app_name, round_number, sessions):
+def get_rows_for_wide_csv_round(app_name, round_number, sessions: List[Session]):
 
     models_module = otree.common.get_models_module(app_name)
     Player = models_module.Player
@@ -259,72 +271,60 @@ def get_rows_for_wide_csv_round(app_name, round_number, sessions):
     Subsession = models_module.Subsession
 
     rows = []
-
-    group_cache = {row['id']: row for row in Group.objects.values()}
-
-    columns_for_models = {
-        Model.__name__.lower(): get_field_names_for_csv(Model)
-        for Model in [Player, Group, Subsession]
+    group_cache = {
+        row['id']: row
+        for row in Group.objects.filter(round_number=round_number).values()
     }
 
-    model_order = ['player', 'group', 'subsession']
+    pfields = get_fields_for_csv(Player)
+    gfields = get_fields_for_csv(Group)
+    sfields = get_fields_for_csv(Subsession)
 
     header_row = []
-    for model_name in model_order:
-        for colname in columns_for_models[model_name]:
-            header_row.append(
-                '{}.{}.{}.{}'.format(app_name, round_number, model_name, colname)
-            )
-
+    for model_name, fields in [
+        ('player', pfields),
+        ('group', gfields),
+        ('subsession', sfields),
+    ]:
+        for fname in fields:
+            header_row.append(f'{app_name}.{round_number}.{model_name}.{fname}')
     rows.append(header_row)
     empty_row = ['' for _ in range(len(header_row))]
 
     for session in sessions:
-        subsession = Subsession.objects.filter(
+        subsessions = Subsession.objects.filter(
             session_id=session.id, round_number=round_number
         ).values()
-        if not subsession:
+        if not subsessions:
             subsession_rows = [empty_row for _ in range(session.num_participants)]
         else:
-            subsession = subsession[0]
-            subsession_id = subsession['id']
+            [subsession] = subsessions
             players = (
-                Player.objects.filter(subsession_id=subsession_id)
+                Player.objects.filter(subsession_id=subsession['id'])
                 .order_by('id')
                 .values()
             )
 
             if len(players) != session.num_participants:
                 msg = (
-                    "Session {} has {} participants, but round {} of app '{}' "
-                    "has {} players. The number of players in the subsession "
+                    f"Session {session.code} has {session.num_participants} participants, "
+                    f"but round {round_number} of app '{app_name}' "
+                    f"has {len(players)} players. The number of players in the subsession "
                     "should always match the number of players in the session. "
                     "Reset the database and examine your code."
-                ).format(
-                    session.code,
-                    session.num_participants,
-                    round_number,
-                    app_name,
-                    len(players),
                 )
                 raise AssertionError(msg)
 
             subsession_rows = []
 
             for player in players:
-                # because player.payoff is a property
-                player['payoff'] = player['_payoff']
-                row = []
-                all_objects = {
-                    'player': player,
-                    'group': group_cache[player['group_id']],
-                    'subsession': subsession,
-                }
+                group = group_cache[player['group_id']]
+                tweak_player_values_dict(player)
 
-                for model_name in model_order:
-                    for colname in columns_for_models[model_name]:
-                        value = all_objects[model_name][colname]
-                        row.append(sanitize_for_csv(value))
+                row = [player[fname] for fname in pfields]
+                row += [group[fname] for fname in gfields]
+                row += [subsession[fname] for fname in sfields]
+
                 subsession_rows.append(row)
         rows.extend(subsession_rows)
     return rows
@@ -339,7 +339,7 @@ def get_rows_for_csv(app_name):
     Subsession = models_module.Subsession
 
     columns_for_models = {
-        Model.__name__.lower(): get_field_names_for_csv(Model)
+        Model.__name__.lower(): get_fields_for_csv(Model)
         for Model in [Player, Group, Subsession, Participant, Session]
     }
 
@@ -348,118 +348,116 @@ def get_rows_for_csv(app_name):
 
     players = Player.objects.order_by('id').values()
 
-    value_dicts = {
-        'group': {row['id']: row for row in Group.objects.values()},
-        'subsession': {row['id']: row for row in Subsession.objects.values()},
-        'participant': {
+    value_dicts = dict(
+        group={row['id']: row for row in Group.objects.values()},
+        subsession={row['id']: row for row in Subsession.objects.values()},
+        participant={
             row['id']: row
             for row in Participant.objects.filter(id__in=participant_ids).values()
         },
-        'session': {
+        session={
             row['id']: row
             for row in Session.objects.filter(id__in=session_ids).values()
         },
-    }
+    )
 
     model_order = ['participant', 'player', 'group', 'subsession', 'session']
 
     # header row
-    rows = [
-        [
-            '{}.{}'.format(model_name, colname)
-            for model_name in model_order
-            for colname in columns_for_models[model_name]
-        ]
-    ]
+    rows = [[f'{m}.{col}' for m in model_order for col in columns_for_models[m]]]
 
     for player in players:
-        # because player.payoff is a property
-        player['payoff'] = player['_payoff']
+        tweak_player_values_dict(player)
         row = []
-        all_objects = {'player': player}
-        for model_name in value_dicts:
-            obj_id = player['{}_id'.format(model_name)]
-            all_objects[model_name] = value_dicts[model_name][obj_id]
 
         for model_name in model_order:
+            if model_name == 'player':
+                obj = player
+            else:
+                obj = value_dicts[model_name][player[f'{model_name}_id']]
             for colname in columns_for_models[model_name]:
-                value = all_objects[model_name][colname]
-                row.append(sanitize_for_csv(value))
+                row.append(sanitize_for_csv(obj[colname]))
         rows.append(row)
 
     return rows
 
 
-def get_rows_for_live_update(subsession: BaseSubsession):
+def get_rows_for_monitor(participants) -> list:
+    field_names = get_fields_for_monitor()
+    callable_fields = {'_numeric_label', '_current_page'}
+    rows = []
+    for participant in participants:
+        row = {}
+        for field_name in field_names:
+            value = getattr(participant, field_name)
+            if field_name in callable_fields:
+                value = value()
+            row[field_name] = value
+        row['id_in_session'] = participant.id_in_session
+        rows.append(row)
+    return rows
 
-    models_module = import_module(subsession.__module__)
+
+def get_rows_for_data_tab(session):
+    for app_name in session.config['app_sequence']:
+        yield from get_rows_for_data_tab_app(session, app_name)
+
+
+def get_rows_for_data_tab_app(session, app_name):
+    models_module = get_models_module(app_name)
     Player = models_module.Player
     Group = models_module.Group
     Subsession = models_module.Subsession
 
-    columns_for_models = {
-        Model.__name__.lower(): get_field_names_for_live_update(Model)
-        for Model in [Player, Group, Subsession]
+    pfields, gfields, sfields = get_fields_for_data_tab(app_name)
+
+    players = Player.objects.filter(session=session).order_by('pk').values()
+
+    players_by_round = defaultdict(list)
+    for p in players:
+        players_by_round[p['round_number']].append(p)
+
+    groups = {g['id']: g for g in Group.objects.filter(session=session).values()}
+    subsessions = {
+        s['id']: s for s in Subsession.objects.filter(session=session).values()
     }
 
-    # we had a strange result on one person's heroku instance
-    # where Meta.ordering on the Player was being ingnored
-    # when you use a filter. So we add one explicitly.
-    players = (
-        Player.objects.filter(subsession_id=subsession.pk)
-        .select_related('group', 'subsession')
-        .order_by('pk')
-    )
-
-    model_order = ['player', 'group', 'subsession']
-
-    rows = []
-    for player in players:
-        row = []
-        for model_name in model_order:
-            if model_name == 'player':
-                model_instance = player
-            else:
-                model_instance = getattr(player, model_name)
-
-            for colname in columns_for_models[model_name]:
-
-                attr = getattr(model_instance, colname, '')
-                if callable(attr):
-                    try:
-                        attr = attr()
-                    except Exception:
-                        attr = ""
-                row.append(sanitize_for_live_update(attr))
-        rows.append(row)
-
-    return columns_for_models, rows
+    for round_number in range(1, len(subsessions) + 1):
+        table = []
+        for p in players_by_round[round_number]:
+            g = groups[p['group_id']]
+            tweak_player_values_dict(p, g['id_in_subsession'])
+            s = subsessions[p['subsession_id']]
+            row = (
+                [p[fname] for fname in pfields]
+                + [g[fname] for fname in gfields]
+                + [s[fname] for fname in sfields]
+            )
+            table.append([sanitize_for_csv(v) for v in row])
+        yield table
 
 
-def export_wide(fp, file_extension, session_code=None):
+def export_wide(fp, session_code=None):
     rows = get_rows_for_wide_csv(session_code=session_code)
-    _export_csv_or_xlsx(fp, rows, file_extension)
+    _export_csv(fp, rows)
 
 
-def export_app(app_name, fp, file_extension):
+def export_app(app_name, fp):
     rows = get_rows_for_csv(app_name)
-    _export_csv_or_xlsx(fp, rows, file_extension)
+    _export_csv(fp, rows)
 
 
-def custom_export_app(app_name, fp, file_extension):
+def custom_export_app(app_name, fp):
     models_module = get_models_module(app_name)
     qs = models_module.Player.objects.select_related(
         'participant', 'group', 'subsession', 'session'
     ).order_by('id')
     rows = models_module.custom_export(qs)
-    _export_csv_or_xlsx(fp, rows, file_extension)
-
-
-def _export_csv_or_xlsx(fp, rows, file_extension):
-    if file_extension == 'xlsx':
-        _export_xlsx(fp, rows)
-    else:
-        _export_csv(fp, rows)
+    # convert to strings so we don't get errors especially for Excel
+    str_rows = []
+    for row in rows:
+        str_rows.append([str(ele) for ele in row])
+    _export_csv(fp, str_rows)
 
 
 def _export_csv(fp, rows):
@@ -467,20 +465,8 @@ def _export_csv(fp, rows):
     writer.writerows(rows)
 
 
-def _export_xlsx(fp, rows):
-    '''
-    CSV often does not open properly in Excel, e.g. unicode
-    '''
-    workbook = xlsxwriter.Workbook(fp, {'in_memory': True})
-    worksheet = workbook.add_worksheet()
-
-    for row_num, row in enumerate(rows):
-        for col_num, cell_value in enumerate(row):
-            worksheet.write(row_num, col_num, cell_value)
-    workbook.close()
-
-
 def export_page_times(fp):
+    write_page_completion_buffer()
     batches = PageTimeBatch.objects.order_by('id').values_list('text', flat=True)
     fp.write(','.join(TIME_SPENT_COLUMNS) + '\n')
     for batch in batches:

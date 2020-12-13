@@ -10,14 +10,11 @@ def _thread_sensitive_init(self, func, thread_sensitive=True):
 
 SyncToAsync.__init__ = _thread_sensitive_init
 
-import json
 import logging
-import django.core.management
 import django.conf
 import os
 import sys
 from sys import argv
-from collections import OrderedDict, defaultdict
 from pathlib import Path
 from typing import Optional
 
@@ -26,16 +23,15 @@ from django.conf import settings as django_settings
 from importlib import import_module
 from django.core.management import get_commands, load_command_class
 import django
-from django.apps import apps
 from django.core.management.base import BaseCommand
-from django.utils import autoreload
+
 
 # "from .settings import ..." actually imports the whole settings module
 # confused me, it was overwriting django.conf.settings above
 # https://docs.python.org/3/reference/import.html#submodules
 from otree_startup.settings import augment_settings
 from otree import __version__
-from . import zipserver
+
 
 # REMEMBER TO ALSO UPDATE THE PROJECT TEMPLATE
 from otree_startup.settings import get_default_settings
@@ -65,6 +61,15 @@ zip
 zipserver
 '''
 
+COMMAND_ALIASES = dict(
+    test='bots',
+    runprodserver='prodserver',
+    webandworkers='prodserver1of2',
+    runprodserver1of2='prodserver1of2',
+    runprodserver2of2='prodserver2of2',
+    timeoutworker='prodserver2of2',
+)
+
 
 def execute_from_command_line(*args, **kwargs):
     '''
@@ -93,10 +98,20 @@ def execute_from_command_line(*args, **kwargs):
         # default command
         argv.append('help')
 
-    subcommand = argv[1]
+    subcmd = argv[1]
+    subcmd = COMMAND_ALIASES.get(subcmd, subcmd)
 
-    if subcommand in ['runzip', 'zipserver']:
+    if subcmd == 'zipserver':
+        from . import zipserver  # expensive import
+
         zipserver.main(argv[2:])
+        # better to return than sys.exit because testing is complicated
+        # with sys.exit -- if you mock it, then the function keeps executing.
+        return
+    if subcmd == 'devserver':
+        from . import devserver  # expensive import
+
+        devserver.main(argv[2:])
         # better to return than sys.exit because testing is complicated
         # with sys.exit -- if you mock it, then the function keeps executing.
         return
@@ -118,24 +133,18 @@ def execute_from_command_line(*args, **kwargs):
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
     DJANGO_SETTINGS_MODULE = os.environ['DJANGO_SETTINGS_MODULE']
 
-    if subcommand in ['help', '--help', '-h'] and len(argv) == 2:
+    if subcmd in ['help', '--help', '-h'] and len(argv) == 2:
         sys.stdout.write(MAIN_HELP_TEXT)
         return
 
-    # this env var is necessary because if the botworker submits a wait page,
-    # it needs to broadcast to redis channel layer, not in-memory.
-    # this caused an obscure bug on 2019-09-21.
-    # prodserver1of2, 2of2, etc
-    # we now require REDIS_URL to be defined even if using default localhost:6379
-    # that is to avoid piling up stuff in redis if it's not being used.
-    if (
-        'prodserver' in subcommand
-        or 'webandworkers' in subcommand
-        or 'timeoutworker' in subcommand
-    ) and os.environ.get('REDIS_URL'):
-        os.environ['OTREE_USE_REDIS'] = '1'
+    # need to set env var rather than setting otree.common.USE_TIMEOUT_WORKER because
+    # that module cannot be loaded yet.
+    # we no longer rely on redis, so eventually we should use the env var USE_TIMEOUT_WORKER.
+    # but for now keep it while test out whether we can skip using redis
+    if subcmd in ['prodserver', 'prodserver1of2']:
+        os.environ['USE_TIMEOUT_WORKER'] = '1'
 
-    if subcommand in [
+    if subcmd in [
         'startproject',
         'version',
         '--version',
@@ -158,53 +167,20 @@ def execute_from_command_line(*args, **kwargs):
                 logger.warning(msg)
                 return
             raise
-        warning = check_update_needed(
-            Path('.').resolve().joinpath('requirements_base.txt')
-        )
+        warning = check_update_needed(Path('.').resolve().joinpath('requirements.txt'))
         if warning:
             logger.warning(warning)
 
-    is_devserver = subcommand == 'devserver'
+    do_django_setup()
 
-    if is_devserver:
-        # apparently required by restart_with_reloader
-        # otherwise, i get:
-        # python.exe: can't open file 'C:\oTree\venv\Scripts\otree':
-        # [Errno 2] No such file or directory
-
-        # this doesn't work if you start runserver from another dir
-        # like python my_project/manage.py runserver. but that doesn't seem
-        # high-priority now.
-        sys.argv = ['manage.py'] + argv[1:]
-
-        # previous solution here was using subprocess.Popen,
-        # but changing it to modifying sys.argv changed average
-        # startup time on my machine from 2.7s to 2.3s.
-
-    # Start the auto-reloading dev server even if the code is broken.
-    # The hardcoded condition is a code smell but we can't rely on a
-    # flag on the command class because we haven't located it yet.
-
-    if is_devserver and '--noreload' not in argv:
-        try:
-            autoreload.check_errors(do_django_setup)()
-        except Exception:
-            # The exception will be raised later in the child process
-            # started by the autoreloader. Pretend it didn't happen by
-            # loading an empty list of applications.
-            apps.all_models = defaultdict(OrderedDict)
-            apps.app_configs = OrderedDict()
-            apps.apps_ready = apps.models_ready = apps.ready = True
-    else:
-        do_django_setup()
-
-    if subcommand == 'help' and len(argv) >= 3:
-        command_to_explain = argv[2]
-        fetch_command(command_to_explain).print_help('otree', command_to_explain)
-    elif subcommand in ("version", "--version"):
+    if subcmd == 'help' and len(argv) >= 3:
+        about_cmd = argv[2]
+        about_cmd = COMMAND_ALIASES.get(about_cmd, about_cmd)
+        fetch_command(about_cmd).print_help('otree', about_cmd)
+    elif subcmd in ("version", "--version"):
         sys.stdout.write(__version__ + '\n')
     else:
-        fetch_command(subcommand).run_from_argv(argv)
+        fetch_command(subcmd).run_from_argv(argv)
 
 
 def configure_settings(DJANGO_SETTINGS_MODULE: str = 'settings'):
@@ -266,36 +242,31 @@ def fetch_command(subcommand: str) -> BaseCommand:
     return klass
 
 
-def check_update_needed(requirements_path: Path) -> Optional[str]:
-    try:
-        import pkg_resources as pkg
-    except ModuleNotFoundError:
+def split_dotted_version(version):
+    return [int(n) for n in version.split('.')]
+
+
+def check_update_needed(
+    requirements_path: Path, current_version=__version__
+) -> Optional[str]:
+    '''rewrote this without pkg_resources since that takes 0.4 seconds just to import'''
+
+    if not requirements_path.exists():
         return
-    try:
-        # ignore all weird things like "-r foo.txt"
-        req_lines = [
-            r
-            for r in requirements_path.read_text('utf8').split('\n')
-            if r.strip().startswith('otree')
-        ]
-    except FileNotFoundError:
-        return
-    reqs = pkg.parse_requirements(req_lines)
-    for req in reqs:
-        if req.project_name == 'otree':
-            try:
-                pkg.require(str(req))
-            except pkg.DistributionNotFound:
-                # if you require otree[mturk], then the mturk packages
-                # will be missing and you get:
-                # The 's3transfer==0.1.10' distribution was not found and is required by otree
-                # which is very confusing.
-                # all we care about is otree.
-                pass
-            except pkg.VersionConflict as exc:
-                # can't say to install requirements_base.txt because if they are using zipserver,
-                # that file doesn't exist.
-                return f'{exc.report()}. Enter: pip3 install "{exc.req}"'
+
+    for line in requirements_path.read_text('utf8').splitlines():
+        if (not line.startswith('otree')) or ' ' in line or '\t' in line:
+            continue
+        for start in ['otree>=', 'otree[mturk]>=']:
+            if line.startswith(start):
+                version_dotted = line[len(start) :]
+                try:
+                    required_version = split_dotted_version(version_dotted)
+                    installed_version = split_dotted_version(current_version)
+                except ValueError:
+                    return
+                if required_version > installed_version:
+                    return f'''This project requires a newer oTree version. Enter: pip3 install "{line}"'''
 
 
 def highlight(string):

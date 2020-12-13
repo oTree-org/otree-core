@@ -11,7 +11,7 @@ from otree.models_concrete import UndefinedFormModel
 
 
 class FormFieldNode(Node):
-    default_template = 'otree/tags/_formfield.html'
+    template_name = 'otree/tags/_formfield.html'
 
     @classmethod
     def parse(cls, parser, token: Token):
@@ -42,79 +42,67 @@ class FormFieldNode(Node):
             raise TemplateSyntaxError(msg)
         return cls(field_name, **arg_dict)
 
-    def __init__(self, field_variable_name, label: FilterExpression = None):
-        self.field_variable_name = field_variable_name
+    def __init__(self, first_arg, label: FilterExpression = None):
+        self.first_arg = first_arg
         self.label_arg = label
 
     def get_form_instance(self, context):
         return Variable('form').resolve(context)
 
     def resolve_bound_field(self, context):
-        bound_field = Variable(self.field_variable_name).resolve(context)
+        bound_field = Variable(self.first_arg).resolve(context)
         return bound_field
 
     def get_bound_field(self, context):
-        # First we try to resolve the {% formfield player.name %} syntax were
-        # player is a model instance.
-        if '.' in self.field_variable_name:
-            form = self.get_form_instance(context)
-            instance_name_in_template, field_name = self.field_variable_name.split(
-                '.', -1
-            )
-            instance_in_template = Variable(instance_name_in_template).resolve(context)
-            # it could be form.my_field
-            if isinstance(instance_in_template, models.Model):
-                instance_from_view = form.instance
-                if type(instance_from_view) == UndefinedFormModel:
-                    msg = (
-                        'Template contains a formfield, but '
-                        'you did not set form_model on the Page class.'
-                    )
-                    raise ValueError(msg)
-                elif type(instance_in_template) != type(instance_from_view):
-                    msg = (
-                        'In the page class, you set form_model to {!r}, '
-                        'but in the template you have a formfield for '
-                        '"{}", which is a different model.'.format(
-                            type(instance_from_view), instance_name_in_template
-                        )
-                    )
-                    raise ValueError(msg)
-                try:
-                    return form[field_name]
-                except KeyError:
-                    msg = (
-                        "'{field_name}' was used as a formfield in the template, "
-                        "but was not included in the Page's 'form_fields'".format(
-                            field_name=field_name
-                        )
-                    )
-                    raise ValueError(msg) from None
+        first_arg = self.first_arg
+        form = self.get_form_instance(context)
 
-        # Second we try to resolve it to a bound field.
-        # we need this so people can do:
-        # {% for field in form %}{% formfield field %}{% endfor %}
-        bound_field = Variable(self.field_variable_name).resolve(context)
-
-        # We assume it's a BoundField when 'as_widget', 'as_hidden' and
-        # 'errors' attribtues are available.
-        if (
-            not hasattr(bound_field, 'as_widget')
-            or not hasattr(bound_field, 'as_hidden')
-            or not hasattr(bound_field, 'errors')
-        ):
-            msg = (
-                "The given variable '{variable_name}' ({variable!r}) is "
-                "neither a model field nor a form field.".format(
-                    variable_name=self.field_variable_name, variable=bound_field
+        field_name = None
+        # {% formfield player.contribution %}
+        if first_arg.startswith('player.') or first_arg.startswith('group.'):
+            field_name = first_arg.split('.')[1]
+        # eventually we may encourage this format:
+        # {% formfield "contribution" %}
+        # this allows easier looping over form fields,
+        # and will let us delete most of this template tag and just use inclusion_tag.
+        elif first_arg[0] in ('"', "'") and first_arg[0] == first_arg[-1]:
+            field_name = first_arg[1:-1]
+        else:
+            # Second we try to resolve it to a bound field.
+            # we need this so people can do:
+            # {% for field in form %}{% formfield field %}{% endfor %}
+            variable = Variable(first_arg).resolve(context)
+            if isinstance(variable, str):
+                field_name = variable
+            elif (
+                hasattr(variable, 'as_widget')
+                and hasattr(variable, 'as_hidden')
+                and hasattr(variable, 'errors')
+            ):
+                # We assume it's a BoundField
+                return variable
+        if field_name:
+            # oTree internally uses {% formfield %} with non-modelforms,
+            # but that's always like {% formfield form.foo %}, never {% formfield "foo" %}
+            if type(form.instance) == UndefinedFormModel:
+                msg = (
+                    'Template contains a formfield, but '
+                    'you did not set form_model on the Page class.'
                 )
-            )
-            raise ValueError(msg)
-        return bound_field
+                raise ValueError(msg)
+            try:
+                return form[field_name]
+            except KeyError:
+                msg = (
+                    f"'{field_name}' was used as a formfield in the template, "
+                    "but was not included in the Page's 'form_fields'"
+                )
+                raise ValueError(msg) from None
+        msg = f'Invalid argument to formfield tag: {first_arg}'
+        raise ValueError(msg)
 
     def get_tag_specific_context(self, context: Context) -> Dict:
         bound_field = self.get_bound_field(context)
-        extra_context = {'bound_field': bound_field, 'help_text': bound_field.help_text}
         if self.label_arg:
             label = self.label_arg.resolve(context)
             # If the with argument label="" was set explicitly, we set it to
@@ -124,11 +112,12 @@ class FormFieldNode(Node):
             # https://github.com/oTree-org/otree-core/issues/325
         else:
             label = bound_field.label
-        extra_context['label'] = label
-        return extra_context
+        return dict(
+            bound_field=bound_field, help_text=bound_field.help_text, label=label,
+        )
 
     def render(self, context: Context):
-        t = context.template.engine.get_template(self.default_template)
+        t = context.template.engine.get_template(self.template_name)
         tag_specific_context = self.get_tag_specific_context(context)
         new_context = context.new(tag_specific_context)
         return t.render(new_context)

@@ -43,7 +43,7 @@ if sys.argv[-1] == 'publish':
     if Path('dist').is_dir():
         shutil.rmtree('dist')
     for cmd in [
-        "python setup.py sdist",
+        "python setup.py sdist bdist_wheel",
         "twine upload dist/*",
         f'git tag -a {version} -m "version {version}"',
         "git push --tags",
@@ -52,6 +52,8 @@ if sys.argv[-1] == 'publish':
         exit_code = os.system(cmd)
         if exit_code != 0:
             raise AssertionError
+    if Path('build').is_dir():
+        shutil.rmtree('build')
 
     sys.exit()
 
@@ -75,19 +77,6 @@ setup(
     author='chris@otree.org',
     author_email='chris@otree.org',
     install_requires=required,
-    classifiers=[
-        'Environment :: Web Environment',
-        'Framework :: Django',
-        'Framework :: Django :: 1.11',
-        'Intended Audience :: Developers',
-        # example license
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
-        'Topic :: Internet :: WWW/HTTP',
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-    ],
     entry_points={'console_scripts': ['otree=otree_startup:execute_from_command_line']},
     zip_safe=False,
     extras_require={'mturk': required_mturk},

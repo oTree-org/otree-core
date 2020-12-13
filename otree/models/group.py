@@ -4,17 +4,15 @@ from otree.common import (
     in_round,
     in_rounds,
     InvalidRoundError,
-    add_field_tracker,
 )
-from otree.models.fieldchecks import ensure_field
+from otree import common
 import django.core.exceptions
 from django.db import models as djmodels
+from otree.constants import BaseConstants, get_role, get_roles
+from otree.db.idmap import GroupIDMapMixin
 
 
-class BaseGroup(models.OTreeModel):
-    """Base class for all Groups.
-    """
-
+class BaseGroup(models.OTreeModel, GroupIDMapMixin):
     class Meta:
         abstract = True
         index_together = ['session', 'id_in_subsession']
@@ -30,6 +28,10 @@ class BaseGroup(models.OTreeModel):
 
     round_number = models.PositiveIntegerField(db_index=True)
 
+    @property
+    def _Constants(self) -> BaseConstants:
+        return get_models_module(self._meta.app_config.name).Constants
+
     def __unicode__(self):
         return str(self.pk)
 
@@ -44,16 +46,25 @@ class BaseGroup(models.OTreeModel):
             raise ValueError(msg) from None
 
     def get_player_by_role(self, role):
-        for p in self.get_players():
-            if p.role() == role:
-                return p
-        msg = 'No player with role {}'.format(role)
+        if get_roles(self._Constants):
+            try:
+                return self.player_set.get(_role=role)
+            except django.core.exceptions.ObjectDoesNotExist:
+                pass
+        else:
+            for p in self.get_players():
+                if p.role() == role:
+                    return p
+        msg = f'No player with role "{role}"'
         raise ValueError(msg)
 
     def set_players(self, players_list):
+        Constants = self._Constants
+        roles = get_roles(Constants)
         for i, player in enumerate(players_list, start=1):
             player.group = self
             player.id_in_group = i
+            player._role = get_role(roles, i)
             player.save()
 
     def in_round(self, round_number):
@@ -115,6 +126,4 @@ class BaseGroup(models.OTreeModel):
         subsession_field = djmodels.ForeignKey(
             subsession_model, on_delete=models.CASCADE
         )
-        ensure_field(cls, 'subsession', subsession_field)
-
-        add_field_tracker(cls)
+        subsession_field.contribute_to_class(cls, 'subsession')

@@ -5,15 +5,13 @@
 
   {% formfield form.session_config %}
 
-  <div class="form-group{% if form.num_participants.errors %} has-error{% endif %} required">
+  <div class="form-group required">
     <label class="col-form-label" for="id_num_participants">
+      {# the label and help_text are different for mturk #}
       {{ form.num_participants.label }}
     </label>
     <div class="controls  field-num_participants">
       {{ form.num_participants }}
-      {% if form.num_participants.errors %}
-        {% include "otree/forms/errors.html" with errors=form.num_participants.errors %}
-      {% endif %}
       {% for config in configs %}
         <div id="lcm-{{ config.name }}" class="lcm"
              style="display:none">
@@ -148,5 +146,4 @@
             $btnCreateSession.prop('disabled', false);
         }
     });
-
 </script>

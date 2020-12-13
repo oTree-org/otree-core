@@ -120,3 +120,13 @@ class ChatMessage(models.Model):
     # are already used by channels
     body = models.TextField()
     timestamp = models.FloatField(default=time.time)
+
+
+class TaskQueueMessage(models.Model):
+
+    method = models.CharField(max_length=50)
+    kwargs_json = models.TextField()
+    epoch_time = models.IntegerField()
+
+    def kwargs(self) -> dict:
+        return json.loads(self.kwargs_json)

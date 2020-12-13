@@ -171,10 +171,10 @@ def run_all_bots_for_session_config(session_config_name, num_participants, expor
             if model_module.Player.objects.exists():
                 fpath = Path(export_path, "{}.csv".format(app))
                 with fpath.open("w", encoding="utf8") as fp:
-                    otree.export.export_app(app, fp, file_extension='csv')
+                    otree.export.export_app(app, fp)
         fpath = Path(export_path, "all_apps_wide.csv")
         with fpath.open("w", encoding="utf8") as fp:
-            otree.export.export_wide(fp, 'csv')
+            otree.export.export_wide(fp)
 
         logger.info('Exported CSV to folder "{}"'.format(export_path))
     else:

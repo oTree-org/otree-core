@@ -1,37 +1,31 @@
+import contextlib
 import json
-from datetime import datetime
-from collections import defaultdict
-from typing import List, Dict, Union, Optional
 import logging
-from xml.etree import ElementTree
-
-from django.conf import settings
-from django.contrib import messages
-from django.urls import reverse
-from django.http import HttpResponseServerError
-from django.shortcuts import get_object_or_404
-
-from django.template.loader import render_to_string
+from collections import defaultdict, namedtuple
+from dataclasses import dataclass
+from datetime import datetime
+from decimal import Decimal
+from typing import List, Dict, Union, Optional
 
 import vanilla
+from django.conf import settings
+from django.contrib import messages
+from django.http import HttpResponseServerError
+from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
+from django.template.loader import render_to_string
+from django.urls import reverse
+
+import otree
+from otree.models import Session, Participant
+from otree.views.abstract import AdminSessionPageMixin
 
 try:
     import boto3
 except ImportError:
     boto3 = None
 
-import otree
-
-from otree.views.abstract import AdminSessionPageMixin
-
-from otree.models import Session, Participant
-from decimal import Decimal
-from django.shortcuts import redirect
-
 logger = logging.getLogger('otree')
-
-import contextlib
-from dataclasses import dataclass
 
 
 @dataclass
@@ -74,28 +68,6 @@ def MTurkClient(*, use_sandbox=True, request):
     except Exception as exc:
         logger.error('MTurk error', exc_info=True)
         messages.error(request, str(exc), extra_tags='safe')
-
-
-def get_all_assignments(mturk_client, hit_id):
-    # Accumulate all relevant assignments, one page of results at
-    # a time.
-    assignments = []
-
-    args = dict(
-        HITId=hit_id,
-        # i think 100 is the max page size
-        MaxResults=100,
-        AssignmentStatuses=['Submitted', 'Approved', 'Rejected'],
-    )
-
-    while True:
-        response = mturk_client.list_assignments_for_hit(**args)
-        if not response['Assignments']:
-            break
-        assignments.extend(response['Assignments'])
-        args['NextToken'] = response['NextToken']
-
-    return assignments
 
 
 def in_public_domain(request):
@@ -210,22 +182,80 @@ class MTurkCreateHIT(AdminSessionPageMixin, vanilla.FormView):
         return redirect('MTurkCreateHIT', session.code)
 
 
+Assignment = namedtuple(
+    'Assignment', ['worker_id', 'assignment_id', 'status', 'answer']
+)
+
+
+def get_all_assignments(mturk_client, hit_id) -> List[Assignment]:
+    # Accumulate all relevant assignments, one page of results at
+    # a time.
+    assignments = []
+
+    args = dict(
+        HITId=hit_id,
+        # i think 100 is the max page size
+        MaxResults=100,
+        AssignmentStatuses=['Submitted', 'Approved', 'Rejected'],
+    )
+
+    while True:
+        response = mturk_client.list_assignments_for_hit(**args)
+        if not response['Assignments']:
+            break
+        for d in response['Assignments']:
+            assignments.append(
+                Assignment(
+                    worker_id=d['WorkerId'],
+                    assignment_id=d['AssignmentId'],
+                    status=d['AssignmentStatus'],
+                    answer=d['Answer'],
+                )
+            )
+        args['NextToken'] = response['NextToken']
+
+    return assignments
+
+
+def get_workers_by_status(
+    all_assignments: List[Assignment],
+) -> Dict[str, List[Assignment]]:
+    workers_by_status = defaultdict(list)
+    for assignment in all_assignments:
+        workers_by_status[assignment.status].append(assignment.worker_id)
+    return workers_by_status
+
+
 class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
     def vars_for_template(self):
         session = self.session
         published = bool(session.mturk_HITId)
         if not published:
             return dict(published=False)
+
         with MTurkClient(
             use_sandbox=session.mturk_use_sandbox, request=self.request
         ) as mturk_client:
             all_assignments = get_all_assignments(mturk_client, session.mturk_HITId)
 
-        workers_by_status = get_workers_by_status(all_assignments)
+            # auto-reject logic
+            assignment_ids_in_db = session.participant_set.exclude(
+                mturk_assignment_id=None
+            ).values_list('mturk_assignment_id', flat=True)
 
-        participants_not_reviewed = session.participant_set.filter(
-            mturk_worker_id__in=workers_by_status['Submitted']
-        )
+            submitted_assignment_ids = [
+                a.assignment_id for a in all_assignments if a.status == 'Submitted'
+            ]
+
+            auto_rejects = set(submitted_assignment_ids) - set(assignment_ids_in_db)
+
+            for assignment_id in auto_rejects:
+                mturk_client.reject_assignment(
+                    AssignmentId=assignment_id,
+                    RequesterFeedback='Auto-rejecting because this assignment was not found in our database.',
+                )
+
+        workers_by_status = get_workers_by_status(all_assignments)
         participants_approved = session.participant_set.filter(
             mturk_worker_id__in=workers_by_status['Approved']
         )
@@ -233,7 +263,15 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             mturk_worker_id__in=workers_by_status['Rejected']
         )
 
+        submitted_worker_ids = workers_by_status['Submitted']
+
+        participants_not_reviewed = session.participant_set.filter(
+            mturk_worker_id__in=submitted_worker_ids
+        )
+
         add_answers(participants_not_reviewed, all_assignments)
+        add_answers(participants_approved, all_assignments)
+        add_answers(participants_rejected, all_assignments)
 
         return dict(
             published=True,
@@ -241,19 +279,16 @@ class MTurkSessionPayments(AdminSessionPageMixin, vanilla.TemplateView):
             participants_rejected=participants_rejected,
             participants_not_reviewed=participants_not_reviewed,
             participation_fee=session.config['participation_fee'],
+            auto_rejects=auto_rejects,
         )
-
-
-def get_workers_by_status(all_assignments) -> Dict[str, List[str]]:
-    workers_by_status = defaultdict(list)
-    for assignment in all_assignments:
-        workers_by_status[assignment['AssignmentStatus']].append(assignment['WorkerId'])
-    return workers_by_status
 
 
 def get_completion_code(xml: str) -> str:
     if not xml:
         return ''
+    # move inside function because it adds 0.03s to startup time
+    from xml.etree import ElementTree
+
     root = ElementTree.fromstring(xml)
     for ans in root:
         if ans[0].text == 'taskAnswers':
@@ -265,10 +300,10 @@ def get_completion_code(xml: str) -> str:
     return ''
 
 
-def add_answers(participants: List[Participant], all_assignments: List[dict]):
+def add_answers(participants: List[Participant], all_assignments: List[Assignment]):
     answers = {}
     for assignment in all_assignments:
-        answers[assignment['WorkerId']] = assignment['Answer']
+        answers[assignment.worker_id] = assignment.answer
     for p in participants:
         p._is_frozen = False
         p.mturk_answers_formatted = get_completion_code(answers[p.mturk_worker_id])
@@ -319,7 +354,7 @@ class PayMTurk(vanilla.View):
             except Exception as e:
                 msg = (
                     'Could not pay {} because of an error communicating '
-                    'with MTurk: {}'.format(p._id_in_session(), str(e))
+                    'with MTurk: {}'.format(p._numeric_label(), str(e))
                 )
                 messages.error(request, msg)
                 logger.error(msg)

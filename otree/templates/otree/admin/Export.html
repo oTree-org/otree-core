@@ -2,7 +2,7 @@
 {% load static otree %}
 
 {% block title %}
-  Data Export
+  CSV Data Export
 {% endblock %}
 
 
@@ -41,12 +41,12 @@
     <p>
 
       <a href="javascript:void(0)" class="download-link"
-         id="wide-xlsx"
-         data-file-extension="xlsx">Excel</a>
+         id="wide-excel"
+        data-excel="1">Excel</a>
       |
       <a href="javascript:void(0)" class="download-link"
          id="wide-csv"
-         data-file-extension="csv">CSV</a>
+         >Plain</a>
     </p>
     <p>
       Data for all apps in one file.
@@ -65,8 +65,6 @@
       or if you want to correlate data between rounds of the same app.
     </p>
 
-
-
     <table class="table">
       <col width="40%">
       <col width="30%">
@@ -78,17 +76,17 @@
           </td>
           <td>
             <a href="javascript:void(0)" class="download-link"
-               id="app-{{ app }}-custom-xlsx"
+               id="app-{{ app }}-custom-excel"
                data-app="{{ app }}"
-               data-custom="1"
-               data-file-extension="xlsx">Excel</a>
+               data-excel="1"
+               data-custom="1">Excel</a>
           </td>
           <td>
             <a href="javascript:void(0)" class="download-link"
-               id="app-{{ app }}-custom-csv"
+               id="app-{{ app }}-custom"
                data-app="{{ app }}"
                data-custom="1"
-               data-file-extension="csv">CSV</a>
+               >Plain</a>
           </td>
         </tr>
       {% endfor %}
@@ -100,15 +98,14 @@
           </td>
           <td>
             <a href="javascript:void(0)" class="download-link"
-               id="app-{{ app }}-xlsx"
-               data-app="{{ app }}"
-               data-file-extension="xlsx">Excel</a>
+               id="app-{{ app }}-excel"
+               data-excel="1"
+               data-app="{{ app }}">Excel</a>
           </td>
           <td>
             <a href="javascript:void(0)" class="download-link"
-               id="app-{{ app }}-csv"
-               data-app="{{ app }}"
-               data-file-extension="csv">CSV</a>
+               id="app-{{ app }}"
+               data-app="{{ app }}">Plain</a>
           </td>
         </tr>
       {% endfor %}
@@ -117,8 +114,8 @@
 
     <h3>Page times</h3>
     <p><small>
-      Records are output in batches so the latest data may not be
-      available immediately, or if the server restarts.
+      If this data is important to you, make sure to download it before
+      restarting the server. Otherwise, you might lose the latest observations.
     </small></p>
     <p><a href="{% url 'ExportPageTimes' %}">
       <img src='{% static "glyphicons/download-alt.png" %}'>
@@ -148,6 +145,10 @@
 
   <br/>
 
+  <p><small>
+    The Excel CSVs contain a byte-order mark to ensure they can open correctly in Excel.
+  </small></p>
+
 {% endblock %}
 
 {% block scripts %}
@@ -168,13 +169,11 @@
       $(function () {
           $('.download-link').click(function () {
               $this = $(this);
-              var fileExtension = $this.data('fileExtension');
-
               var linkId = $this.attr('id');
               var content = {
-                  'file_extension': fileExtension,
                   // link_id is just roundtripped so we can use it client-side later.
-                  'link_id': linkId
+                  'link_id': linkId,
+                  'for_excel': $this.data('excel')
               };
               var appName = $this.data('app');
               if (appName) {
@@ -186,20 +185,9 @@
           })
       });
 
-      function s2ab(s) {
-          var buf = new ArrayBuffer(s.length);
-          var view = new Uint8Array(buf);
-          for (var i = 0; i != s.length; ++i) view[i] = s.charCodeAt(i) & 0xFF;
-          return buf;
-      }
-
       function saveReceivedFile(content) {
           var c = content;
-          if (c.file_extension === 'xlsx') {
-              var data = s2ab(atob(c.data));
-          } else {
-              var data = c.data;
-          }
+          var data = c.data;
           var file = new Blob([data], {type: c.mime_type});
           if (window.navigator.msSaveOrOpenBlob) // IE10+
               window.navigator.msSaveOrOpenBlob(file, c.file_name);

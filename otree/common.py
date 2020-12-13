@@ -12,25 +12,21 @@ from collections import OrderedDict
 from importlib import import_module
 from pathlib import Path
 from typing import Iterable, Tuple
-import redis
 from django.apps import apps
 from django.db import connection
 from django.db import transaction
-from huey.contrib.djhuey import HUEY
 import urllib
 import os
-import model_utils.tracker
 import json
-
 from django.conf import settings
 from django.utils.safestring import mark_safe
 
 # until 2016, otree apps imported currency from otree.common.
-from otree.currency import Currency, RealWorldCurrency
+from otree.currency import Currency, RealWorldCurrency, currency_range  # noqa
 
 # set to False if using runserver
 
-USE_REDIS = bool(os.environ.get('OTREE_USE_REDIS', ''))
+USE_TIMEOUT_WORKER = bool(os.getenv('USE_TIMEOUT_WORKER'))
 
 
 class _CurrencyEncoder(json.JSONEncoder):
@@ -184,6 +180,10 @@ def ensure_superuser_exists(*args, **kwargs) -> str:
     """
     Creates our default superuser.
     If it fails, it returns a failure message
+    The weakness of this is that if you change your password, you need to resetdb.
+    but that doesn't affect many people. we could show a warning saying that
+    ADMIN_PASSWORD doesn't match the hashed password, but i could not find a trivial way
+    to do that. the make_password function is nondeterministic.
     """
     username = settings.ADMIN_USERNAME
     password = settings.ADMIN_PASSWORD
@@ -194,8 +194,6 @@ def ensure_superuser_exists(*args, **kwargs) -> str:
     from django.contrib.auth.models import User
 
     if User.objects.filter(username=username).exists():
-        # msg = 'Default superuser exists.'
-        # logger.info(msg)
         return ''
     User.objects.create_superuser(username, email='', password=password)
     msg = 'Created superuser "{}"'.format(username)
@@ -221,6 +219,7 @@ def transaction_except_for_sqlite():
     On SQLite, transactions tend to result in "database locked" errors.
     So, skip the transaction on SQLite, to allow local dev.
     Should only be used if omitting the transaction rarely causes problems.
+    2020-10-13: maybe not needed now that we are single threaded
     '''
     if is_sqlite():
         yield
@@ -313,33 +312,6 @@ class ResponseForException(Exception):
     pass
 
 
-def add_field_tracker(cls):
-    # need to do it here because FieldTracker doesnt work on abstract classes
-    _ft = model_utils.tracker.FieldTracker()
-    _ft.contribute_to_class(cls, '_ft')
-    # need to call this, because class_prepared has already been fired
-    # (it is currently executing)
-    _ft.finalize_class(sender=cls)
-
-
-class FieldInstanceTrackerWithVarsNumpySupport(
-    model_utils.tracker.FieldInstanceTracker
-):
-    def has_changed(self, field):
-        try:
-            return super().has_changed(field)
-        except ValueError as exc:
-            # we just assume it's always changed, so then we always save that field.
-            # it could be "The truth value of an array..." or "...of a DataFrame"
-            if 'The truth value of' in str(exc):
-                return True
-            raise
-
-
-class FieldTrackerWithVarsSupport(model_utils.tracker.FieldTracker):
-    tracker_class = FieldInstanceTrackerWithVarsNumpySupport
-
-
 def _group_by_rank(ranked_list, players_per_group):
     ppg = players_per_group
     players = ranked_list
@@ -384,6 +356,7 @@ def dump_db_and_exit(*args, code=0):
 
 
 def dump_db(*args):
+
     # return
     global _dumped
     if _dumped:
@@ -422,4 +395,4 @@ def load_db():
         src = sqlite3.connect('db.sqlite3')
         src.backup(connection.connection)
     else:
-        print('Creating new database', db_path.resolve())
+        sys.stdout.write('Creating new database\n')

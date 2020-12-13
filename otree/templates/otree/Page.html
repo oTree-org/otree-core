@@ -17,7 +17,7 @@ i removed many linebreaks to make output HTML cleaner
               {% blocktrans trimmed %}Please fix the errors in the form.{% endblocktrans %}
               {{ form.non_field_errors }}
             </div>
-        {% endif %}<script>var js_vars = {{ js_vars|json }};</script>
+        {% endif %}{% if js_vars|default:False %}<script>var js_vars = {{ js_vars|json }};</script>{% endif %}
         <form class="otree-form" method="post" role="form" id="form" autocomplete="off">{% csrf_token %}
             <div class="_otree-content">{% block content %}{% endblock %}</div>
         </form>

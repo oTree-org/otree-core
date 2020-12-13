@@ -2,7 +2,7 @@
 
 These are the core oTree libraries.
 
-Before you fork this project, keep in mind that otree-core is updated
+Before you fork this project, keep in mind that otree is updated
 frequently, and over time you might get upstream merge conflicts, as
 your local project diverges from the oTree mainline version.
 

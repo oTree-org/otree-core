@@ -19,10 +19,12 @@ ALWAYS_UNRESTRICTED = {
     'ParticipantRoomHeartbeat',
     'ParticipantHeartbeatGBAT',
     'RESTCreateSession',
+    'RESTSessionVars',
     'PostParticipantVarsThroughREST',
     'CreateBrowserBotsSession',
     'CloseBrowserBotsSession',
     'BrowserBotStartLink',
+    'SaveDB',
 }
 
 
@@ -77,12 +79,12 @@ def url_patterns_from_builtin_module(module_name: str):
         # class's name
         url_name = getattr(ViewCls, 'url_name', ViewCls.__name__)
 
-        if settings.AUTH_LEVEL == 'STUDY':
-            unrestricted = url_name in ALWAYS_UNRESTRICTED
-        elif settings.AUTH_LEVEL == 'DEMO':
-            unrestricted = url_name in UNRESTRICTED_IN_DEMO_MODE
-        else:
-            unrestricted = True
+        unrestricted = {
+            'STUDY': url_name in ALWAYS_UNRESTRICTED,
+            'DEMO': url_name in UNRESTRICTED_IN_DEMO_MODE,
+            '': True,
+            None: True,
+        }[settings.AUTH_LEVEL]
 
         if unrestricted:
             as_view = ViewCls.as_view()
@@ -143,6 +145,7 @@ def get_urlpatterns():
         urls.url(r'^$', RedirectView.as_view(url='/demo', permanent=True)),
         urls.url(r'^accounts/login/$', LoginView.as_view(), name='login'),
         urls.url(r'^accounts/logout/$', LogoutView.as_view(), name='logout'),
+        urls.url(r'^favicon\.ico$', RedirectView.as_view(url='/static/favicon.ico')),
     ]
 
     urlpatterns += staticfiles_urlpatterns()

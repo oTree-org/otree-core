@@ -50,6 +50,24 @@ class BaseConstants(metaclass=BaseConstantsMeta):
     pass
 
 
+def get_roles(Constants) -> list:
+    roles = []
+    for k, v in Constants.__dict__.items():
+        if k.startswith('role_'):
+            if not isinstance(v, str):
+                # this is especially for legacy apps before the role_* feature was introduced.
+                msg = f"{k}: any Constant that starts with 'role_' must be a string, for example: role_sender = 'Sender'"
+                raise Exception(msg)
+            roles.append(v)
+    return roles
+
+
+def get_role(roles, id_in_group):
+    '''this is split apart from get_roles_ as a perf optimization'''
+    if roles and len(roles) >= id_in_group:
+        return roles[id_in_group - 1]
+
+
 get_param_truth_value = '1'
 admin_secret_code = 'admin_secret_code'
 timeout_happened = 'timeout_happened'

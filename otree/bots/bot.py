@@ -8,7 +8,6 @@ from urllib.parse import unquote, urlsplit
 from html.parser import HTMLParser
 
 import otree.constants
-from django import test
 from django.urls import resolve
 from django.conf import settings
 from otree.currency import Currency
@@ -20,7 +19,7 @@ from otree.common import (
     get_admin_secret_code,
     get_models_module,
 )
-import otree.db.idmap
+from otree.db import idmap
 
 ADMIN_SECRET_CODE = get_admin_secret_code()
 
@@ -113,14 +112,16 @@ def expect(*args):
         raise ExpectError(msg)
 
 
-class ParticipantBot(test.Client):
+class ParticipantBot:
     def __init__(self, participant_or_code, *, player_bots, executed_live_methods=None):
+        from django.test import Client  # expensive import
 
         if isinstance(participant_or_code, Participant):
             self.participant_code = participant_or_code.code
         else:
             self.participant_code = participant_or_code
 
+        self._client = Client()
         self.url = None
         self._response = None
         self._html = None
@@ -129,7 +130,6 @@ class ParticipantBot(test.Client):
         if executed_live_methods is None:
             executed_live_methods = set()
         self.executed_live_methods = executed_live_methods
-        super().__init__()
 
         for b in player_bots:
             b.participant_bot = self
@@ -138,7 +138,7 @@ class ParticipantBot(test.Client):
 
     def open_start_url(self):
         start_url = common.participant_start_url(self.participant_code)
-        self.response = self.get(start_url, follow=True)
+        self.response = self._client.get(start_url, follow=True)
 
     def get_submits(self):
         for player_bot in self.player_bots:
@@ -170,18 +170,24 @@ class ParticipantBot(test.Client):
         if live_method_name:
             record = (player_bot.player.group_id, PageClass)
             if record not in self.executed_live_methods:
-                with otree.db.idmap.use_cache():
+                with idmap.use_cache():
                     bots_module = inspect.getmodule(player_bot)
                     method_calls_fn = getattr(bots_module, 'call_live_method', None)
                     if method_calls_fn:
-                        method = getattr(player_bot.group, live_method_name)
+                        players = {
+                            p.id_in_group: p for p in player_bot.group.get_players()
+                        }
+
+                        def method(id_in_group, data):
+                            return getattr(players[id_in_group], live_method_name)(data)
+
                         method_calls_fn(
                             method=method,
                             case=player_bot.case,
                             round_number=player_bot.round_number,
                             page_class=PageClass,
                         )
-                        otree.db.idmap.save_objects()
+
                 self.executed_live_methods.add(record)
 
     def _play_individually(self):
@@ -263,7 +269,7 @@ class ParticipantBot(test.Client):
             return False
 
         # however, wait pages can turn into regular pages, so let's try again
-        self.response = self.get(self.url, follow=True)
+        self.response = self._client.get(self.url, follow=True)
         return is_wait_page(self.response)
 
     def submit(self, *, post_data, must_fail=False, timeout_happened=False, **kwargs):
@@ -276,7 +282,7 @@ class ParticipantBot(test.Client):
         if timeout_happened:
             log_string += ', timeout_happened'
         logger.info(log_string)
-        self.response = self.post(self.url, post_data, follow=True)
+        self.response = self._client.post(self.url, post_data, follow=True)
 
 
 class PlayerBot:
@@ -398,6 +404,7 @@ def _Submission(
         )
         raise AssertionError(msg)
 
+    # todo: this might not be necessary anymore now that we don't use redis
     for key in post_data:
         if isinstance(post_data[key], Currency):
             # because must be json serializable for Huey

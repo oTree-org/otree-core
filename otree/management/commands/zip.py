@@ -11,6 +11,7 @@ import logging
 from pathlib import Path
 import sys
 import re
+from otree import __version__ as otree_version
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +24,11 @@ PROJECT_PATH = Path('.').resolve()
 # TODO: maybe some of these extensions like .env, staticfiles could legitimately exist in subfolders.
 EXCLUDED_PATH_ENDINGS = '~ .git db.sqlite3 .pyo .pyc .pyd .idea .DS_Store .otreezip venv _static_root staticfiles __pycache__ .env'.split()
 
-
-# TODO: make sure we recognize and exclude virtualenvs, even if not called venv
+OVERWRITE_TOKEN = 'oTree-may-overwrite-this-file'
+DONT_OVERWRITE_TOKEN = 'oTree-may-not-overwrite-this-file'
 
 
 def filter_func(tar_info: tarfile.TarInfo):
-
     path = tar_info.path
 
     for ending in EXCLUDED_PATH_ENDINGS:
@@ -54,11 +54,6 @@ class Command(BaseCommand):
     help = "Zip into an archive"
 
     def handle(self, **options):
-        # remove these lines after a month or so
-        legacy_filename = 'zipped.otreezip'
-        if os.path.exists(legacy_filename):
-            self.stdout.write('removing zipped.otreezip, this should only happen once')
-            os.remove(legacy_filename)
         zip_project(PROJECT_PATH)
 
     def run_from_argv(self, argv):
@@ -89,8 +84,11 @@ def zip_project(project_path: Path):
         logger.error(msg)
         sys.exit(1)
 
+    for fn, new_text in fix_reqs_files(project_path).items():
+        project_path.joinpath(fn).write_text(new_text)
+
     try:
-        check_requirements_files(project_path)
+        validate_reqs_files(project_path)
     except RequirementsError as exc:
         logger.error(str(exc))
         sys.exit(1)
@@ -101,7 +99,7 @@ def zip_project(project_path: Path):
     if not runtime_existed:
         # don't use sys.version_info because it might be newer than what
         # heroku supports
-        runtime_txt.write_text(f'python-3.7.7')
+        runtime_txt.write_text(f'python-3.7.9')
     try:
         with tarfile.open(archive_name, 'w:gz') as tar:
             # if i omit arcname, it nests the project 2 levels deep.
@@ -112,6 +110,41 @@ def zip_project(project_path: Path):
         if not runtime_existed:
             runtime_txt.unlink()
     logger.info(f'Saved your code into file "{archive_name}"')
+
+
+def fix_reqs_files(project_path: Path) -> dict:
+    rpath = project_path.joinpath('requirements.txt')
+    rbpath = project_path.joinpath('requirements_base.txt')
+    original_rtxt = rpath.read_text('utf8')
+    original_rbtxt = rbpath.read_text('utf8') if rbpath.exists() else ''
+
+    can_overwrite = False
+    if OVERWRITE_TOKEN in original_rtxt:
+        can_overwrite = True
+    elif DONT_OVERWRITE_TOKEN not in original_rtxt:
+        ans = input(
+            "Do you want oTree to automatically keep your requirements files up to date?\n"
+            "(Enter 'n' if you have custom requirements in requirements.txt or requirements_base.txt)\n"
+            "(y/n): "
+        ).lower()
+        if ans == 'y':
+            can_overwrite = True
+        elif ans == 'n':
+            return {rpath.name: f'# {DONT_OVERWRITE_TOKEN}\n' + original_rtxt}
+        else:
+            sys.stdout.write('Answer not recognized; skipping\n')
+            can_overwrite = False
+
+    if can_overwrite:
+        txt = [REQS_DEFAULT, REQS_DEFAULT_MTURK][
+            'otree[mturk]' in (original_rtxt + original_rbtxt)
+        ]
+        d = {rpath.name: txt}
+        if rbpath.exists():
+            d[rbpath.name] = REQS_BASE_DEFAULT
+        return d
+    else:
+        return {}
 
 
 def get_non_comment_lines(f):
@@ -127,77 +160,60 @@ class RequirementsError(Exception):
     pass
 
 
-def check_requirements_files(project_path: Path):
-    reqs_server_path = project_path / 'requirements_server.txt'
-    if reqs_server_path.exists():
-        # checking legacy requirements structure is too complicated,
-        # skip it.
-        return
+REQS_BASE_DEFAULT = '''\
+# You should put your requirements in requirements.txt instead.
+# You can delete this file.
+'''
 
-    reqs_path = project_path / 'requirements.txt'
-    reqs_base_path = project_path / 'requirements_base.txt'
-    reqs_base_exists = reqs_base_path.exists()
+# we do otree>= because if we require the exact version,
+# then if you upgrade and run devserver, otree will complain
+# that you are using the wrong version.
+# if someone needs that exact version, they can manage the file manually.
+_REQS_DEFAULT_FMT = f'''\
+# {OVERWRITE_TOKEN}
+# IF YOU MODIFY THIS FILE, remove these comments. 
+# otherwise, oTree will automatically overwrite it.
+otree%s>={otree_version}
+psycopg2>=2.8.4
+sentry-sdk==0.7.9
+'''
 
-    if not reqs_path.exists():
-        raise RequirementsError("You need a requirements.txt in your project folder")
+REQS_DEFAULT = _REQS_DEFAULT_FMT % ''
+REQS_DEFAULT_MTURK = _REQS_DEFAULT_FMT % '[mturk]'
 
-    with reqs_path.open() as f:
-        all_req_lines = get_non_comment_lines(f)
 
-    reqs_base_should_exist = False
-    for ln in all_req_lines:
-        if 'requirements_base.txt' in ln:
-            reqs_base_should_exist = True
+def validate_reqs_files(project_path: Path):
+    rpath = project_path / 'requirements.txt'
+    rbpath = project_path / 'requirements_base.txt'
 
-    if reqs_base_exists != reqs_base_should_exist:
-        if reqs_base_should_exist:
-            msg = (
-                'Your requirements.txt calls requirements_base.txt, '
-                'but requirements_base.txt was not found.'
-            )
+    with rpath.open(encoding='utf8') as f:
+        rlines = get_non_comment_lines(f)
+
+    if rbpath.exists():
+        with rbpath.open(encoding='utf8') as f:
+            rblines = get_non_comment_lines(f)
+
+        # check duplicates
+        already_seen = set()
+        for ln in rlines + rblines:
+            m = re.match(r'(^[\w-]+).*?', ln)
+            if m:
+                package = m.group(1)
+                if package in already_seen:
+                    msg = (
+                        f'"{package}" is listed more than once '
+                        'in your requirements_base.txt & requirements.txt. '
+                    )
+                    raise RequirementsError(msg)
+                already_seen.add(package)
+    else:
+        REFERENCE_TO_REQS_BASE = '-r requirements_base.txt'
+        if REFERENCE_TO_REQS_BASE in rlines:
+            msg = f'your requirements.txt has a line that says "{REFERENCE_TO_REQS_BASE}". You should remove that line.'
             raise RequirementsError(msg)
-        else:
-            msg = (
-                'Your requirements_base.txt '
-                'is being ignored. '
-                'Add the following line to requirements.txt:\n'
-                '-r requirements_base.txt'
-            )
-            raise RequirementsError(msg)
 
-    if reqs_base_exists:
-        with reqs_base_path.open() as f:
-            all_req_lines.extend(get_non_comment_lines(f))
-
-    psycopg2_found = False
-    for ln in all_req_lines:
-        if 'psycopg2' in ln:
-            psycopg2_found = True
-
-    if not psycopg2_found:
-        msg = (
-            'Your requirements.txt must have a line that says "psycopg2", '
-            'which is necessary for Postgres. '
-        )
+    # better to tell people about this so they stop deleting that line.
+    # also simpler to implement and test the warning
+    if not 'psycopg2' in rpath.read_text('utf8'):
+        msg = 'You should add a line to your requirements.txt that says: psycopg2'
         raise RequirementsError(msg)
-
-    # check duplicates
-    already_seen = set()
-    for ln in all_req_lines:
-
-        m = re.match(r'(^[\w-]+).*?', ln)
-        if m:
-            package = m.group(1)
-            if package in already_seen:
-                if reqs_base_exists:
-                    msg = (
-                        f'"{package}" is listed more than once '
-                        'in your requirements_base.txt and/or requirements.txt. '
-                    )
-                else:
-                    msg = (
-                        f'"{package}" is listed more than once '
-                        'in your requirements.txt. '
-                    )
-                raise RequirementsError(msg)
-            already_seen.add(package)

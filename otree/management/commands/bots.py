@@ -8,6 +8,7 @@ from django.test.utils import (
     teardown_test_environment,
 )
 
+
 from otree.bots.runner import run_all_bots_for_session_config
 
 import otree.common

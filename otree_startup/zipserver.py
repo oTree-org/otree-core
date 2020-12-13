@@ -11,8 +11,7 @@ import os
 import subprocess
 import shutil
 from time import sleep
-import http.client
-import urllib.error
+from .common import prepare_for_termination
 
 logger = logging.getLogger(__name__)
 
@@ -82,26 +81,28 @@ def autoreload_for_new_zipfiles() -> int:
 
             tempdirs.append(project.tmpdir)
             project.start()
-            try:
-                while True:
-                    # if process is still running, poll() returns None
-                    exit_code = project.poll()
-                    if exit_code != None:
-                        return exit_code
-                    sleep(1)
-                    latest_project = get_newest_project()
-                    # it's possible that zipfile was deleted while the program
-                    # was running
-                    if latest_project and latest_project != project:
-                        newer_project = latest_project
-                        # use stdout.write because logger is not configured
-                        # (django setup has not even been run)
-                        stdout_write(MSG_FOUND_NEWER_OTREEZIP)
-                        break
-            finally:
-                if exit_code is None:
-                    project.terminate_through_http()
+            # I used to have a try block that executed 'terminate_through_http' inside 'finally'
+            # added on 2019-03-09. not sure why that was necessary
+            # maybe it was just for thoroughness but now it interferes with terminating through HTTP.
+            while True:
+                # if process is still running, poll() returns None
+                exit_code = project.poll()
+                if exit_code != None:
+                    return exit_code
+                sleep(1)
+                latest_project = get_newest_project()
+                # it's possible that zipfile was deleted while the program
+                # was running
+                if latest_project and latest_project != project:
+                    newer_project = latest_project
+                    # use stdout.write because logger is not configured
+                    # (django setup has not even been run)
+                    stdout_write(MSG_FOUND_NEWER_OTREEZIP)
+                    project.terminate()
+                    break
     finally:
+        # e.g. KeyboardInterrupt
+        project.wait()
         for td in tempdirs:
             td.cleanup()
 
@@ -128,14 +129,7 @@ class Project:
 
     def start(self):
         self._proc = subprocess.Popen(
-            [
-                sys.executable,
-                'manage.py',
-                'devserver',
-                PORT,
-                '--noreload',
-                '--inside-zipserver',
-            ],
+            [sys.executable, 'manage.py', 'devserver_inner', PORT,],
             cwd=self.tmpdir.name,
             env=os.environ.copy(),
         )
@@ -146,24 +140,14 @@ class Project:
     def poll(self):
         return self._proc.poll()
 
-    def terminate(self):
-        return self._proc.terminate()
-
-    def terminate_through_http(self):
-        from urllib.request import urlopen
-
-        try:
-            urlopen(f'http://localhost:{PORT}/KillZipServer/', data=b'foo')
-        except (http.client.RemoteDisconnected, urllib.error.URLError):
-            # - by design, RemoteDisconnected will happen because it sys.exit()
-            # before returning an HttpResponse
-            # - URLError may happen if the server didn't even start up yet
-            #  (if you stop it right away)
-            pass
-        self._proc.wait()
-
     def wait(self) -> int:
         return self._proc.wait()
+
+    def terminate(self):
+        child_pid = prepare_for_termination(PORT)
+        self._proc.terminate()
+        # see the explanation in devserver about this
+        os.kill(child_pid, 9)
 
     def take_db_from_previous(self, other_tmpdir: str):
         for item in ['__temp_migrations', 'db.sqlite3']:

@@ -1,11 +1,8 @@
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
+from django.conf.urls import url
 from otree.channels import consumers
 from otree.extensions import get_extensions_modules
-
-from django.conf.urls import url
-
-from channels.routing import ProtocolTypeRouter, URLRouter, ChannelNameRouter
-from channels.auth import AuthMiddlewareStack
-
 
 websocket_routes = [
     # WebSockets
@@ -18,6 +15,7 @@ websocket_routes = [
     url(r'^delete_sessions/$', consumers.DeleteSessions),
     url(r'^wait_for_session_in_room/$', consumers.RoomParticipant),
     url(r'^room_without_session/(?P<room>\w+)/$', consumers.RoomAdmin),
+    url(r'^session_monitor/(?P<code>\w+)/$', consumers.SessionMonitor),
     url(r'^browser_bots_client/(?P<session_code>\w+)/$', consumers.BrowserBotsLauncher),
     url(r'^browser_bot_wait/$', consumers.BrowserBot),
     url(
@@ -31,8 +29,6 @@ websocket_routes = [
         consumers.ChatConsumer,
     ),
     url(r"^export/$", consumers.ExportData),
-    # for django autoreloader
-    # just so client can detect when server has finished restarting
     url(r'^no_op/$', consumers.NoOp),
 ]
 
@@ -43,5 +39,8 @@ for extensions_module in extensions_modules:
 
 
 application = ProtocolTypeRouter(
-    {"websocket": AuthMiddlewareStack(URLRouter(websocket_routes))}
+    {
+        "websocket": AuthMiddlewareStack(URLRouter(websocket_routes)),
+        "lifespan": consumers.LifespanApp,
+    }
 )

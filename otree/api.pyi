@@ -252,6 +252,7 @@ class BasePlayer:
     group: BaseGroup
     subsession: BaseSubsession
     round_number: int
+    role: str
     def start(self):
         pass
     def in_previous_rounds(self) -> List[BasePlayer]:
@@ -261,8 +262,6 @@ class BasePlayer:
     def get_others_in_group(self) -> List[BasePlayer]:
         pass
     def get_others_in_subsession(self) -> List[BasePlayer]:
-        pass
-    def role(self):
         pass
     def in_round(self, round_number) -> BasePlayer:
         pass

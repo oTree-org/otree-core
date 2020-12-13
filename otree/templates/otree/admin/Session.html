@@ -10,18 +10,19 @@
 {% endblock %}
 
 {% block menus %}
-<ul class="nav nav-tabs justify-content-center">
-    <li role="presentation" class="nav-item">
-        <a class="nav-link {% active_page request 'SessionDescription' session.code %}" href="{% url 'SessionDescription' session.code %}"><img src='{% static "glyphicons/pushpin.png" %}'> Description</a>
+<ul class="nav nav-tabs">
+    <li role="presentation">
+    {% if session.is_demo %}
+        <a class="nav-link" href="{% url 'CreateDemoSession' session.config.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch. You can also copy this link and share with others.">
+            <img src='{% static "glyphicons/refresh.png" %}'> New
+        </a>
+    {% else %}
+        <a class="nav-link {% active_page request 'SessionEditProperties' session.code %}" href="{% url 'SessionEditProperties' session.code %}"><img src='{% static "glyphicons/pencil.png" %}'> Edit</a>
+    {% endif %}
     </li>
     <li role="presentation" class="nav-item">
         <a class="nav-link {% active_page request 'SessionStartLinks' session.code %}" href="{% url 'SessionStartLinks' session.code %}"><img src='{% static "glyphicons/link.png" %}'> Links</a>
     </li>
-    {% if not session.is_demo %}
-    <li role="presentation" class="nav-item">
-        <a class="nav-link {% active_page request 'SessionEditProperties' session.code %}" href="{% url 'SessionEditProperties' session.code %}"><img src='{% static "glyphicons/pencil.png" %}'> Edit</a>
-    </li>
-    {% endif %}
     <li role="presentation" class="nav-item">
         <a class="nav-link {% active_page request 'SessionMonitor' session.code %}" href="{% url 'SessionMonitor' session.code %}"><img src='{% static "glyphicons/eye-open.png" %}'> Monitor</a>
     </li>
@@ -47,13 +48,9 @@
         <a class="nav-link {% active_page request 'MTurkCreateHIT' session.code %}" href="{% url 'MTurkCreateHIT' session.code %}"><img src='{% static "glyphicons/cloud.png" %}'> MTurk</a>
     </li>
     {% endif %}
-    {% if session.is_demo %}
-    <li role="presentation">
-        <a class="nav-link" href="{% url 'CreateDemoSession' session.config.name %}" data-toggle="popover" data-trigger="hover" data-placement="top" data-content="Recreate session from scratch. You can also copy this link and share with others.">
-            <img src='{% static "glyphicons/refresh.png" %}'> New
-        </a>
+    <li role="presentation" class="nav-item">
+        <a class="nav-link {% active_page request 'SessionDescription' session.code %}" href="{% url 'SessionDescription' session.code %}"><img src='{% static "glyphicons/pushpin.png" %}'> Description</a>
     </li>
-    {% endif %}
 
 </ul>
 {% endblock %}

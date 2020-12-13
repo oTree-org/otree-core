@@ -26,12 +26,11 @@ class BadRequestError(Exception):
 
 
 PARTICIPANT_NOT_IN_BOTWORKER_MSG = (
-    "Participant {participant_code} not loaded in botworker. "
+    "Bot for Participant {participant_code} not loaded. "
     "This can happen for several reasons: "
-    "(1) You are running multiple botworkers "
-    "(2) You restarted the botworker after creating the session "
-    "(3) The bots expired "
-    "(the botworker stores bots for "
+    "(1) You restarted the server after creating the session "
+    "(2) The bots expired "
+    "(the server stores bots for "
     "only the most recent {prune_limit} sessions)."
 )
 

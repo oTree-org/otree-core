@@ -250,7 +250,7 @@ for lc, CUR in curs:
     locale = Locale.parse(lc)
     pattern = locale.currency_formats['standard'].pattern.replace('\\xa4', ' ').replace('#,##0.00', '#')    
     formatted = fc(1.00, currency=CUR, locale=lc)
-    print('{}\t{}\t{}\t{}'.format(la, LO, CUR, formatted))
+    sys.stdout.write('{}\t{}\t{}\t{}\n'.format(la, LO, CUR, formatted))
 
 ar	AE	AED	د.إ.‏ 1.00
 ar	EG	EGP	ج.م.‏ 1.00

@@ -1,14 +1,6 @@
 {% extends "otree/admin/Session.html" %}
 {% load otree %}
 
-{% block internal_scripts %}
-  {{ block.super }}
-  <style type="text/css" media="screen">
-    .codes {
-      font-family: 'Courier New'
-    }
-  </style>
-{% endblock %}
 {% block content %}
   {{ block.super }}
 
@@ -42,73 +34,6 @@
         <form action="" method="post" role="form" class="form"
               id="form">
           {% csrf_token %}
-
-          <h4>Participants to be reviewed</h4>
-
-          <table class="table table-striped">
-            <tr>
-              <th>Code</th>
-              <th>Assignment ID</th>
-              <th>Worker ID</th>
-              <th>Progress</th>
-              <th>Completion code</th>
-              <th>
-                Bonus payoff
-              </th>
-              <th>Total pay</th>
-              <th>
-                Select
-                <div class="checkbox">
-                  <label>
-                    <input name="checkAll" type="checkbox"
-                           value="">
-                  </label>
-                </div>
-              </th>
-            </tr>
-
-            {% for p in participants_not_reviewed %}
-              <tr>
-                <td class="codes">{{ p.code }}</td>
-                <td class="codes">{{ p.mturk_assignment_id|default_if_none:"" }}</td>
-                <td class="codes">{{ p.mturk_worker_id|default_if_none:"" }}</td>
-                <td>{{ p.current_page_ }}</td>
-                <td>{{ p.mturk_answers_formatted }}</td>
-                <td>
-                  {{ p.payoff_in_real_world_currency }}
-                </td>
-                <td>{{ p.payoff_plus_participation_fee }}</td>
-                <td>
-                  <div class="checkbox-inline">
-                    <label>
-                      <input type="checkbox"
-                             name="workers"
-                             data-value="{{ p.payoff_plus_participation_fee|json }}"
-                             value="{{ p.mturk_worker_id }}">
-                    </label>
-                  </div>
-                </td>
-              </tr>
-            {% endfor %}
-          </table>
-          <div class="btn-group">
-            <button type="button"
-                    class="btn btn-primary"
-                    data-toggle="modal"
-                    data-target="#mturk-pay"
-                    id="pay"
-                    disabled>
-              Pay via MTurk
-            </button>
-            <button type="button"
-                    class="btn btn-primary"
-                    data-toggle="modal"
-                    data-target="#mturk-reject"
-                    id="reject"
-                    disabled>
-              Reject
-            </button>
-          </div>
           <div class="modal" id="mturk-pay" tabindex="-1" role="dialog">
             <div class="modal-dialog">
               <div class="modal-content bg-warning">
@@ -157,118 +82,90 @@
               </div>
             </div>
           </div>
+
+          <h4>Participants to be reviewed</h4>
+          {% include 'otree/includes/mturk_payment_table.html' with participants=participants_not_reviewed reviewable=True only %}
         </form>
 
-        <script>
-            $(document).ready(function () {
-                /*
-                 "checkAll" checkbox
-                 in the table header
-                 */
-                checkFunction('workers', 'checkAll');
-
-                $('input[name=workers]').change(function () {
-                    var sum = 0.00;
-                    var numChecked = 0;
-                    var $payButton = $('#pay');
-                    var $rejectButton = $('#reject');
-                    $('input[name=workers]:checked').each(function (index, element) {
-                        sum += parseFloat($(this).data('value'));
-                        numChecked += 1;
-                    });
-                    if (numChecked > 0) {
-                        $payButton.attr('disabled', false).text('Pay via MTurk ($' + sum.toFixed(2) + ')');
-                        $rejectButton.attr('disabled', false);
-                    } else {
-                        $payButton.attr('disabled', true).text('Pay via MTurk');
-                        $rejectButton.attr('disabled', true);
-                    }
-                })
-            });
-
-            function checkFunction(checkName, checkAllName) {
-                // code for "checkAll" checkbox
-                $('input[name=' + checkAllName + ']').click(function () {
-                    $('input[name=' + checkName + ']').prop('checked', $(this).prop('checked')).trigger("change")
-                });
-                // if all checkboxes are selected check also "checkAll" checkbox
-                $('input[name=' + checkName + ']').change(function () {
-                    var check = ($("input[name=" + checkName + "]:checked").length === $("input[name=" + checkName + "]").length);
-                    $("input[name=" + checkAllName + "]").prop('checked', check);
-                })
-            }
-        </script>
+        <div class="btn-group">
+          <button type="button"
+                  class="btn btn-primary"
+                  data-toggle="modal"
+                  data-target="#mturk-pay"
+                  id="pay"
+                  disabled>
+            Pay via MTurk
+          </button>
+          <button type="button"
+                  class="btn btn-primary"
+                  data-toggle="modal"
+                  data-target="#mturk-reject"
+                  id="reject"
+                  disabled>
+            Reject
+          </button>
+        </div>
       {% endif %}
-
 
       {% if participants_approved %}
         <h4>Approved assignments</h4>
-        <table class="table table-striped">
-          <tr>
-            <th>Participant code</th>
-            <th>Assignment Id</th>
-            <th>Worker Id</th>
-            <th>
-              Participation fee
-            </th>
-            <th>
-              Bonus
-            </th>
-            <th>Total pay</th>
-          </tr>
-
-          {% for p in participants_approved %}
-            <tr>
-              <td class="codes">{{ p.code }}</td>
-              <td class="codes">{{ p.mturk_assignment_id|default_if_none:"" }}</td>
-              <td class="codes">{{ p.mturk_worker_id|default_if_none:"" }}</td>
-              <td>
-                {{ participation_fee }}
-              </td>
-              <td>
-                {{ p.payoff_in_real_world_currency }}
-              </td>
-              <td>{{ p.payoff_plus_participation_fee }}</td>
-            </tr>
-          {% endfor %}
-        </table>
+        {% include 'otree/includes/mturk_payment_table.html' with participants=participants_approved reviewable=False only %}
       {% endif %}
       {% if participants_rejected %}
         <h4>Rejected assignments</h4>
-        <table class="table table-striped">
-          <tr>
-            <th>Participant code</th>
-            <th>Assignment Id</th>
-            <th>Worker Id</th>
-            <th>
-              Participation fee
-            </th>
-            <th>
-              Bonus
-            </th>
-            <th>Total pay</th>
-          </tr>
-
-          {% for p in participants_rejected %}
-            <tr>
-              <td class="codes">{{ p.code }}</td>
-              <td class="codes">{{ p.mturk_assignment_id|default_if_none:"" }}</td>
-              <td class="codes">{{ p.mturk_worker_id|default_if_none:"" }}</td>
-              <td>
-                {{ participation_fee }}
-              </td>
-              <td>
-                {{ p.payoff_in_real_world_currency }}
-              </td>
-              <td>{{ p.payoff_plus_participation_fee }}</td>
-            </tr>
-          {% endfor %}
-        </table>
+        {% include 'otree/includes/mturk_payment_table.html' with participants=participants_rejected reviewable=False only %}
       {% endif %}
       {% if not participants_not_reviewed and not participants_approved and not participants_rejected %}
-        <p>You have no participants who finished the
-          experiment.</p>
+        <p>No workers have submitted yet.</p>
       {% endif %}
+      {% if auto_rejects %}
+        <div class="alert alert-danger">
+          oTree automatically rejected the following assignments because the participants submitted without even
+          opening the link to the study: {{ auto_rejects }}
+        </div>
+      {% endif %}
+
+      <script>
+          $(document).ready(function () {
+              /*
+               "checkAll" checkbox
+               in the table header
+               */
+              checkFunction('workers', 'checkAll');
+
+              $('input[name=workers]').change(function () {
+                  var sum = 0.00;
+                  var numChecked = 0;
+                  var $payButton = $('#pay');
+                  var $rejectButton = $('#reject');
+                  $('input[name=workers]:checked').each(function (index, element) {
+                      sum += parseFloat($(this).data('value'));
+                      numChecked += 1;
+                  });
+                  if (numChecked > 0) {
+                      $payButton.attr('disabled', false).text('Pay via MTurk ($' + sum.toFixed(2) + ')');
+                      $rejectButton.attr('disabled', false);
+                  } else {
+                      $payButton.attr('disabled', true).text('Pay via MTurk');
+                      $rejectButton.attr('disabled', true);
+                  }
+              })
+          });
+
+          function checkFunction(checkName, checkAllName) {
+              // code for "checkAll" checkbox
+              $('input[name=' + checkAllName + ']').click(function () {
+                  $('input[name=' + checkName + ']').prop('checked', $(this).prop('checked')).trigger("change")
+              });
+              // if all checkboxes are selected check also "checkAll" checkbox
+              $('input[name=' + checkName + ']').change(function () {
+                  var check = ($("input[name=" + checkName + "]:checked").length === $("input[name=" + checkName + "]").length);
+                  $("input[name=" + checkAllName + "]").prop('checked', check);
+              })
+          }
+      </script>
+
+
     </div>
   {% endif %}
   <br>

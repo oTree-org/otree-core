@@ -65,9 +65,11 @@ class _BaseMoneyInput(forms.NumberInput):
         return context
 
     def format_value(self, value):
+        if value == '' or value is None:
+            return None
         if isinstance(value, (Currency, RealWorldCurrency)):
             value = Decimal(value)
-        return force_text(value)
+        return str(value)
 
 
 class _RealWorldCurrencyInput(_BaseMoneyInput):
@@ -110,9 +112,11 @@ class Slider(forms.NumberInput):
         super().__init__(*args, **kwargs)
 
     def format_value(self, value):
+        if value == '' or value is None:
+            return None
         if isinstance(value, (Currency, RealWorldCurrency)):
             value = Decimal(value)
-        return force_text(value)
+        return str(value)
 
     def get_context(self, *args, **kwargs):
         context = super().get_context(*args, **kwargs)

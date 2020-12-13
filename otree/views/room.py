@@ -1,14 +1,15 @@
 import time
 
 import vanilla
+from django.http import JsonResponse
+from django.shortcuts import redirect
 from django.urls import reverse
-from django.http import HttpResponseRedirect, JsonResponse
+
 from otree.channels import utils as channel_utils
 from otree.models_concrete import ParticipantRoomVisit
 from otree.room import ROOM_DICT
-from otree.views.admin import CreateSessionForm
-from django.shortcuts import redirect
 from otree.session import SESSION_CONFIGS_DICT
+from otree.views.admin import CreateSessionForm
 
 
 class Rooms(vanilla.TemplateView):

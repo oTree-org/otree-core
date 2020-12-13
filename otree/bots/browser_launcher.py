@@ -171,7 +171,7 @@ class Launcher:
         for session_to_create in sessions_to_create:
             total_time_spent += self.run_session(**session_to_create)
 
-        print('Total: {} seconds'.format(round(total_time_spent, 1)))
+        sys.stdout.write('Total: {} seconds\n'.format(round(total_time_spent, 1)))
 
         # don't delete sessions -- it's too susceptible to race conditions
         # between sending the completion message and loading the last page
@@ -187,7 +187,7 @@ class Launcher:
         browser_process = self.launch_browser(num_participants, pre_create_id)
 
         row_fmt = "{:<%d} {:>2} participants..." % (self.max_name_length + 1)
-        print(row_fmt.format(session_config_name, num_participants), end='')
+        sys.stdout.write(row_fmt.format(session_config_name, num_participants))
 
         session_code = self.create_bb_session(
             session_config_name=session_config_name,
@@ -197,7 +197,7 @@ class Launcher:
         )
 
         time_spent = self.websocket_listen(session_code, num_participants)
-        print('...finished in {} seconds'.format(time_spent))
+        sys.stdout.write('...finished in {} seconds\n'.format(time_spent))
 
         # TODO:
         # - if Chrome/FF is already running when the browser is launched,
@@ -269,10 +269,10 @@ class Launcher:
         is_running = browser_type.lower() in ps_output.lower()
 
         if is_running:
-            print(
+            sys.stdout.write(
                 'WARNING: it looks like {browser} is already running. '
                 'You should quit {browser} before running '
-                'this command.'.format(browser=browser_type)
+                'this command.\n'.format(browser=browser_type)
             )
 
     def close_existing_session(self):

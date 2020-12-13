@@ -3,6 +3,11 @@ import otree.db
 from otree.channels import utils as channel_utils
 from otree.models import Participant
 from otree.lookup import get_page_lookup
+import logging
+from otree.db import idmap
+
+
+logger = logging.getLogger(__name__)
 
 
 def live_payload_function(participant_code, page_name, payload):
@@ -12,22 +17,40 @@ def live_payload_function(participant_code, page_name, payload):
     app_name = lookup.app_name
     models_module = otree.common.get_models_module(app_name)
     PageClass = lookup.page_class
-    assert page_name == PageClass.__name__
-    method_name = PageClass.live_method
+    # this could be incorrect if the player advances right after liveSend is executed.
+    # maybe just return if it doesn't match. (but leave it in for now and see how much that occurs,
+    # don't want silent failures.)
+    if page_name != PageClass.__name__:
+        logger.warning(
+            f'Ignoring liveSend message from {participant_code} because '
+            f'they are on page {PageClass.__name__}, not {page_name}.'
+        )
+        return
+    live_method_name = PageClass.live_method
 
-    with otree.db.idmap.use_cache():
+    with idmap.use_cache():
         player = models_module.Player.objects.get(
             round_number=lookup.round_number, participant=participant
         )
+
+        # it makes sense to check the group first because
+        # if the player forgot to define it on the Player,
+        # we shouldn't fall back to checking the group. you could get an error like
+        # 'Group' has no attribute 'live_auction' which would be confusing.
+        # also, we need this 'group' object anyway.
+        # and this is a good place to show the deprecation warning.
         group = player.group
-        method = getattr(group, method_name)
-        retval = method(player.id_in_group, payload)
-        otree.db.idmap.save_objects()
+        if hasattr(group, live_method_name):
+            method = getattr(group, live_method_name)
+            retval = method(player.id_in_group, payload)
+        else:
+            method = getattr(player, live_method_name)
+            retval = method(payload)
 
     if not retval:
         return
     if not isinstance(retval, dict):
-        msg = f'{method_name} must return a dict'
+        msg = f'{live_method_name} must return a dict'
         raise LiveMethodBadReturnValue(msg)
 
     pcodes_dict = {

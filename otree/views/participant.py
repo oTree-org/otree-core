@@ -1,25 +1,25 @@
-import threading
 import time
 
 import django.utils.timezone
-import otree.common
-import otree.constants
-import otree.models
-import otree.views.admin
-import otree.views.mturk
 import vanilla
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
     HttpResponseNotFound,
-    Http404,
 )
 from django.shortcuts import get_object_or_404, render
 from django.template.response import TemplateResponse
 from django.utils.translation import ugettext as _
-from otree.common import make_hash, BotError
+
+import otree.bots.browser as browser_bots
 import otree.channels.utils as channel_utils
-import otree.db.idmap
+import otree.common
+import otree.constants
+import otree.models
+import otree.views.admin
+import otree.views.mturk
+from otree.common import make_hash, BotError
+from otree.db import idmap
 from otree.models import Participant, Session
 from otree.models_concrete import (
     ParticipantRoomVisit,
@@ -27,8 +27,15 @@ from otree.models_concrete import (
     ParticipantVarsFromREST,
 )
 from otree.room import ROOM_DICT
-from otree.views.abstract import GenericWaitPageMixin, NO_PARTICIPANTS_LEFT_MSG
-import otree.bots.browser as browser_bots
+from otree.views.abstract import GenericWaitPageMixin
+
+
+def no_participants_left_http_response():
+    '''
+    this function exists because i'm not sure if Http response objects can be reused
+    better to return 404 so browser bot client & tests can recognize it
+    '''
+    return HttpResponseNotFound(_("Session is full."))
 
 
 class OutOfRangeNotification(vanilla.View):
@@ -63,28 +70,27 @@ class InitializeParticipant(vanilla.UpdateView):
     url_pattern = r'^InitializeParticipant/(?P<participant_code>[a-z0-9]+)/$'
 
     def get(self, request, participant_code):
-            participant = get_object_or_404(Participant, code=participant_code)
+        participant = get_object_or_404(Participant, code=participant_code)
 
-            if participant._index_in_pages == 0:
-                participant._index_in_pages = 1
-                participant.visited = True
+        if participant._index_in_pages == 0:
+            participant._index_in_pages = 1
+            participant.visited = True
 
-                # participant.label might already have been set
-                participant.label = participant.label or self.request.GET.get(
-                    otree.constants.participant_label
-                )
+            # participant.label might already have been set
+            participant.label = participant.label or self.request.GET.get(
+                otree.constants.participant_label
+            )
 
-                now = django.utils.timezone.now()
-                participant.time_started = now
-                participant._last_page_timestamp = time.time()
-                participant.save()
-                with otree.db.idmap.use_cache():
-                    player = participant._get_current_player()
-                    player.start()
-                    otree.db.idmap.save_objects()
+            now = django.utils.timezone.now()
+            participant.time_started = now
+            participant._last_page_timestamp = time.time()
+            participant.save()
+            with idmap.use_cache():
+                player = participant._get_current_player()
+                player.start()
 
-            first_url = participant._url_i_should_be_on()
-            return HttpResponseRedirect(first_url)
+        first_url = participant._url_i_should_be_on()
+        return HttpResponseRedirect(first_url)
 
 
 class MTurkStart(vanilla.View):
@@ -96,8 +102,14 @@ class MTurkStart(vanilla.View):
         return super().dispatch(request)
 
     def get(self, request):
-        assignment_id = self.request.GET['assignmentId']
-        worker_id = self.request.GET['workerId']
+        GET = request.GET
+        try:
+            assignment_id = GET['assignmentId']
+            worker_id = GET['workerId']
+        except Exception:
+            return HttpResponseNotFound(
+                'URL is missing assignmentId or workerId parameter'
+            )
         qual_id = self.session.config['mturk_hit_settings'].get(
             'grant_qualification_id'
         )
@@ -140,7 +152,7 @@ class MTurkStart(vanilla.View):
                     visited=False
                 ).order_by('id')[0]
             except IndexError:
-                return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
+                return no_participants_left_http_response()
 
             # 2014-10-17: needs to be here even if it's also set in
             # the next view to prevent race conditions
@@ -176,14 +188,14 @@ def get_participant_with_cookie_check(session, cookies):
         return participant
 
 
-def participant_start_page_or_404(session, *, label, cookies=None):
+def participant_or_none_if_exceeded(session, *, label, cookies=None):
     '''pass request.session as an arg if you want to get/set a cookie'''
     if cookies is None:
         participant = get_existing_or_new_participant(session, label)
     else:
         participant = get_participant_with_cookie_check(session, cookies)
     if not participant:
-        raise Http404(NO_PARTICIPANTS_LEFT_MSG)
+        return
 
     # needs to be here even if it's also set in
     # the next view to prevent race conditions
@@ -205,7 +217,9 @@ class JoinSessionAnonymously(vanilla.View):
             otree.models.Session, _anonymous_code=anonymous_code
         )
         label = self.request.GET.get('participant_label')
-        participant = participant_start_page_or_404(session, label=label)
+        participant = participant_or_none_if_exceeded(session, label=label)
+        if not participant:
+            return no_participants_left_http_response()
         return HttpResponseRedirect(participant._start_url())
 
 
@@ -275,9 +289,11 @@ class AssignVisitorToRoom(GenericWaitPageMixin, vanilla.View):
         # participant_label_file, 2 requests for the same start URL with same label
         # will return the same participant. Not sure if the previous behavior
         # (assigning to 2 different participants) was intentional or bug.
-        participant = participant_start_page_or_404(
+        participant = participant_or_none_if_exceeded(
             session, label=label, cookies=cookies
         )
+        if not participant:
+            return no_participants_left_http_response()
         if label:  # whether the room has participant labels or not
             passed_vars = ParticipantVarsFromREST.objects.filter(
                 room_name=self.room_name, participant_label=label
@@ -329,29 +345,29 @@ class BrowserBotStartLink(GenericWaitPageMixin, vanilla.View):
     url_pattern = r'^browser_bot_start/(?P<pre_create_id>\w+)/$'
 
     def dispatch(self, request, pre_create_id):
-            session_info = BrowserBotsLauncherSessionCode.objects.first()
-            if session_info:
-                if pre_create_id != session_info.pre_create_id:
-                    return HttpResponseNotFound('Incorrect pre_create_id')
-                session = Session.objects.get(code=session_info.code)
-                participant = (
-                    session.participant_set.filter(visited=False).order_by('id').first()
-                )
-                if not participant:
-                    return HttpResponseNotFound(NO_PARTICIPANTS_LEFT_MSG)
+        session_info = BrowserBotsLauncherSessionCode.objects.first()
+        if session_info:
+            if pre_create_id != session_info.pre_create_id:
+                return HttpResponseNotFound('Incorrect pre_create_id')
+            session = Session.objects.get(code=session_info.code)
+            participant = (
+                session.participant_set.filter(visited=False).order_by('id').first()
+            )
+            if not participant:
+                return no_participants_left_http_response()
 
-                # 2014-10-17: needs to be here even if it's also set in
-                # the next view to prevent race conditions
-                participant.visited = True
-                participant.save()
-                return HttpResponseRedirect(participant._start_url())
-            else:
-                ctx = {
-                    'view': self,
-                    'title_text': 'Please wait',
-                    'body_text': 'Waiting for browser bots session to begin',
-                }
-                return render(request, "otree/WaitPage.html", ctx)
+            # 2014-10-17: needs to be here even if it's also set in
+            # the next view to prevent race conditions
+            participant.visited = True
+            participant.save()
+            return HttpResponseRedirect(participant._start_url())
+        else:
+            ctx = {
+                'view': self,
+                'title_text': 'Please wait',
+                'body_text': 'Waiting for browser bots session to begin',
+            }
+            return render(request, "otree/WaitPage.html", ctx)
 
     def socket_url(self):
         return '/browser_bot_wait/'
