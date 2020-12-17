@@ -59,6 +59,8 @@ def get_roles(Constants) -> list:
                 msg = f"{k}: any Constant that starts with 'role_' must be a string, for example: role_sender = 'Sender'"
                 raise Exception(msg)
             roles.append(v)
+    # repeats roles list until there are at least as many roles as players per group
+    roles *= ((Constants.players_per_group - 1) // len(roles)) + 1
     return roles
 
 
