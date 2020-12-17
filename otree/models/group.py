@@ -46,12 +46,15 @@ class BaseGroup(models.OTreeModel, GroupIDMapMixin):
             raise ValueError(msg) from None
 
     def get_player_by_role(self, role):
+        """
+        Return a list of all players with that role.
+        """
         if get_roles(self._Constants):
-            try:
+            try:  # if a role is defined (in Constants)
                 return self.player_set.filter(_role=role)
             except django.core.exceptions.ObjectDoesNotExist:
                 pass
-        else:
+        else:  # if a role is defined in the old way, i.e., with player.role()
             players_with_role = [p for p in self.get_players() if p.role() == role]
             return players_with_role
         msg = f'No player with role "{role}"'
