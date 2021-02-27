@@ -1,0 +1,42 @@
+{% extends "otree/BaseAdmin.html" %}
+{% block title %}Admin Login{% endblock %}
+
+{% block content %}
+  {% if form.errors %}
+    Login failed
+  {% endif %}
+
+  {% for w in warnings %}
+    <p class="text-danger">{{ w }}</p>
+  {% endfor %}
+
+  <div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="mb-3 required">
+          <label class="col-form-label" for="id_username">Username:</label>
+          <div class="controls  field-username">
+            <input type="text" name="username"
+                   autofocus required id="id_username" class="form-control">
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="mb-3 required">
+          <label class="col-form-label" for="id_password">Password:</label>
+          <div class="controls  field-password">
+            <input type="password" name="password"
+                   required id="id_password" class="form-control">
+          </div>
+        </div>
+      </div>
+      <div class="submit-row">
+        <button type="submit" id="btn-login"
+                class="btn btn-secondary">Log in
+        </button>
+      </div>
+    </form>
+  </div>
+
+{% endblock %}

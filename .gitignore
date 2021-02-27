@@ -1,0 +1,15 @@
+build/
+database.db
+dist/
+docs/_build/doctrees
+docs/_build/html/_sources/
+docs/app/Thumbs.db
+myapp*
+.idea/
+*.pyc
+db.sqlite3
+.tox/
+.coverage
+htmlcov/
+tests/_static_root
+__temp_*

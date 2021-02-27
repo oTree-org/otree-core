@@ -1,0 +1,15 @@
+{% extends "otree/Session.html" %}
+
+
+{% block content %}
+    {{ super() }}
+    {% include "otree/includes/messages.html" %}
+    <form action="" method="post" role="form" class="form" id="form">
+        {% csrf_token %}
+
+      {% formfields %}
+
+      <button>Save changes</button>
+    </form>
+
+{% endblock %}

@@ -1,0 +1,40 @@
+
+{# NOTE: keep this compact so that view-source is friendly for users #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block head_title %}{% endblock %}</title>
+    {% block internal_styles %}
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{% static 'bootstrap5/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'otree/css/theme.css' %}">
+        {% comment %}
+        this actually belongs in internal_scripts, but we are in the process
+        of deprecating it, so some people's apps might still rely on jQuery being
+        available within the content block.
+        {% endcomment %}
+        <script src="{% static 'otree/js/jquery-3.2.1.min.js' %}"></script>
+    {% endblock %}
+    {# these blocks are for public API #}
+    {% block global_styles %}{% endblock %}
+    {% block app_styles %}{% endblock %}
+    {% block styles %}{% endblock %}
+</head>
+<body>
+{% block body_main %}{% endblock %}
+
+{% block internal_scripts %}
+  <script src="{% static 'otree/js/internet-explorer.js' %}"></script>
+  <script src="{% static 'otree/js/reconnecting-websocket-iife.min.js' %}"></script>
+    {% block bootstrap_scripts %}
+    <script src="{% static 'bootstrap5/js/bootstrap.bundle.min.js' %}"></script>
+    {% endblock %}
+    <script src="{% static 'otree/js/common.js' %}"></script>
+{% endblock %}
+{% block live %}{% endblock %}
+{# these blocks are for public API #}
+{% block global_scripts %}{% endblock %}
+{% block app_scripts %}{% endblock %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

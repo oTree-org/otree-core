@@ -1,0 +1,35 @@
+<HTMLQuestion xmlns="http://mechanicalturk.amazonaws.com/AWSMechanicalTurkDataSchemas/2011-11-11/HTMLQuestion.xsd">
+  <HTMLContent><![CDATA[
+    <!DOCTYPE html>
+    <body>
+    {% include user_template %}
+    <script>
+        var oTreeURL = "{{ start_url|safe }}";
+
+        function turkGetParam(name) {
+            var regexS = "[\?&]" + name + "=([^&#]*)";
+            var regex = new RegExp(regexS);
+            var results = regex.exec(window.location.href);
+            if (results == null) {
+                return "";
+            } else {
+                return results[1];
+            }
+        }
+
+        // ASSIGNS THE URL PARAMETERS TO JAVASCRIPT VARIABLES
+        var oTreeAnchors = document.getElementsByClassName('otree-link');
+        var assignmentId = turkGetParam('assignmentId');
+        if (assignmentId && assignmentId !== 'ASSIGNMENT_ID_NOT_AVAILABLE') {
+            for (var anchor of oTreeAnchors) {
+                anchor.target = '_blank';
+                anchor.href = oTreeURL + window.location.search;
+            }
+        }
+    </script>
+    </body>
+    </html>
+    ]]>
+  </HTMLContent>
+  <FrameHeight>{{ frame_height }}</FrameHeight>
+</HTMLQuestion>

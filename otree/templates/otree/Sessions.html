@@ -1,0 +1,164 @@
+{% extends "otree/BaseAdmin.html" %}
+
+
+{% block title %}
+  {% if is_archive %}
+    Archived Sessions
+  {% else %}
+    Sessions
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {{ super() }}
+
+  <form action="{% url 'CreateSession' %}">
+    <p>&nbsp;</p>{# this is just here for ergonomics so that after you click 'create session' you are in the same spot #}
+    <div class="btn-group">
+      <button class="btn btn-primary">
+        Create new session
+      </button>
+      <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown">
+      </button>
+      <div class="dropdown-menu" role="menu">
+        <a class="dropdown-item" href="{% url 'CreateSession' %}?is_mturk=1">For MTurk</a>
+      </div>
+    </div>
+  </form>
+
+  <br>
+
+  {% if sessions %}
+      <form id="delete-archive-form" method="post">
+      {% csrf_token %}
+      <div class="btn-group" role="group">
+        <button type="submit"
+                class="action-on-selected-sessions btn btn-secondary"
+                disabled formaction="{% url 'ToggleArchivedSessions' %}">
+          <img src='{% static "glyphicons/folder-closed.png" %}'>
+          {% if is_archive %}Un-Archive{% else %}Archive{% endif %}
+        </button>
+        <button type="button"
+                class="action-on-selected-sessions btn btn-secondary"
+                id="btn-delete-sessions"
+                disabled>
+          <img src='{% static "glyphicons/delete.png" %}'> Delete
+        </button>
+        <progress id="delete-session-wait" style="display:none"></progress>
+      </div>
+
+      <br><br>
+
+      <table class="table">
+        <thead>
+        <th>
+          <input name="checkAll" type="checkbox" value="">
+        </th>
+        <th>Code</th>
+        <th>Size</th>
+        <th>Config</th>
+        <th>Label</th>
+        <th></th>
+        </thead>
+        <tbody>
+        {% for s in sessions %}
+          <tr {% if s.archived %}class="hidden"{% endif %}>
+            <td>
+              <input name="session" type="checkbox" value="{{ s.code }}">
+            </td>
+            <td><a href="{% url 'SessionStartLinks' s.code %}">{{ s.code }}</a></td>
+            <td>{{ s.num_participants }}</td>
+            <td>{{ s.config.name }}</td>
+            <td>{{ s.label }}</td>
+            <td>
+              {% if s.mturk_is_active() %}
+                <a href="{% url 'MTurkCreateHIT' s.code %}"
+                   class="btn btn-sm btn-success" role="button">
+                MTurk Live
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </form>
+  {% endif %}
+  {% if not is_archive and archived_sessions_exist %}
+    <div>
+      <form action="" method="GET">
+        <a href="?archived=1">Archived sessions</a>
+      </form>
+    </div>
+  {% endif %}
+  {% include "otree/includes/messages.html" %}
+{% endblock %}
+
+{% block internal_scripts %}
+  {{ super() }}
+  <script>
+
+      /*
+      ****************************
+      ****************************
+      Code for "checkAll" checkbox
+      in the header
+      ****************************
+      ****************************
+      */
+      $(function () {
+          checkFunction('session', 'checkAll');
+      });
+
+      function checkFunction(checkName, checkAllName) {
+// code for "checkAll" checkbox
+          $('input[name=' + checkAllName + ']:visible').click(function () {
+              $('input[name=' + checkName + ']:visible').prop('checked', $(this).prop('checked')).trigger("change")
+          });
+// if all checkboxes are selected check also "checkAll" checkbox
+          $('input[name=' + checkName + ']').change(function () {
+              var check = ($("input[name=" + checkName + "]:checked:visible").length == $("input[name=" + checkName + "]:visible").length);
+              $("input[name=" + checkAllName + "]:visible").prop('checked', check);
+          })
+      }
+
+      $(function () {
+          $('input[name=session]').change(function () {
+              var actionButtons = $('.action-on-selected-sessions');
+              var numCheckedSessions = $('input[name=session]:checked').length;
+              if (numCheckedSessions === 0) {
+                  actionButtons.attr('disabled', true);
+              } else {
+                  actionButtons.attr('disabled', false);
+              }
+          })
+
+          let socket = makeReconnectingWebSocket("/delete_sessions");
+          let progressDiv = $('#delete-session-wait');
+
+          let $btnConfirmDelete = $('#btn-delete-sessions');
+
+          $btnConfirmDelete.click(function (e) {
+              $btnConfirmDelete.prop('disabled', true);
+              progressDiv.show();
+
+              let ary = $('#delete-archive-form').serializeArray();
+              let session_codes = [];
+              for (let entry of ary) {
+                  if (entry.name === 'session') {
+                      session_codes.push(entry.value);
+                  }
+              }
+              socket.send(JSON.stringify(session_codes));
+              e.preventDefault();
+          });
+
+          socket.onmessage = function (message) {
+              location.reload();
+          }
+
+      });
+  
+  </script>
+
+{% endblock %}

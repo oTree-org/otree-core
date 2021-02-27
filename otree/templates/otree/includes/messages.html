@@ -1,0 +1,7 @@
+{% for ele in admin_message_queue %}
+    <div class="alert alert-{{ ele.alert_type }}">
+        {{ ele.msg }}
+    </div>
+{% endfor %}
+{# .clear() returns None so we convert that to empty string #}
+{{ admin_message_queue.clear() || "" }}

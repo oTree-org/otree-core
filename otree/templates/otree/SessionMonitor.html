@@ -1,0 +1,69 @@
+{% extends "otree/Session.html" %}
+
+
+{% block content %}
+  {{ super() }}
+  <table id="monitor-table"
+         class="table table-bordered table-hover table-condensed">
+    <thead>
+    <tr>
+      {% for header in column_names %}
+        <th>{{ header }}</th>
+      {% endfor %}
+    </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <p><span id="num_participants_visited">0</span>/{{ session.num_participants }} participants started.</p>
+  <p><small id="msg-refreshed" style="color: darkgreen"></small></p>
+
+  {% if not session.use_browser_bots %}
+    {% csrf_token %}
+    <button id="advance_users" class="btn btn-primary" type="button"
+            data-bs-toggle="popover" data-bs-trigger="hover"
+            data-bs-content="Advance the slowest user(s) by one page, by forcing a timeout on their current page.">
+      Advance slowest user(s)
+    </button>
+  {% endif %}
+
+  <div id="refresh_server_error" class="alert alert-danger"
+       style="display: none;">
+    Failed to refresh data from the server.
+  </div>
+
+  <div id="auto_advance_server_error" class="alert alert-danger"
+       style="display: none;">
+    An error occurred and participants could not be advanced.
+    See the server logs for details.
+  </div>
+
+{% endblock %}
+
+
+{% block internal_scripts %}
+  {{ super() }}
+  <script>
+      let recentlyActiveParticipants = {};
+      var $table, $tbody;
+      let visitedParticipants;
+      var monitorSocket;
+      var advanceUrl = '{% url 'AdvanceSession' session.code %}';
+      var socketUrl = {{ socket_url|json }};
+  </script>
+
+  <script src="{% static 'otree/js/monitor.js' %}"></script>
+
+  <script>
+      $(document).ready(function () {
+          visitedParticipants = [];
+          $table = $('#monitor-table');
+          $tbody = $table.find('tbody');
+          initWebSocket(socketUrl, $tbody, visitedParticipants, $('#msg-refreshed'));
+          setup_ajax_advance(advanceUrl);
+
+          $('[data-bs-toggle="popover"]').popover();
+      });
+
+  </script>
+{% endblock %}
