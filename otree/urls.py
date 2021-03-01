@@ -46,6 +46,7 @@ UNRESTRICTED_IN_DEMO_MODE = ALWAYS_UNRESTRICTED.union(
         'SessionMonitor',
         'SessionPayments',
         'SessionData',
+        'SessionDataAjax',
         'SessionStartLinks',
         'WSCreateDemoSession',
         'WSSessionMonitor',
