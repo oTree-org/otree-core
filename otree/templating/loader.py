@@ -58,8 +58,8 @@ def get_ibis_loader():
 
     dirs = [
         Path('.'),  # for noself
-        Path(otree.__file__).parent.joinpath('templates'),
         Path('_templates'),
+        Path(otree.__file__).parent.joinpath('templates'),
     ] + [Path(app_name, 'templates') for app_name in settings.OTREE_APPS]
     return loader_class(*dirs)
 

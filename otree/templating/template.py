@@ -1,7 +1,6 @@
-from . import nodes
 from . import compiler
 from . import context
-from . import ibis_loader
+from . import nodes
 
 
 class Template:

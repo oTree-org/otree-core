@@ -1,3 +1,4 @@
+import decimal
 import wtforms.fields as wtfields
 from otree.currency import Currency, to_dec
 from otree.i18n import format_number
@@ -33,7 +34,11 @@ class CurrencyField(wtfields.Field):
 
     def process_formdata(self, valuelist):
         if valuelist and valuelist[0]:
-            data = Currency(handle_localized_number_input(valuelist[0]))
+            try:
+                data = Currency(handle_localized_number_input(valuelist[0]))
+            except (decimal.InvalidOperation, ValueError):
+                self.data = None
+                raise ValueError(self.gettext('Not a valid decimal value'))
         else:
             data = None
         self.data = data

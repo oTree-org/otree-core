@@ -37,10 +37,10 @@ def esc_fn(fn):
 
 
 def unzip(zip_file: str, output_folder):
-    if os.path.isfile('settings.py') and os.path.isfile('manage.py'):
+    if os.path.isfile('settings.py'):
         logger.error(
             'You are trying to unzip a project but it seems you are '
-            'already in a project folder (found settings.py and manage.py).'
+            'already in a project folder (found settings.py).'
         )
         sys.exit(-1)
 

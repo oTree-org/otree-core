@@ -57,7 +57,10 @@ class Command(BaseCommand):
                 init = app.joinpath('__init__.py')
                 init.unlink(missing_ok=True)
                 app.joinpath('app.py').rename(init)
-
+        # delete manage.py so that PyCharm doesn't try to enforce Django syntax in templates
+        manage_py = Path('manage.py')
+        if manage_py.exists():
+            manage_py.unlink()
         print_function('Done.')
 
 

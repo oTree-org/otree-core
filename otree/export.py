@@ -441,10 +441,9 @@ def custom_export_app(app_name, fp):
         # need this to query null values
         player._is_frozen = False
     rows = models_module.custom_export(qs)
-    # convert to strings so we don't get errors especially for Excel
     str_rows = []
     for row in rows:
-        str_rows.append([str(ele) for ele in row])
+        str_rows.append([sanitize_for_csv(ele) for ele in row])
     _export_csv(fp, str_rows)
 
 

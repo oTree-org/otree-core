@@ -29,10 +29,10 @@ class Command(BaseCommand):
 
     def handle(self, name, interactive):
         dest = Path(name)
-        if Path('settings.py').exists() and Path('manage.py').exists():
+        if Path('settings.py').exists():
             msg = (
                 'You are trying to create a project but it seems you are '
-                'already in a project folder (found settings.py and manage.py).'
+                'already in a project folder (found settings.py).'
             )
             sys.exit(msg)
         if dest.exists():
