@@ -197,9 +197,13 @@ class BaseRESTView(HTTPEndpoint):
                 return _HttpResponseForbidden(
                     f'HTTP Request Header {REST_KEY_HEADER} is incorrect'
                 )
-        if request.method.lower() == 'post':
-            return self.post()
-        return self.get()
+        try:
+            if request.method.lower() == 'post':
+                return self.post()
+            return self.get()
+        except TypeError as exc:
+            # assume it to be because of wrong kwargs
+            return _HttpResponseForbidden(str(exc))
 
     def get(self):
         return self.inner_get(**self._payload)

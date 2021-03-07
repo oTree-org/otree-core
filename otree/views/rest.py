@@ -40,7 +40,7 @@ class PostParticipantVarsThroughREST(BaseRESTView):
         else:
             obj = ParticipantVarsFromREST(**kwargs, _json_data=_json_data)
             db.add(obj)
-        return Response('ok')
+        return JSONResponse({})
 
 
 class RESTSessionVars(BaseRESTView):
@@ -54,7 +54,7 @@ class RESTSessionVars(BaseRESTView):
         if not session:
             return Response(f'No current session in room {room_name}', 404)
         session.vars.update(vars)
-        return Response('ok')
+        return JSONResponse({})
 
 
 def get_session_urls(session: Session, request: Request) -> dict:
@@ -136,6 +136,13 @@ class RESTSessionConfigs(BaseRESTView):
 
     def inner_get(self):
         return Response(json_dumps(list(SESSION_CONFIGS_DICT.values())))
+
+
+class RESTOTreeVersion(BaseRESTView):
+    url_pattern = '/api/otree_version'
+
+    def inner_get(self):
+        return JSONResponse(dict(version=otree.__version__))
 
 
 class RESTCreateSessionLegacy(RESTSession):
