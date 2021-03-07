@@ -698,33 +698,25 @@ class FormFieldNode(Node):
 class FieldErrorsNode(Node):
     def process_token(self, token):
         try:
-            tag, arg = token.text.split(None, 1)
+            tag, arg = token.text.split()
         except:
             msg = f"1 argument required"
             raise errors.TemplateSyntaxError(msg, token) from None
         self.field_expr = Expression(arg, token)
 
     def wrender(self, context):
-
         fieldname = self.field_expr.eval(context)
-        fld: wtfields.Field
+
         if not isinstance(fieldname, str):
             raise TypeError("argument must be a string")
-
         if fieldname not in context['form']:
             raise ValueError(f'Field not found in form: {fieldname:.20}')
-        fld = context['form'][fieldname]
 
+        fld: wtfields.Field = context['form'][fieldname]
         if not fld.errors:
             return ''
-
-        if fld.errors:
-            # if the user wants custom styling, they can loop over form.xyz.errors
-            return (
-                '<div class="form-control-errors">'
-                + '<br/>'.join(fld.errors)
-                + '</div>'
-            )
+        # if the user wants custom styling, they can loop over form.xyz.errors
+        return '<div class="form-control-errors">' + '<br/>'.join(fld.errors) + '</div>'
 
 
 @register('formfields')

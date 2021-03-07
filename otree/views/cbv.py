@@ -1,6 +1,7 @@
 import asyncio
 import os
 import random
+import json
 
 from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import FormData
@@ -164,10 +165,23 @@ class BaseRESTView(HTTPEndpoint):
     """
     async so that i can get request.json().
     inner_post should also call group_send, at there are complications with doing sync_group_send.
-    
+
     """
 
-    def post(self, request: Request):
+    async def dispatch(self) -> None:
+        request = self.request = Request(self.scope, receive=self.receive)
+        # do the await out here in async function. need to compensate since we don't know
+        # if there is a body (depending on the specific endpoint)
+        body = await request.body()
+        if body:
+            payload = json.loads(body)
+        else:
+            payload = {}
+        self._payload = payload
+        response = await run_in_threadpool(self.inner_dispatch, request)
+        await response(self.scope, self.receive, self.send)
+
+    def inner_dispatch(self, request):
         if settings.AUTH_LEVEL in ['DEMO', 'STUDY']:
             REST_KEY = os.getenv(REST_KEY_NAME)  # put it here for easy testing
             if not REST_KEY:
@@ -183,8 +197,18 @@ class BaseRESTView(HTTPEndpoint):
                 return _HttpResponseForbidden(
                     f'HTTP Request Header {REST_KEY_HEADER} is incorrect'
                 )
-        payload = asyncio.run(request.json())
-        return self.inner_post(**payload)
+        if request.method.lower() == 'post':
+            return self.post()
+        return self.get()
+
+    def get(self):
+        return self.inner_get(**self._payload)
+
+    def post(self):
+        return self.inner_post(**self._payload)
+
+    def inner_get(self, **kwargs):
+        return Response('Method not allowed', status_code=405)
 
     def inner_post(self, **kwargs):
-        raise NotImplementedError
+        return Response('Method not allowed', status_code=405)

@@ -4,16 +4,14 @@ from . import errors
 
 # User-configurable functions and variables available in all contexts.
 builtins = {
-    'now': datetime.datetime.now,
     'range': range,
 }
 
 
 # A wrapper around a stack of dictionaries.
 class DataStack:
-
     def __init__(self):
-       self.stack = []
+        self.stack = []
 
     def __getitem__(self, key):
         for d in reversed(self.stack):
@@ -25,17 +23,15 @@ class DataStack:
 # A Context object is a wrapper around the user's input data. Its `.resolve()` method contains
 # the lookup-logic for resolving dotted variable names.
 class Context:
-
     def __init__(self, data_dict, template):
 
         # Data store of resolvable variable names for the .resolve() method.
         self.data = DataStack()
 
         # Standard builtins.
-        self.data.stack.append({
-            'context': self,
-            'is_defined': self.is_defined,
-        })
+        self.data.stack.append(
+            {'context': self, 'is_defined': self.is_defined,}
+        )
 
         # User-configurable builtins.
         self.data.stack.append(builtins)

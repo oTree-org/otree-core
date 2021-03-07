@@ -1,17 +1,20 @@
 import json
-import time
 
-from starlette.responses import Response
+from starlette.requests import Request
+from starlette.responses import Response, JSONResponse
 
 import otree
 import otree.bots.browser
 import otree.views.cbv
+from otree import settings
 from otree.channels import utils as channel_utils
 from otree.common import GlobalState
+from otree.currency import json_dumps
 from otree.database import db
+from otree.models import Session, Participant
 from otree.models_concrete import ParticipantVarsFromREST
 from otree.room import ROOM_DICT
-from otree.session import create_session
+from otree.session import create_session, SESSION_CONFIGS_DICT, CreateSessionInvalidArgs
 from .cbv import BaseRESTView
 
 
@@ -54,29 +57,88 @@ class RESTSessionVars(BaseRESTView):
         return Response('ok')
 
 
-class RESTCreateSession(BaseRESTView):
+def get_session_urls(session: Session, request: Request) -> dict:
+    d = dict(
+        session_url=request.url_for(
+            'JoinSessionAnonymously', anonymous_code=session._anonymous_code
+        )
+    )
+    room = session.get_room()
+    if room:
+        d['room_url'] = room.get_room_wide_url(request)
+    return d
+
+
+class RESTSession(BaseRESTView):
 
     url_pattern = '/api/sessions'
 
     def inner_post(self, **kwargs):
-        '''
-        Notes:
-        - This allows you to pass parameters that did not exist in the original config,
-        as well as params that are blocked from editing in the UI,
-        either because of datatype.
-        I can't see any specific problem with this.
-        '''
-        session = create_session(**kwargs)
+        try:
+            session = create_session(**kwargs)
+        except CreateSessionInvalidArgs as exc:
+            return Response(str(exc), status_code=400)
         room_name = kwargs.get('room_name')
+
+        response_payload = dict(code=session.code)
         if room_name:
             channel_utils.sync_group_send(
                 group=channel_utils.room_participants_group_name(room_name),
                 data={'status': 'session_ready'},
             )
-        return Response(session.code)
+
+        response_payload.update(get_session_urls(session, self.request))
+
+        return JSONResponse(response_payload)
+
+    def inner_get(self, code, participant_labels=None):
+        session = db.get_or_404(Session, code=code)
+        pp_set = session.pp_set
+        if participant_labels is not None:
+            print('participant_labels is', participant_labels)
+            pp_set = pp_set.filter(Participant.label.in_(participant_labels))
+        pdata = []
+        for id_in_session, code, label, payoff in pp_set.with_entities(
+            Participant.id_in_session,
+            Participant.code,
+            Participant.label,
+            Participant.payoff,
+        ):
+            pdata.append(
+                dict(
+                    id_in_session=id_in_session,
+                    code=code,
+                    label=label,
+                    payoff_in_real_world_currency=payoff.to_real_world_currency(
+                        session
+                    ),
+                )
+            )
+
+        # need custom json_dumps for currency values
+        return Response(
+            json_dumps(
+                dict(
+                    # we need the session config for mturk settings and participation fee
+                    # technically, other parts of session config might not be JSON serializable
+                    config=session.config,
+                    num_participants=session.num_participants,
+                    REAL_WORLD_CURRENCY_CODE=settings.REAL_WORLD_CURRENCY_CODE,
+                    participants=pdata,
+                    **get_session_urls(session, self.request),
+                )
+            )
+        )
 
 
-class RESTCreateSessionLegacy(RESTCreateSession):
+class RESTSessionConfigs(BaseRESTView):
+    url_pattern = '/api/session_configs'
+
+    def inner_get(self):
+        return Response(json_dumps(list(SESSION_CONFIGS_DICT.values())))
+
+
+class RESTCreateSessionLegacy(RESTSession):
     url_pattern = '/api/v1/sessions'
 
 

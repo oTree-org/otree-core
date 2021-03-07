@@ -222,6 +222,9 @@ SESSION_CONFIGS_DICT = get_session_configs_dict(
     settings.SESSION_CONFIGS, settings.SESSION_CONFIG_DEFAULTS
 )
 
+class CreateSessionInvalidArgs(ValueError):
+    pass
+
 
 def create_session(
     session_config_name,
@@ -240,7 +243,7 @@ def create_session(
         session_config = SESSION_CONFIGS_DICT[session_config_name]
     except KeyError:
         msg = 'Session config "{}" not found in settings.SESSION_CONFIGS.'
-        raise KeyError(msg.format(session_config_name)) from None
+        raise CreateSessionInvalidArgs(msg.format(session_config_name)) from None
     else:
         # copy so that we don't mutate the original
         # .copy() returns a dict, so need to convert back to SessionConfig
@@ -251,7 +254,7 @@ def create_session(
         # to put stuff in the session config that should be in the session.
         bad_keys = modified_config.keys() & NON_EDITABLE_FIELDS
         if bad_keys:
-            raise Exception(
+            raise CreateSessionInvalidArgs(
                 f'The following session config fields are not editable: {bad_keys}'
             )
         session_config.update(modified_config)
@@ -272,7 +275,7 @@ def create_session(
                 'Session Config {}: Number of participants ({}) is not a multiple '
                 'of group size ({})'
             ).format(session_config['name'], num_participants, session_lcm)
-            raise ValueError(msg)
+            raise CreateSessionInvalidArgs(msg)
 
     session = Session(
         config=session_config,
