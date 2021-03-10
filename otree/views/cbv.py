@@ -199,20 +199,22 @@ class BaseRESTView(HTTPEndpoint):
                 )
         try:
             if request.method.lower() == 'post':
-                return self.post()
-            return self.get()
+                return self.outer_post()
+            return self.outer_get()
         except TypeError as exc:
             # assume it to be because of wrong kwargs
             return _HttpResponseForbidden(str(exc))
 
-    def get(self):
-        return self.inner_get(**self._payload)
+    def outer_get(self):
+        return self.get(**self._payload)
 
-    def post(self):
-        return self.inner_post(**self._payload)
+    def outer_post(self):
+        return self.post(**self._payload)
 
-    def inner_get(self, **kwargs):
+    # it's good to call these simply 'get' and 'post' because that makes the error message
+    # simpler if they are called with wrong args (TypeError)
+    def get(self, **kwargs):
         return Response('Method not allowed', status_code=405)
 
-    def inner_post(self, **kwargs):
+    def post(self, **kwargs):
         return Response('Method not allowed', status_code=405)

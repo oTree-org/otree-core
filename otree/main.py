@@ -241,6 +241,7 @@ devserver
 prodserver
 prodserver1of2
 prodserver2of2
+remove_self
 resetdb
 startapp
 startproject

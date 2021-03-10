@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
@@ -15,6 +16,8 @@ from otree.models import Session, Participant
 from otree.models_concrete import ParticipantVarsFromREST
 from otree.room import ROOM_DICT
 from otree.session import create_session, SESSION_CONFIGS_DICT, CreateSessionInvalidArgs
+from otree.templating import ibis_loader
+
 from .cbv import BaseRESTView
 
 
@@ -22,7 +25,7 @@ class PostParticipantVarsThroughREST(BaseRESTView):
 
     url_pattern = '/api/participant_vars'
 
-    def inner_post(self, room_name, participant_label, vars):
+    def post(self, room_name, participant_label, vars):
         if room_name not in ROOM_DICT:
             return Response(f'Room {room_name} not found', status_code=404)
         room = ROOM_DICT[room_name]
@@ -46,7 +49,7 @@ class PostParticipantVarsThroughREST(BaseRESTView):
 class RESTSessionVars(BaseRESTView):
     url_pattern = '/api/session_vars'
 
-    def inner_post(self, room_name, vars):
+    def post(self, room_name, vars):
         if room_name not in ROOM_DICT:
             return Response(f'Room {room_name} not found', status_code=404)
         room = ROOM_DICT[room_name]
@@ -59,9 +62,10 @@ class RESTSessionVars(BaseRESTView):
 
 def get_session_urls(session: Session, request: Request) -> dict:
     d = dict(
-        session_url=request.url_for(
+        session_wide_url=request.url_for(
             'JoinSessionAnonymously', anonymous_code=session._anonymous_code
-        )
+        ),
+        admin_url=request.url_for('SessionStartLinks', code=session.code,),
     )
     room = session.get_room()
     if room:
@@ -69,33 +73,13 @@ def get_session_urls(session: Session, request: Request) -> dict:
     return d
 
 
-class RESTSession(BaseRESTView):
+class RESTGetSessionInfo(BaseRESTView):
+    url_pattern = '/api/session'
 
-    url_pattern = '/api/sessions'
-
-    def inner_post(self, **kwargs):
-        try:
-            session = create_session(**kwargs)
-        except CreateSessionInvalidArgs as exc:
-            return Response(str(exc), status_code=400)
-        room_name = kwargs.get('room_name')
-
-        response_payload = dict(code=session.code)
-        if room_name:
-            channel_utils.sync_group_send(
-                group=channel_utils.room_participants_group_name(room_name),
-                data={'status': 'session_ready'},
-            )
-
-        response_payload.update(get_session_urls(session, self.request))
-
-        return JSONResponse(response_payload)
-
-    def inner_get(self, code, participant_labels=None):
+    def get(self, code, participant_labels=None):
         session = db.get_or_404(Session, code=code)
         pp_set = session.pp_set
         if participant_labels is not None:
-            print('participant_labels is', participant_labels)
             pp_set = pp_set.filter(Participant.label.in_(participant_labels))
         pdata = []
         for id_in_session, code, label, payoff in pp_set.with_entities(
@@ -115,37 +99,64 @@ class RESTSession(BaseRESTView):
                 )
             )
 
-        # need custom json_dumps for currency values
-        return Response(
-            json_dumps(
-                dict(
-                    # we need the session config for mturk settings and participation fee
-                    # technically, other parts of session config might not be JSON serializable
-                    config=session.config,
-                    num_participants=session.num_participants,
-                    REAL_WORLD_CURRENCY_CODE=settings.REAL_WORLD_CURRENCY_CODE,
-                    participants=pdata,
-                    **get_session_urls(session, self.request),
-                )
-            )
+        payload = dict(
+            # we need the session config for mturk settings and participation fee
+            # technically, other parts of session config might not be JSON serializable
+            config=session.config,
+            num_participants=session.num_participants,
+            REAL_WORLD_CURRENCY_CODE=settings.REAL_WORLD_CURRENCY_CODE,
+            participants=pdata,
+            **get_session_urls(session, self.request),
         )
+
+        mturk_settings = session.config.get('mturk_hit_settings')
+        if mturk_settings:
+            payload['mturk_template_html'] = ibis_loader.search_template(
+                mturk_settings['template']
+            ).read_text('utf8')
+
+        # need custom json_dumps for currency values
+        return Response(json_dumps(payload))
+
+
+class RESTCreateSession(BaseRESTView):
+
+    url_pattern = '/api/sessions'
+
+    def post(self, **kwargs):
+        try:
+            session = create_session(**kwargs)
+        except CreateSessionInvalidArgs as exc:
+            return Response(str(exc), status_code=400)
+        room_name = kwargs.get('room_name')
+
+        response_payload = dict(code=session.code)
+        if room_name:
+            channel_utils.sync_group_send(
+                group=channel_utils.room_participants_group_name(room_name),
+                data={'status': 'session_ready'},
+            )
+
+        response_payload.update(get_session_urls(session, self.request))
+
+        return JSONResponse(response_payload)
 
 
 class RESTSessionConfigs(BaseRESTView):
     url_pattern = '/api/session_configs'
 
-    def inner_get(self):
+    def get(self):
         return Response(json_dumps(list(SESSION_CONFIGS_DICT.values())))
 
 
 class RESTOTreeVersion(BaseRESTView):
     url_pattern = '/api/otree_version'
 
-    def inner_get(self):
+    def get(self):
         return JSONResponse(dict(version=otree.__version__))
 
 
-class RESTCreateSessionLegacy(RESTSession):
+class RESTCreateSessionLegacy(RESTCreateSession):
     url_pattern = '/api/v1/sessions'
 
 
@@ -163,7 +174,7 @@ launcher_session_code = None
 class CreateBrowserBotsSession(BaseRESTView):
     url_pattern = '/create_browser_bots_session'
 
-    def inner_post(
+    def post(
         self, num_participants, session_config_name, case_number,
     ):
         session = create_session(
@@ -183,6 +194,6 @@ class CreateBrowserBotsSession(BaseRESTView):
 class CloseBrowserBotsSession(BaseRESTView):
     url_pattern = '/close_browser_bots_session'
 
-    def inner_post(self, **kwargs):
+    def post(self, **kwargs):
         GlobalState.browser_bots_launcher_session_code = None
         return Response('ok')

@@ -50,11 +50,8 @@ def random_chars_10():
 
 @lru_cache()
 def is_noself(app_name):
-    return (
-        Path(f'{app_name}/__init__.py').exists()
-        and not Path(f'{app_name}/models.py').exists()
-    )
-    # return Path(f'{app_name}/app.py').exists()
+    init_path = Path(f'{app_name}/__init__.py')
+    return init_path.exists() and 'import' in init_path.read_text('utf8')
 
 
 def get_bots_module(app_name):

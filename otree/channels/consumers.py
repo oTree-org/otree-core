@@ -432,7 +432,6 @@ class WSCreateSession(BaseCreateSession):
 
         # if room_name is missing, it will be empty string
         room_name = form.room_name.data or None
-        print('room_name', room_name)
 
         await self.create_session_then_send_start_link(
             session_config_name=session_config_name,
