@@ -34,7 +34,7 @@ class PostParticipantVarsThroughREST(BaseRESTView):
             participant = session.pp_set.filter_by(label=participant_label).first()
             if participant:
                 participant.vars.update(vars)
-                return Response('ok')
+                return JSONResponse({})
         kwargs = dict(participant_label=participant_label, room_name=room_name,)
         _json_data = json.dumps(vars)
         obj = ParticipantVarsFromREST.objects_first(**kwargs)
@@ -49,13 +49,20 @@ class PostParticipantVarsThroughREST(BaseRESTView):
 class RESTSessionVars(BaseRESTView):
     url_pattern = '/api/session_vars'
 
-    def post(self, room_name, vars):
-        if room_name not in ROOM_DICT:
-            return Response(f'Room {room_name} not found', status_code=404)
-        room = ROOM_DICT[room_name]
-        session = room.get_session()
-        if not session:
-            return Response(f'No current session in room {room_name}', 404)
+    def post(self, vars, code=None, room_name=None):
+        if not (code or room_name):
+            return Response(
+                f"You must pass either 'code' or 'room_name'", status_code=404
+            )
+        if code:
+            session = Session.objects_get(code=code)
+        else:
+            if room_name not in ROOM_DICT:
+                return Response(f'Room {room_name} not found', status_code=404)
+            room = ROOM_DICT[room_name]
+            session = room.get_session()
+            if not session:
+                return Response(f'No current session in room {room_name}', 404)
         session.vars.update(vars)
         return JSONResponse({})
 
@@ -65,7 +72,7 @@ def get_session_urls(session: Session, request: Request) -> dict:
         session_wide_url=request.url_for(
             'JoinSessionAnonymously', anonymous_code=session._anonymous_code
         ),
-        admin_url=request.url_for('SessionStartLinks', code=session.code,),
+        admin_url=request.url_for('SessionStartLinks', code=session.code),
     )
     room = session.get_room()
     if room:
@@ -81,23 +88,17 @@ class RESTGetSessionInfo(BaseRESTView):
         pp_set = session.pp_set
         if participant_labels is not None:
             pp_set = pp_set.filter(Participant.label.in_(participant_labels))
-        pdata = []
-        for id_in_session, code, label, payoff in pp_set.with_entities(
-            Participant.id_in_session,
-            Participant.code,
-            Participant.label,
-            Participant.payoff,
-        ):
-            pdata.append(
-                dict(
-                    id_in_session=id_in_session,
-                    code=code,
-                    label=label,
-                    payoff_in_real_world_currency=payoff.to_real_world_currency(
-                        session
-                    ),
-                )
+        pdata_list = []
+        for pp in pp_set:
+            pdata = dict(
+                id_in_session=pp.id_in_session,
+                code=pp.code,
+                label=pp.label,
+                payoff_in_real_world_currency=pp.payoff.to_real_world_currency(session),
             )
+            if 'finished' in settings.PARTICIPANT_FIELDS:
+                pdata['finished'] = pp.vars.get('finished', False)
+            pdata_list.append(pdata)
 
         payload = dict(
             # we need the session config for mturk settings and participation fee
@@ -105,7 +106,7 @@ class RESTGetSessionInfo(BaseRESTView):
             config=session.config,
             num_participants=session.num_participants,
             REAL_WORLD_CURRENCY_CODE=settings.REAL_WORLD_CURRENCY_CODE,
-            participants=pdata,
+            participants=pdata_list,
             **get_session_urls(session, self.request),
         )
 

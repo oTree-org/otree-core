@@ -16,12 +16,12 @@ class BaseWidget:
     def __call__(self, field, **render_kw):
 
         self.field = field
-        self.render_kw = render_kw
         render_kw.setdefault('id', field.id)
         if self.has_value and 'value' not in render_kw:
             render_kw['value'] = field._value()
         if 'required' not in render_kw and 'required' in getattr(field, 'flags', []):
             render_kw['required'] = True
+        self.render_kw = render_kw
         return Markup(''.join(self.get_html_fragments()))
 
     def get_html_fragments(self):
@@ -162,7 +162,15 @@ class RadioSelect(BaseWidget):
     def get_html_fragments(self):
         yield '<div %s>' % html_params(**self.render_kw)
         for subfield in self.field:
-            yield '<div class="form-check">%s %s</div>' % (subfield(), subfield.label)
+            subfield_html = (
+                subfield(required=True)
+                if self.render_kw.get('required')
+                else subfield()
+            )
+            yield '<div class="form-check">%s %s</div>' % (
+                subfield_html,
+                subfield.label,
+            )
         yield '</div>'
 
 
@@ -171,9 +179,14 @@ class RadioSelectHorizontal(BaseWidget):
 
     def get_html_fragments(self):
         for subfield in self.field:
+            subfield_html = (
+                subfield(required=True)
+                if self.render_kw.get('required')
+                else subfield()
+            )
             yield f'''
             <div class="form-check form-check-inline">
-                {subfield()}
+                {subfield_html}
                 <label for="{subfield.id}" class="form-check-label">{subfield.label.text}</label>
             </div>
             '''

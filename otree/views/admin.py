@@ -231,6 +231,7 @@ class SessionPayments(AdminSessionPage):
 
         return dict(
             participants=participants,
+            show_finished_status='finished' in settings.PARTICIPANT_FIELDS,
             total_payments=total_payments,
             mean_payment=mean_payment,
             participation_fee=session.config['participation_fee'],

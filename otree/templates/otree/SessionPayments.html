@@ -30,6 +30,7 @@
         <th>Code</th>
         <th>Label</th>
         <th>Progress</th>
+        {% if show_finished_status %} <th>Finished</th> {% endif %}
         <th>Payoff (bonus)</th>
         <th>Total</th>
       </tr>
@@ -39,6 +40,7 @@
           <td style="font-family: 'Courier New'">{{ p.code }}</td>
           <td>{{ p.label || "" }}</td>
           <td>{{ p.current_page_() }}</td>
+          {% if show_finished_status %} <td>{{ p._get_finished() and "1" }}</td> {% endif %}
           <td>{{ p.payoff_in_real_world_currency() }}</td>
           <td>{{ p.payoff_plus_participation_fee() }}</td>
         </tr>

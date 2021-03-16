@@ -200,3 +200,6 @@ class Participant(MixinVars, otree.database.SSPPGModel):
             resp = page.get()
             if not str(resp.status_code).startswith('3'):
                 return
+
+    def _get_finished(self):
+        return self.vars.get('finished', False)

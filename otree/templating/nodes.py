@@ -472,34 +472,19 @@ class IncludeNode(Node):
             raise errors.TemplateSyntaxError(msg, token) from None
         expr = Expression(arg, token)
 
-        if expr.is_literal:
-            if isinstance(expr.literal, str):
-                template = ibis_loader.load(expr.literal)
-                self.children.append(template.root_node)
-            else:
-                msg = f"Malformed 'include' tag. "
-                msg += f"The template name should be a quoted string "
-                msg += f"literal or a variable name."
-                raise errors.TemplateSyntaxError(msg, token)
-        else:
-            self.expr = expr
-            self.arg = arg
+        self.expr = expr
+        self.arg = arg
 
     def wrender(self, context):
-        if self.children:
-            return ''.join(child.render(context) for child in self.children)
+        template_name = self.expr.eval(context)
+        if isinstance(template_name, str):
+            template = ibis_loader.load(template_name)
+            return template.root_node.render(context)
         else:
-            template_name = self.expr.eval(context)
-            if isinstance(template_name, str):
-                template = ibis_loader.load(template_name)
-                return template.root_node.render(context)
-            else:
-                msg = f"Invalid argument for the 'include' tag. "
-                msg += f"The variable '{self.arg}' should evaluate "
-                msg += (
-                    f"to a string. This variable has the value: {repr(template_name)}."
-                )
-                raise errors.TemplateRenderingError(msg, self.token)
+            msg = f"Invalid argument for the 'include' tag. "
+            msg += f"The variable '{self.arg}' should evaluate "
+            msg += f"to a string. This variable has the value: {repr(template_name)}."
+            raise errors.TemplateRenderingError(msg, self.token)
 
 
 # ExtendNodes implement template inheritance. They indicate that the current template inherits
