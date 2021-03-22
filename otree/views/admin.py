@@ -204,7 +204,9 @@ class SessionEditProperties(AdminSessionPage):
         session.comment = form.comment.data
 
         participation_fee = form.participation_fee.data
-        rwc_per_point = form.real_world_currency_per_point.data
+        # convert to float because that's the usual type for rwc_per_point
+        # it shouldn't behave differently after you edit session properties
+        rwc_per_point = float(form.real_world_currency_per_point.data)
 
         config = session.config.copy()
         if participation_fee is not None:

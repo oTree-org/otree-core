@@ -521,7 +521,7 @@ class SPGModel(SSPPGModel):
             # - catch the TypeError
             msg = (
                 f'{object_name}.{attr} is None. '
-                f'Accessing a null field is considered an error. '
+                f'Accessing a null field is generally considered an error. '
             )
             raise TypeError(msg)
         return res
