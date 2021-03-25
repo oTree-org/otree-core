@@ -21,7 +21,57 @@ from otree.templating import ibis_loader
 from .cbv import BaseRESTView
 
 
-class PostParticipantVarsThroughREST(BaseRESTView):
+class RESTOTreeVersion(BaseRESTView):
+    url_pattern = '/api/otree_version'
+
+    def get(self):
+        return JSONResponse(dict(version=otree.__version__))
+
+
+class RESTSessionConfigs(BaseRESTView):
+    url_pattern = '/api/session_configs'
+
+    def get(self):
+        return Response(json_dumps(list(SESSION_CONFIGS_DICT.values())))
+
+
+class RESTRooms(BaseRESTView):
+    url_pattern = '/api/rooms'
+
+    def get(self):
+        data = [r.rest_api_dict(self.request) for r in ROOM_DICT.values()]
+        return JSONResponse(data)
+
+
+class RESTSessionVars(BaseRESTView):
+
+    url_pattern = '/api/session_vars/{code}'
+
+    def post(self, vars):
+        code = self.request.path_params['code']
+        session = db.get_or_404(Session, code=code)
+        session.vars.update(vars)
+        return JSONResponse({})
+
+
+class RESTParticipantVars(BaseRESTView):
+
+    url_pattern = '/api/participant_vars/{code}'
+
+    def post(self, vars):
+        code = self.request.path_params['code']
+        participant = db.get_or_404(Participant, code=code)
+        participant.vars.update(vars)
+        return JSONResponse({})
+
+
+class RESTParticipantVarsByRoom(BaseRESTView):
+    """
+    This can be used when you don't know the participant code,
+    or when the participant doesn't have a code yet.
+    For example, you might need to send data to oTree about the participant
+    BEFORE sending the participant to oTree via their room link.
+    """
 
     url_pattern = '/api/participant_vars'
 
@@ -46,25 +96,27 @@ class PostParticipantVarsThroughREST(BaseRESTView):
         return JSONResponse({})
 
 
-class RESTSessionVars(BaseRESTView):
-    url_pattern = '/api/session_vars'
+class RESTCreateSession(BaseRESTView):
 
-    def post(self, vars, code=None, room_name=None):
-        if not (code or room_name):
-            return Response(
-                f"You must pass either 'code' or 'room_name'", status_code=404
+    url_pattern = '/api/sessions'
+
+    def post(self, **kwargs):
+        try:
+            session = create_session(**kwargs)
+        except CreateSessionInvalidArgs as exc:
+            return Response(str(exc), status_code=400)
+        room_name = kwargs.get('room_name')
+
+        response_payload = dict(code=session.code)
+        if room_name:
+            channel_utils.sync_group_send(
+                group=channel_utils.room_participants_group_name(room_name),
+                data={'status': 'session_ready'},
             )
-        if code:
-            session = Session.objects_get(code=code)
-        else:
-            if room_name not in ROOM_DICT:
-                return Response(f'Room {room_name} not found', status_code=404)
-            room = ROOM_DICT[room_name]
-            session = room.get_session()
-            if not session:
-                return Response(f'No current session in room {room_name}', 404)
-        session.vars.update(vars)
-        return JSONResponse({})
+
+        response_payload.update(get_session_urls(session, self.request))
+
+        return JSONResponse(response_payload)
 
 
 def get_session_urls(session: Session, request: Request) -> dict:
@@ -81,9 +133,10 @@ def get_session_urls(session: Session, request: Request) -> dict:
 
 
 class RESTGetSessionInfo(BaseRESTView):
-    url_pattern = '/api/session'
+    url_pattern = '/api/sessions/{code}'
 
-    def get(self, code, participant_labels=None):
+    def get(self, participant_labels=None):
+        code = self.request.path_params['code']
         session = db.get_or_404(Session, code=code)
         pp_set = session.pp_set
         if participant_labels is not None:
@@ -118,55 +171,6 @@ class RESTGetSessionInfo(BaseRESTView):
 
         # need custom json_dumps for currency values
         return Response(json_dumps(payload))
-
-
-class RESTCreateSession(BaseRESTView):
-
-    url_pattern = '/api/sessions'
-
-    def post(self, **kwargs):
-        try:
-            session = create_session(**kwargs)
-        except CreateSessionInvalidArgs as exc:
-            return Response(str(exc), status_code=400)
-        room_name = kwargs.get('room_name')
-
-        response_payload = dict(code=session.code)
-        if room_name:
-            channel_utils.sync_group_send(
-                group=channel_utils.room_participants_group_name(room_name),
-                data={'status': 'session_ready'},
-            )
-
-        response_payload.update(get_session_urls(session, self.request))
-
-        return JSONResponse(response_payload)
-
-
-class RESTSessionConfigs(BaseRESTView):
-    url_pattern = '/api/session_configs'
-
-    def get(self):
-        return Response(json_dumps(list(SESSION_CONFIGS_DICT.values())))
-
-
-class RESTOTreeVersion(BaseRESTView):
-    url_pattern = '/api/otree_version'
-
-    def get(self):
-        return JSONResponse(dict(version=otree.__version__))
-
-
-class RESTCreateSessionLegacy(RESTCreateSession):
-    url_pattern = '/api/v1/sessions'
-
-
-class RESTSessionVarsLegacy(RESTSessionVars):
-    url_pattern = '/api/v1/session_vars'
-
-
-class RESTParticipantVarsLegacy(PostParticipantVarsThroughREST):
-    url_pattern = '/api/v1/participant_vars'
 
 
 launcher_session_code = None

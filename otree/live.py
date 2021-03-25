@@ -3,14 +3,18 @@ from otree.channels import utils as channel_utils
 from otree.models import Participant, BasePlayer, BaseGroup
 from otree.lookup import get_page_lookup
 import logging
-
+from otree.database import NoResultFound
 
 logger = logging.getLogger(__name__)
 
 
 async def live_payload_function(participant_code, page_name, payload):
 
-    participant = Participant.objects_get(code=participant_code)
+    try:
+        participant = Participant.objects_get(code=participant_code)
+    except NoResultFound:
+        logger.warning(f'Participant not found: {participant_code}')
+        return
     lookup = get_page_lookup(participant._session_code, participant._index_in_pages)
     app_name = lookup.app_name
     models_module = otree.common.get_models_module(app_name)

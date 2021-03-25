@@ -44,6 +44,21 @@ class BaseRoom:
     def get_participant_urls(self, request):
         return []
 
+    def rest_api_dict(self, request) -> dict:
+        session = self.get_session()
+        if session:
+            session_code = session.code
+        else:
+            session_code = None
+        return dict(
+            # better to include session_code key even if it's blank,
+            # so that people can see the schema and know that session code
+            # will be there if they create a session
+            session_code=session_code,
+            name=self.name,
+            url=self.get_room_wide_url(request),
+        )
+
 
 class NoLabelRoom(BaseRoom):
     has_participant_labels = False

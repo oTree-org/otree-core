@@ -239,6 +239,9 @@ def init_orm():
 
     # import all models so it's loaded into the engine?
     for app in OTREE_APPS:
+        if len(app) > 45:
+            msg = f'App name is too long: {app}'
+            sys.exit(msg)
         try:
             models = get_models_module(app)
         except Exception as exc:
