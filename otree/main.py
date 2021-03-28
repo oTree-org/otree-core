@@ -213,6 +213,19 @@ def check_for_sentry():
             sys.exit(
                 'For Sentry to work, you need to add sentry_sdk to your requirements.txt.'
             )
+        from sentry_sdk.utils import json_dumps
+        from urllib.request import urlopen
+        import urllib.error
+
+        def before_send(event, hint):
+            otree_post_url = os.getenv('OTREE_ERROR_REPORT_ENDPOINT')
+            if otree_post_url:
+                try:
+                    urlopen(otree_post_url, data=json_dumps(event), timeout=0.5)
+                except urllib.error.URLError:
+                    # in case timeout is raised etc
+                    pass
+            return event
 
         sentry_sdk.init(
             dsn=SENTRY_DSN,
@@ -229,6 +242,7 @@ def check_for_sentry():
             # in anecdotal test, 40 vs 50 seconds
             max_breadcrumbs=0,
             release=__version__,
+            before_send=before_send,
         )
 
 

@@ -206,6 +206,12 @@ class BaseRESTView(HTTPEndpoint):
             return _HttpResponseForbidden(str(exc))
 
     def outer_get(self):
+        # technically GET should be using the query params, not the JSON payload,
+        # but it's just a pain to deal with the flimsy structure of query params
+        # (untyped and awkward to pass lists as a multidict etc.)
+        # wait until the API gets fleshed out more before I make the effort of switching
+        # the only place we currently use json in GET is participant_labels, which is just an
+        # optional param that filters down the data.
         return self.get(**self._payload)
 
     def outer_post(self):
