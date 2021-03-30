@@ -9,7 +9,7 @@ from . import cbv
 import otree.common
 import otree.models
 import otree.export
-from otree.export import BOM
+from otree.export import BOM, get_installed_apps_with_data
 from otree.models.participant import Participant
 from otree.models.session import Session
 from otree.models_concrete import ChatMessage
@@ -23,21 +23,13 @@ class Export(cbv.AdminView):
 
         # can't use settings.OTREE_APPS, because maybe the app
         # was removed from SESSION_CONFIGS.
-        app_names_with_data = set()
-        for session in dbq(Session):
-            for app_name in session.config['app_sequence']:
-                app_names_with_data.add(app_name)
+        app_names_with_data = get_installed_apps_with_data()
 
         custom_export_apps = []
         for app_name in app_names_with_data:
-            try:
-                models_module = otree.common.get_models_module(app_name)
-            except ModuleNotFoundError:
-                # maybe the app was removed from the project.
-                pass
-            else:
-                if getattr(models_module, 'custom_export', None):
-                    custom_export_apps.append(app_name)
+            models_module = otree.common.get_models_module(app_name)
+            if getattr(models_module, 'custom_export', None):
+                custom_export_apps.append(app_name)
 
         return dict(
             db_is_empty=not bool(dbq(Participant).first()),

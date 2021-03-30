@@ -82,8 +82,10 @@ class Worker:
             code=participant_code, _index_in_pages=page_index
         ).first()
         if pp:
+            path = pp._url_i_should_be_on()
+            logger.info(f'Auto-submitting timed out page: {path}')
             post(
-                urljoin(self.base_url, pp._url_i_should_be_on()),
+                urljoin(self.base_url, path),
                 data={otree.constants.timeout_happened: True},
             )
 
@@ -104,7 +106,7 @@ class Worker:
             # (as we saw with advance_slowest)
             Participant._index_in_pages <= page_index + 1,
         )
-        for participant in unvisited_participants:
+        for pp in unvisited_participants:
 
             # if the wait page is the first page,
             # then _current_form_page_url could be null.
@@ -112,7 +114,10 @@ class Worker:
             # because that will redirect to the current wait page.
             # (alternatively we could define _current_page_url or
             # current_wait_page_url)
-            get(urljoin(self.base_url, participant._url_i_should_be_on()))
+            path = pp._url_i_should_be_on()
+            logger.info(f'Auto-submitting timed out page: {path}')
+
+            get(urljoin(self.base_url, path))
 
 
 def _db_enqueue(method, delay, kwargs):

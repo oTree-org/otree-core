@@ -22,6 +22,7 @@ from otree.models.session import Session
 from otree.models.subsession import BaseSubsession
 from otree.models_concrete import PageTimeBatch
 from otree.session import SessionConfig
+from otree import settings
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +156,20 @@ def get_payoff_plus_participation_fee(session, participant_values_dict):
     return session._get_payoff_plus_participation_fee(payoff)
 
 
+def get_installed_apps_with_data() -> list:
+    """
+    this is just important for devserver.
+    on prodserver there should never be an inconsistency between
+    currently installed apps and apps with data, because you resetdb each time
+    """
+    app_names_with_data = set()
+    for session in dbq(Session):
+        for app_name in session.config['app_sequence']:
+            if app_name in settings.OTREE_APPS:
+                app_names_with_data.add(app_name)
+    return list(sorted(app_names_with_data))
+
+
 def _get_best_app_order(sessions):
     # heuristic to get the most relevant order of apps
     app_sequences = collections.Counter()
@@ -164,12 +179,7 @@ def _get_best_app_order(sessions):
         app_sequences[tuple(app_sequence)] += session.num_participants
     most_common_app_sequence = app_sequences.most_common(1)[0][0]
 
-    # can't use settings.OTREE_APPS, because maybe the app
-    # was removed from SESSION_CONFIGS.
-    app_names_with_data = set()
-    for session in sessions:
-        for app_name in session.config['app_sequence']:
-            app_names_with_data.add(app_name)
+    app_names_with_data = get_installed_apps_with_data()
 
     apps_not_in_popular_sequence = [
         app for app in app_names_with_data if app not in most_common_app_sequence
