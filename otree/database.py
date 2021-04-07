@@ -551,8 +551,10 @@ class SPGModel(SSPPGModel):
     def call_user_defined(self, funcname, *args, missing_ok=False, **kwargs):
         target = self.get_user_defined_target()
         func = getattr(target, funcname, None)
-        if func is None and missing_ok:
-            return
+        if func is None:
+            if missing_ok:
+                return
+            raise Exception(f'"{funcname}" not found in {repr(target)}')
         return func(self, *args, **kwargs)
 
     @classmethod

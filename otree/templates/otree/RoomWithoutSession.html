@@ -20,7 +20,7 @@
         <summary>Show/Hide</summary>
         <div style="font-size:20px">
           {% for participant_label in room.get_participant_labels() %}
-            <span style="display: none" class="badge badge-success present-participant-label"
+            <span style="display: none" class="badge bg-success present-participant-label"
                   id="present-participant-label-{{ participant_label|escape }}">
                 {{ participant_label }}
             </span>
@@ -34,7 +34,7 @@
         <summary>Show/hide</summary>
         <div style="font-size:20px">
           {% for participant_label in room.get_participant_labels() %}
-            <span class="badge badge-secondary absent-participant-label count-this"
+            <span class="badge bg-secondary absent-participant-label count-this"
                   id="absent-participant-label-{{ participant_label|escape }}">{{ participant_label }}</span>
           {% endfor %}
         </div>
