@@ -158,6 +158,14 @@ def scan():
                 + ': |floatformat is not available because it comes from Django. '
                 'You should replace it with to0/to1/to2, for example {{ my_number|to2 }}'
             )
+        for attr in ['toggle', 'target', 'parent', 'show']:
+            oldstyle = 'data-' + attr
+            newstyle = 'data-bs-' + attr
+            if oldstyle in txt:
+                yield (
+                    str(pth)
+                    + f': In Bootstrap 5, {oldstyle} has been renamed to {newstyle}.'
+                )
 
     custom_css_pth = Path('_static/global/custom.css')
     if custom_css_pth.exists():
