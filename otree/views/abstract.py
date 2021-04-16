@@ -1133,4 +1133,5 @@ class MockForm:
         if False:
             yield
 
+    field_names = []
     errors = None

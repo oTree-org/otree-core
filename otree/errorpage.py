@@ -61,10 +61,11 @@ TEMPLATE = """
             {styles}
             {otree_styles}
         </style>
-        <title>500 Server Error</title>
+        <title>{tab_title}</title>
     </head>
     <body>
-        <h2>{error}</h2>
+        <h2>Application error (500)</h2>
+        <h1>{error}</h1>
         {ibis_html}
         <div class="traceback-container">
             <p class="traceback-title">Traceback</p>
@@ -74,6 +75,7 @@ TEMPLATE = """
     </body>
 </html>
 """
+
 
 OTREE_STYLES = """
 .locals-table {
@@ -152,6 +154,7 @@ class OTreeServerErrorMiddleware(ServerErrorMiddleware):
         return TEMPLATE.format(
             styles=STYLES,
             js=JS,
+            tab_title=error,
             error=error,
             exc_html=exc_html,
             ibis_html=ibis_html,

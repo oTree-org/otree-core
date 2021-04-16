@@ -177,6 +177,13 @@ class SessionEditPropertiesForm(wtforms.Form):
     label = wtforms.StringField()
     comment = wtforms.StringField()
 
+    field_names = [
+        'participation_fee',
+        'real_world_currency_per_point',
+        'label',
+        'comment',
+    ]
+
 
 class SessionEditProperties(AdminSessionPage):
 

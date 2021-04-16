@@ -13,8 +13,7 @@
    whole screen */
 .input-group,
 input.form-control,
-select.form-control,
-textarea.form-control {
+select.form-control {
     max-width: 400px;
 }
 

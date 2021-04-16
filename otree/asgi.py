@@ -1,13 +1,15 @@
 from starlette.applications import Starlette
-from . import settings
-from .urls import routes
 from starlette.middleware import Middleware
-from .errorpage import OTreeServerErrorMiddleware
-from starlette.routing import NoMatchFound
 from starlette.responses import HTMLResponse
+from starlette.routing import NoMatchFound
+
+from otree import errorpage
 from otree.database import save_sqlite_db
-from .patch import ExceptionMiddleware
 from . import middleware
+from . import settings
+from .errorpage import OTreeServerErrorMiddleware
+from .patch import ExceptionMiddleware
+from .urls import routes
 
 
 class OTreeStarlette(Starlette):
@@ -62,17 +64,9 @@ def reverse(name, **path_params):
         raise NoMatchFound(f'{name}, {path_params}') from None
 
 
-HTML_500_PAGE = """<!DOCTYPE html>
-<html>
-<head>
-    <title>Server Error (500)</title>
-</head>
-<body>
-
-<h2>Server Error (500)</h2>
-
+ERR_500_EXPLANATION = """
 <p>
-  For security reasons, the error message is not displayed here.
+  For security reasons, the error is not displayed here.
   You can view it with one of the below techniques:
 </p>
 
@@ -81,6 +75,15 @@ HTML_500_PAGE = """<!DOCTYPE html>
     <li>Look at your Sentry messages (see the docs on how to enable Sentry)</li>
     <li>Look at the server logs</li>
 </ul>
+"""
 
-</body>
-</html>"""
+# 500 page should look like the debug 500 page so that people make the connection
+HTML_500_PAGE = errorpage.TEMPLATE.format(
+    styles=errorpage.STYLES,
+    otree_styles=errorpage.OTREE_STYLES,
+    tab_title="Application error (500)",
+    error="",
+    ibis_html='',
+    exc_html=ERR_500_EXPLANATION,
+    js='',
+)

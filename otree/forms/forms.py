@@ -87,6 +87,9 @@ def get_form(instance, field_names, view, formdata):
     instance._is_frozen = False
     FormClass = model_form(type(instance), obj=instance, only=field_names)
     form = FormClass(formdata=formdata, obj=instance, view=view)
+    # because only= does not preserve order, so we need to store this
+    # so that {{ formfields }} tag can access it.
+    form.field_names = field_names
     instance._is_frozen = True
     return form
 
