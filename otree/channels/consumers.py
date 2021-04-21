@@ -249,13 +249,19 @@ class WSGroupByArrivalTime(_OTreeAsyncJsonWebsocketConsumer):
         self.player_id = player_id
         self.participant_id = participant_id
         self.mark_ready_status(True)
-        if self.is_ready(
-            app_name=app_name,
-            player_id=player_id,
-            page_index=page_index,
-            session_pk=session_pk,
-        ):
-            await self.websocket.send_json({'status': 'ready'})
+        try:
+            is_ready = self.is_ready(
+                app_name=app_name,
+                player_id=player_id,
+                page_index=page_index,
+                session_pk=session_pk,
+            )
+        except NoResultFound:
+            # if session was deleted
+            pass
+        else:
+            if is_ready:
+                await self.websocket.send_json({'status': 'ready'})
 
     async def pre_disconnect(
         self, app_name, player_id, page_index, session_pk, participant_id

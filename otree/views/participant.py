@@ -185,7 +185,7 @@ def participant_or_none_if_exceeded(session, *, label, cookies=None):
     # the next view to prevent race conditions
     participant.visited = True
     if label:
-        participant.label = label
+        participant.set_label(label)
 
     return participant
 

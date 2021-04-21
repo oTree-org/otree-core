@@ -49,13 +49,17 @@ def get_mem_conn():
 
 
 def get_schema(conn):
+
     conn.text_factory = str
     cur = conn.cursor()
 
     result = cur.execute(
         "SELECT name FROM sqlite_master WHERE type='table';"
     ).fetchall()
-    table_names = sorted(list(zip(*result))[0])
+    try:
+        table_names = sorted(list(zip(*result))[0])
+    except IndexError:
+        return {}
 
     d = {}
     for table_name in table_names:
@@ -585,7 +589,9 @@ class MixinSessionFK:
 
     @declared_attr
     def session_id(cls):
-        return Column(st.Integer, ForeignKey(f'otree_session.id'))
+        # cascade is necessary here also:
+        # https://stackoverflow.com/questions/19243964/sqlalchemy-delete-doesnt-cascade
+        return Column(st.Integer, ForeignKey(f'otree_session.id', ondelete='CASCADE'))
 
     @declared_attr
     def session(cls):

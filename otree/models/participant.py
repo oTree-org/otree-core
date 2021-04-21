@@ -4,7 +4,7 @@ import time
 from sqlalchemy import Column as Column, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import sqltypes as st
-
+from starlette.exceptions import HTTPException
 import otree.common
 import otree.database
 from otree.common import random_chars_8, ADMIN_SECRET_CODE
@@ -18,10 +18,10 @@ from otree import settings
 class Participant(MixinVars, otree.database.SSPPGModel):
     __tablename__ = 'otree_participant'
 
-    session_id = Column(st.Integer, ForeignKey('otree_session.id'))
+    session_id = Column(st.Integer, ForeignKey('otree_session.id', ondelete='CASCADE'))
     session = relationship("Session", back_populates="pp_set")
 
-    label = Column(st.String(50), nullable=True,)
+    label = Column(st.String(100), nullable=True)
 
     id_in_session = Column(st.Integer, nullable=True)
 
@@ -87,6 +87,15 @@ class Participant(MixinVars, otree.database.SSPPGModel):
     _gbat_page_index = Column(st.Integer,)
     _gbat_grouped = Column(st.Boolean,)
 
+    def set_label(self, label):
+        if not label:
+            return
+        if len(label) > 100:
+            raise HTTPException(
+                404, f'participant_label is too long or malformed: {label}'
+            )
+        self.label = label
+
     def _current_page(self):
         # don't put 'pages' because that causes wrapping which takes more space
         # since it's longer than the header
@@ -143,7 +152,8 @@ class Participant(MixinVars, otree.database.SSPPGModel):
             pp.visited = True
 
             # participant.label might already have been set
-            pp.label = pp.label or participant_label
+            if not pp.label:
+                pp.set_label(participant_label)
 
             # default to Central European Time
             pp.time_started = datetime.datetime.utcnow() + datetime.timedelta(hours=1)

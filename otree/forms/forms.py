@@ -201,6 +201,7 @@ class ModelForm(wtforms.Form):
 
     _fields: Dict[str, wtforms.fields.Field]
     non_field_error = None
+    field_names = []
 
     def __init__(
         self, view, formdata=None, obj=None, prefix='', data=None, meta=None, **kwargs,
@@ -256,6 +257,9 @@ class ModelForm(wtforms.Form):
         if self.non_field_error:
             errors['__all__'] = self.non_field_error
         return errors
+
+    def __iter__(self):
+        return (self[k] for k in self.field_names)
 
 
 def expand_choice_tuples(choices):

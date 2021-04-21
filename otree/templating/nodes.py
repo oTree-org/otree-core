@@ -710,9 +710,10 @@ class FormFields(Node):
         from .template import Template
 
         form = context['form']
+        field_names = [f.name for f in form]
         return Template(
             '''{% for name in field_names %}{% formfield name %}{% endfor %}'''
-        ).render(field_names=form.field_names, form=form, strict_mode=True)
+        ).render(field_names=field_names, form=form, strict_mode=True)
 
 
 @register('load')
