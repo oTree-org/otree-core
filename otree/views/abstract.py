@@ -828,7 +828,11 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         return resp
 
     def _run_aapa_and_notify(self, group_or_subsession):
-        '''new design is that if anybody is waiting on the wait page, we run AAPA.
+        '''
+        group_or_subsession is passed explicitly, because in the case of GBAT it might
+        not include the current player, so we can't just use self.player.group.
+
+        new design is that if anybody is waiting on the wait page, we run AAPA.
         If nobody is shown the wait page, we don't need to notify or even create a
         CompletedGroupWaitPage record.
         '''
@@ -935,14 +939,19 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
     def _group_or_subsession(self):
         return self.subsession if self.wait_for_all_groups else self.group
 
-    def _get_participants_for_this_waitpage(self):
+    def _get_participants_for_this_waitpage(self, group_or_subsession):
+        """
+        group_or_subsession needs to be passed because it could be a newly created group with GBAT,
+        and may not equal self.group because the current player may not be part of the group.
+        (for example, when creating single-player groups with waiting_too_long).
+        """
         Player = self.PlayerClass
         fk_field = Player.subsession_id if self.wait_for_all_groups else Player.group_id
         # tried select_from but my filter clause didn't work
         return (
             dbq(Player)
             .join(Participant)
-            .filter(fk_field == self._group_or_subsession.id)
+            .filter(fk_field == group_or_subsession.id)
             .with_entities(Participant)
         )
 
@@ -993,7 +1002,9 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
         else:
             db.add(CompletedGroupWaitPage(**base_kwargs, group_id=group.id))
 
-        participants = self._get_participants_for_this_waitpage()
+        participants = self._get_participants_for_this_waitpage(
+            group or self.subsession
+        )
         self._mark_page_completions(list(participants))
         for pp in participants:
             pp._last_page_timestamp = int(time.time())
@@ -1057,7 +1068,9 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
 
     def _tally_unvisited(self):
 
-        participants = self._get_participants_for_this_waitpage()
+        participants = self._get_participants_for_this_waitpage(
+            self._group_or_subsession
+        )
         session_code = self.participant._session_code
 
         visited = []

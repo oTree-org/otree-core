@@ -154,7 +154,11 @@ class BaseSubsession(SPGModel, MixinSessionFK):
 
         target = self.get_user_defined_target()
         # user may not have defined it
-        func = getattr(target, 'group_by_arrival_time_method', type(self).group_by_arrival_time_method)
+        func = getattr(
+            target,
+            'group_by_arrival_time_method',
+            type(self).group_by_arrival_time_method,
+        )
         players_for_group = func(self, waiting_players)
 
         if not players_for_group:
