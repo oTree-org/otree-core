@@ -19,6 +19,7 @@ from otree.common import (
     get_models_module,
 )
 from otree.database import db, session_scope
+from otree.live import call_live_method_compat
 
 ADMIN_SECRET_CODE = get_admin_secret_code()
 
@@ -256,8 +257,8 @@ class ParticipantBot:
 
     def live_method_stuff(self, player_bot, submission):
         PageClass = submission.page_class
-        live_method_name = PageClass.live_method
-        if live_method_name:
+        live_method = PageClass.live_method
+        if live_method:
             record = (player_bot.player.group_id, PageClass)
             if record not in self.executed_live_methods:
                 bots_module = inspect.getmodule(player_bot)
@@ -266,7 +267,9 @@ class ParticipantBot:
                     players = {p.id_in_group: p for p in player_bot.group.get_players()}
 
                     def method(id_in_group, data):
-                        return getattr(players[id_in_group], live_method_name)(data)
+                        return call_live_method_compat(
+                            live_method, players[id_in_group], data
+                        )
 
                     method_calls_fn(
                         method=method,

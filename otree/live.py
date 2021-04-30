@@ -40,11 +40,9 @@ async def live_payload_function(participant_code, page_name, payload):
     # also, we need this 'group' object anyway.
     # and this is a good place to show the deprecation warning.
     group = player.group
-    if isinstance(PageClass.live_method, str):
-        retval = player.call_user_defined(PageClass.live_method, payload)
-    else:
-        # noself style
-        retval = PageClass.live_method(player, payload)
+    live_method = PageClass.live_method
+
+    retval = call_live_method_compat(live_method, player, payload)
 
     if not retval:
         return
@@ -94,3 +92,10 @@ async def _live_send_back(session_code, page_index, pcode_retval):
         await channel_utils.group_send(
             group=group_name, data=retval,
         )
+
+
+def call_live_method_compat(live_method, player, payload):
+    if isinstance(live_method, str):
+        return player.call_user_defined(live_method, payload)
+    # noself style
+    return live_method(player, payload)
