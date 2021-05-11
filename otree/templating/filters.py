@@ -1,5 +1,5 @@
 import html
-from otree.i18n import gettext as original_gettext
+from otree.i18n import core_gettext
 
 from otree.currency import Currency, json_dumps, BaseCurrency
 from otree.i18n import format_number
@@ -63,7 +63,7 @@ def safe(val):
 
 @register
 def gettext(val):
-    return original_gettext(val)
+    return core_gettext(val)
 
 
 @register

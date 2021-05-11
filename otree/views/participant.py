@@ -1,5 +1,5 @@
 import time
-from otree.i18n import gettext as _
+from otree.i18n import core_gettext as _
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import HTMLResponse, Response, RedirectResponse
 from starlette.requests import Request
@@ -244,7 +244,7 @@ class AssignVisitorToRoom(GenericWaitPageMixin, HTTPEndpoint):
 
         session = room.get_session()
         if session is None:
-            self.tab_unique_id = otree.common.random_chars_10()
+            self.tab_unique_id = otree.common.random_chars_join_code()
             self._socket_url = channel_utils.room_participant_path(
                 room_name=self.room_name,
                 participant_label=label,

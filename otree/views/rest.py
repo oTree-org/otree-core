@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from importlib import import_module
 
 from starlette.requests import Request
 from starlette.responses import Response, JSONResponse
@@ -9,7 +10,7 @@ import otree.bots.browser
 import otree.views.cbv
 from otree import settings
 from otree.channels import utils as channel_utils
-from otree.common import GlobalState
+from otree.common import GlobalState, get_models_module
 from otree.currency import json_dumps
 from otree.database import db
 from otree.models import Session, Participant
@@ -202,3 +203,16 @@ class CloseBrowserBotsSession(BaseRESTView):
     def post(self, **kwargs):
         GlobalState.browser_bots_launcher_session_code = None
         return Response('ok')
+
+
+class RESTApps(BaseRESTView):
+    url_pattern = '/api/apps'
+
+    def get(self):
+        from otree.settings import OTREE_APPS
+
+        d = {}
+        for app in OTREE_APPS:
+            models_module = get_models_module(app)
+            d[app] = getattr(models_module, 'doc', '')
+        return Response(json_dumps(d))

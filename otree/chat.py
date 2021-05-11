@@ -2,7 +2,7 @@ import re
 from otree.common import signer_sign, signer_unsign
 
 from otree.channels import utils as channel_utils
-from otree.i18n import gettext
+from otree.i18n import core_gettext
 
 
 class ChatTagError(Exception):
@@ -44,7 +44,7 @@ def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED) -> dict
         # Translators: A player's default chat nickname,
         # which is "Player" + their ID in group. For example:
         # "Player 2".
-        nickname = gettext('Participant {id_in_group}').format(
+        nickname = core_gettext('Participant {id_in_group}').format(
             id_in_group=player.id_in_group
         )
     nickname = str(nickname)
@@ -58,7 +58,7 @@ def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED) -> dict
         participant_id=participant.id,
         nickname_signed=nickname_signed,
         nickname=nickname,
-        nickname_i_see_for_myself=gettext("{nickname} (Me)").format(nickname=nickname),
+        nickname_i_see_for_myself=core_gettext("{nickname} (Me)").format(nickname=nickname),
     )
     return dict(
         channel=prefixed_channel,

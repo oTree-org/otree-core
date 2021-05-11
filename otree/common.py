@@ -44,8 +44,14 @@ def random_chars_8():
     return random_chars(8)
 
 
-def random_chars_10():
-    return random_chars(10)
+CONSONANTS = 'bdfghjklmnprstvz'
+VOWELS = 'aeiou'
+
+SYLLABLES = [c + v for c in CONSONANTS for v in VOWELS]
+
+
+def random_chars_join_code():
+    return ''.join(random.sample(SYLLABLES, 4))
 
 
 @lru_cache()

@@ -8,7 +8,8 @@ import types
 import wtforms.fields as wtfields
 from otree.chat import chat_template_tag
 from otree.common import CSRF_TOKEN_NAME
-from otree.i18n import format_number, gettext
+from otree.i18n import format_number
+from gettext import gettext
 from otree.forms.fields import CheckboxField
 
 from . import errors
@@ -882,6 +883,8 @@ class BlockTransNode(Node):
 
 @register('trans')
 class TransNode(Node):
+    """this is only for the user's own translations, because it uses gettext with the 'messages.mo' domain"""
+
     def process_token(self, token):
         args = smart_split(token.text)[1:]
         assert len(args) == 1, f"trans tag takes 1 argument, not {len(args)}"

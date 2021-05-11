@@ -25,6 +25,9 @@ class Command(BaseCommand):
                 f"'{name}' is not a valid name. Please make sure the "
                 "name is a valid Python identifier."
             )
+        max_chars = 40
+        if len(name) > max_chars:
+            sys_exit(f"Name must be shorter than {max_chars} characters")
 
         try:
             import_module(name)

@@ -98,7 +98,10 @@ def load_in_memory_db():
 
     for tblname in new_schema:
         if tblname in old_schema:
-            common_cols = [c for c in old_schema[tblname] if c in new_schema[tblname]]
+            # need to quote it, because
+            common_cols = [
+                f'"{c}"' for c in old_schema[tblname] if c in new_schema[tblname]
+            ]
             common_cols_joined = ', '.join(common_cols)
             select_cmd = f'SELECT {common_cols_joined} FROM {tblname}'
             question_marks = ', '.join('?' for _ in common_cols)
@@ -828,6 +831,16 @@ class ExtraModel(AnyModel):
 
 @event.listens_for(mapper, "instrument_class")
 def prevent_forbidden_colnames(mapper, cls):
+    forbidden_list = ['order', 'index']
+    if cls.__name__ == 'Player':
+        forbidden_list += ['payoff', 'role']
+
+    columns = list(cls.__table__.columns)
+    for f in columns:
+        if f.name in forbidden_list:
+            msg = f'{repr(cls)}: You should rename the model field "{f.name}" to something else. This name is reserved.'
+            sys.exit(msg)
+
     if not cls.id.primary_key:
         sys.exit(
             f'"id" cannot be used as a field name on model {cls.__name__} because this name is reserved'

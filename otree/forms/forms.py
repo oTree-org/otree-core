@@ -1,5 +1,5 @@
 import enum
-from ..i18n import gettext
+from ..i18n import core_gettext
 from typing import Dict
 
 import wtforms
@@ -172,7 +172,9 @@ coerce_functions = {
 def get_choices_field(fa, datatype: FormDataTypes):
     # fa means field_args
     if datatype == FormDataTypes.bool:
-        fa.setdefault('choices', [(True, gettext('Yes')), (False, gettext('No'))])
+        fa.setdefault(
+            'choices', [(True, core_gettext('Yes')), (False, core_gettext('No'))]
+        )
     if 'choices' in fa:
         if datatype == FormDataTypes.Currency:
             before = fa['choices']

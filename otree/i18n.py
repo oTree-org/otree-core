@@ -217,13 +217,13 @@ def format_number(number, places=None):
 def extract_otreetemplate(fileobj, keywords, comment_tags, options):
     """babel custom extractor for {% trans %} tag in otree templates"""
     for lineno, line in enumerate(fileobj, start=1):
-        for msg in re.findall(r"""\{%\s?trans ['"](.*)['"]\s?%\}""", line.decode()):
+        for msg in re.findall(r"""\{\{\s?trans ['"](.*)['"]\s?\}\}""", line.decode()):
             yield (lineno, 'trans', msg, [])
 
 
-def gettext(msg):
+def core_gettext(msg):
     return gettext_lib.dgettext('django', msg)
 
 
-def ngettext(msg1, msg2, n):
+def core_ngettext(msg1, msg2, n):
     return gettext_lib.dngettext('django', msg1, msg2, n)

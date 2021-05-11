@@ -4,7 +4,7 @@ from wtforms.compat import text_type
 from wtforms.widgets import html_params
 from otree import settings
 from otree.currency import CURRENCY_SYMBOLS
-from otree.i18n import gettext
+from otree.i18n import core_gettext
 
 
 # the below code is adapted from wtforms
@@ -72,7 +72,7 @@ class CurrencyWidget(BaseWidget):
                 places = settings.POINTS_DECIMAL_PLACES
             else:
                 # Translators: the label next to a "points" input field
-                CURRENCY_SYMBOL = gettext('points')
+                CURRENCY_SYMBOL = core_gettext('points')
                 places = settings.REAL_WORLD_CURRENCY_DECIMAL_PLACES
         else:
             CURRENCY_SYMBOL = CURRENCY_SYMBOLS.get(

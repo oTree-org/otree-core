@@ -1,4 +1,4 @@
-from otree.i18n import gettext
+from otree.i18n import core_gettext
 
 
 class MustCopyError(Exception):
@@ -75,5 +75,5 @@ timeout_happened = 'timeout_happened'
 participant_label = 'participant_label'
 wait_page_http_header = 'oTree-Wait-Page'
 redisplay_with_errors_http_header = 'oTree-Redisplay-With-Errors'
-field_required_msg = gettext('This field is required.')
+field_required_msg = core_gettext('This field is required.')
 AUTO_NAME_BOTS_EXPORT_FOLDER = 'auto_name'

@@ -77,14 +77,7 @@ def model_classes(helper: AppCheckHelper, app_name):
         )
         helper.add_error(msg, numeric_id=119)
 
-    FORBIDDEN_COLNAMES = {'payoff', 'role', 'order'}
-
     for Model in [Player, Group, Subsession]:
-        columns = list(Model.__table__.columns)
-        for f in columns:
-            if f.name in FORBIDDEN_COLNAMES:
-                msg = f'You should rename the model field "{f.name}" to something else. This name is reserved.'
-                helper.add_error(msg, numeric_id=114)
         for attr_name in dir(Model):
             if attr_name not in base_model_attrs[Model.__name__]:
                 attr_value = getattr(Model, attr_name)

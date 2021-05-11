@@ -13,7 +13,7 @@ from otree import settings
 from otree.channels.utils import auto_advance_group
 from otree.common import (
     random_chars_8,
-    random_chars_10,
+    random_chars_join_code,
     get_admin_secret_code,
 )
 from otree.database import NoResultFound, MixinVars
@@ -70,7 +70,7 @@ class Session(MixinVars, otree.database.SSPPGModel):
     comment = Column(st.Text)
 
     _anonymous_code = Column(
-        st.String(20), default=random_chars_10, nullable=False, index=True,
+        st.String(20), default=random_chars_join_code, nullable=False, index=True,
     )
 
     is_demo = Column(st.Boolean, default=False)

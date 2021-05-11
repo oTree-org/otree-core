@@ -140,12 +140,20 @@ def scan():
         if 'vars_for_all_templates' in txt:
             yield f'{pth}: {VARS_FOR_ALL_TEMPLATES_MSG}'
 
+        for substring in ['min', 'max', 'choices', 'error_message']:
+            if f'_{substring}(' in txt:
+                yield (
+                    f"{pth} contains a field validation function (FIELD_{substring}). "
+                    "This function should be moved to models.py. See here: "
+                    "https://otree.readthedocs.io/en/self/misc/version_history.html#new-format-for-form-validation"
+                )
+
     for pth in root.glob('*/templates/*/*.html'):
         txt = pth.read_text('utf8')
         if '{% extends "global/Base.html" %}' in txt:
             yield (
                 f'{pth} ' + 'starts with {% extends "global/Base.html" %}. '
-                'You should replace that with {% extends "global/Page.html" %}'
+                'You should remove that.'
             )
         if 'with label=' in txt:
             yield (

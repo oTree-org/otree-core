@@ -35,7 +35,7 @@ from otree.common import (
 )
 from otree.database import db, dbq
 from otree.forms.forms import get_form
-from otree.i18n import gettext
+from otree.i18n import core_gettext
 from otree.lookup import get_min_idx_for_app, get_page_lookup
 from otree.models import Participant, Session, BaseGroup, BaseSubsession
 from otree.models_concrete import (
@@ -733,7 +733,7 @@ class Page(FormPageOrInGameWaitPage):
 
     timeout_seconds = None
     timeout_submission = None
-    timer_text = gettext("Time left to complete this page:")
+    timer_text = core_gettext("Time left to complete this page:")
 
 
 class GenericWaitPageMixin:
@@ -759,7 +759,7 @@ class GenericWaitPageMixin:
         return response
 
     # Translators: the default title of a wait page
-    title_text = gettext('Please wait')
+    title_text = core_gettext('Please wait')
     body_text = None
 
     def _get_default_body_text(self):
@@ -1131,9 +1131,9 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
     def _get_default_body_text(self):
         num_other_players = self._group_or_subsession.player_set.count() - 1
         if num_other_players > 1:
-            return gettext('Waiting for the other participants.')
+            return core_gettext('Waiting for the other participants.')
         if num_other_players == 1:
-            return gettext('Waiting for the other participant.')
+            return core_gettext('Waiting for the other participant.')
         return ''
 
 
