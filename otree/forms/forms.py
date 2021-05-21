@@ -24,7 +24,12 @@ def model_form(ModelClass, obj, only):
         field_props = getattr(ModelClass, name).form_props
 
         # fa = field_args
-        fa = {'validators': [], 'render_kw': {}}
+        fa = {
+            'validators': [],
+            'render_kw': {},
+            # to match Django behavior
+            'id': f'id_{name}',
+        }
         if 'label' in field_props:
             fa['label'] = field_props['label']
 
@@ -147,7 +152,8 @@ class ModelConverter(wtforms_sqlalchemy.orm.ModelConverterBase):
 
 def bool_from_form_value(val):
     # when using test clients, we might get a non-string type
-    if val in [None, False, '', '0', 'False']:
+    # javascript uses 'false'
+    if val in [None, False, '', '0', 'False', 'false']:
         return False
     return True
 

@@ -729,6 +729,8 @@ def StringField(**kwargs):
 
 
 def LongStringField(**kwargs):
+    if 'choices' in kwargs:
+        raise ValueError('LongStringField cannot have choices')
     return wrap_column(st.Text, **kwargs)
 
 

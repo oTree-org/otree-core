@@ -27,7 +27,8 @@ class Participant(MixinVars, otree.database.SSPPGModel):
 
     payoff = Column(CurrencyType, default=0)
 
-    time_started = Column(st.DateTime, nullable=True)
+    # better to use a string so that it doesn't become unofficial API
+    time_started_utc = Column(st.String(50), nullable=True)
     mturk_assignment_id = Column(st.String(50), nullable=True)
     mturk_worker_id = Column(st.String(50), nullable=True)
 
@@ -155,9 +156,26 @@ class Participant(MixinVars, otree.database.SSPPGModel):
             if not pp.label:
                 pp.set_label(participant_label)
 
-            # default to Central European Time
-            pp.time_started = datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+            # use UTC because daylight savings is not abandoned yet in EU
+            # if anything, they will switch to permanent CEST (UTC+2)
+            pp.time_started_utc = str(datetime.datetime.utcnow())
             pp._last_page_timestamp = int(time.time())
+
+            from otree import common2
+
+            row = common2.TimeSpentRow(
+                session_code=pp._session_code,
+                participant_id_in_session=pp.id_in_session,
+                participant_code=pp.code,
+                page_index=0,
+                app_name='',
+                page_name='InitializeParticipant',
+                epoch_time_completed=int(time.time()),
+                round_number=1,
+                timeout_happened=0,
+                is_wait_page=0,
+            )
+            common2.write_row_to_page_buffer(row)
 
     def _update_monitor_table(self):
         from otree import export

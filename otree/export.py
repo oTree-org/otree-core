@@ -11,7 +11,7 @@ from sqlalchemy.sql.functions import func
 
 import otree
 from otree.common import get_models_module
-from otree.common2 import TIME_SPENT_COLUMNS, write_page_completion_buffer
+from otree.common2 import TimeSpentRow, write_page_completion_buffer
 from otree.currency import Currency, RealWorldCurrency
 from otree.database import dbq, values_flat
 from otree import database
@@ -72,7 +72,7 @@ def _get_table_fields(Model, for_export=False):
                 # even rows for different rounds.
                 #'_round_number',
                 '_current_page_name',
-                'time_started',
+                'time_started_utc',
                 'visited',
                 'mturk_worker_id',
                 'mturk_assignment_id',
@@ -465,7 +465,7 @@ def _export_csv(fp, rows):
 def export_page_times(fp):
     write_page_completion_buffer()
     batches = values_flat(dbq(PageTimeBatch).order_by('id'), PageTimeBatch.text)
-    fp.write(','.join(TIME_SPENT_COLUMNS) + '\n')
+    fp.write(','.join(TimeSpentRow.__annotations__.keys()) + '\n')
     for batch in batches:
         fp.write(batch)
 

@@ -627,7 +627,7 @@ class FormFieldNode(Node):
         if label_expr:
             label = label_expr.eval(context)
         else:
-            label = fld.label
+            label = fld.label.text
         # if not label.endswith(':'):
         #    label += ':'
 
@@ -646,11 +646,11 @@ class FormFieldNode(Node):
 <div class="{{classes}}">
     {% if is_checkbox %}
       {{fld}}
-      <label class="form-check-label">
+      <label class="form-check-label" for="{{fld.id}}">
         {{label}}
       </label>
     {% else %}
-        <label class="col-form-label" for="id_{{fld.name}}">{{label}}</label>
+        <label class="col-form-label" for="{{fld.id}}">{{label}}</label>
         <div class="controls">
             {{fld}}
         </div>

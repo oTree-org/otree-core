@@ -259,7 +259,6 @@ class WaitPage:
     title_text: str
     body_text: str
     template_name: str
-    after_all_players_arrive: str
 
     round_number: int
     @staticmethod
@@ -273,6 +272,9 @@ class WaitPage:
         pass
     @staticmethod
     def app_after_this_page(player: Player, upcoming_apps):
+        pass
+    @staticmethod
+    def after_all_players_arrive(group: Group):
         pass
 
 class Page:
