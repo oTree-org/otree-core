@@ -466,25 +466,40 @@ class ElseNode(Node):
 @register('include')
 class IncludeNode(Node):
     def process_token(self, token):
-        try:
-            tag, arg = token.text.split(None, 1)
-        except:
-            msg = f"Malformed tag"
-            raise errors.TemplateSyntaxError(msg, token) from None
-        expr = Expression(arg, token)
-
-        self.expr = expr
-        self.arg = arg
+        self.variables = {}
+        parts = utils.splitre(token.text[7:], ["with"])
+        if len(parts) == 1:
+            self.template_arg = parts[0]
+            self.template_expr = Expression(parts[0], token)
+        elif len(parts) == 2:
+            self.template_arg = parts[0]
+            self.template_expr = Expression(parts[0], token)
+            chunks = utils.splitc(parts[1], "&", strip=True, discard_empty=True)
+            for chunk in chunks:
+                try:
+                    name, expr = chunk.split('=', 1)
+                    self.variables[name.strip()] = Expression(expr.strip(), token)
+                except:
+                    raise errors.TemplateSyntaxError(
+                        "Malformed 'include' tag.", token
+                    ) from None
+        else:
+            raise errors.TemplateSyntaxError("Malformed 'include' tag.", token)
 
     def wrender(self, context):
-        template_name = self.expr.eval(context)
+        template_name = self.template_expr.eval(context)
         if isinstance(template_name, str):
             template = ibis_loader.load(template_name)
-            return template.root_node.render(context)
+            context.push()
+            for name, expr in self.variables.items():
+                context[name] = expr.eval(context)
+            rendered = template.root_node.render(context)
+            context.pop()
+            return rendered
         else:
             msg = f"Invalid argument for the 'include' tag. "
-            msg += f"The variable '{self.arg}' should evaluate "
-            msg += f"to a string. This variable has the value: {repr(template_name)}."
+            msg += f"The variable '{self.template_arg}' should evaluate to a string. "
+            msg += f"This variable has the value: {repr(template_name)}."
             raise errors.TemplateRenderingError(msg, self.token)
 
 

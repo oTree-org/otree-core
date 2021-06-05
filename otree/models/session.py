@@ -1,6 +1,6 @@
 import logging
 import time
-
+from datetime import datetime
 from sqlalchemy import Column
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import sqltypes as st
@@ -79,6 +79,22 @@ class Session(MixinVars, otree.database.SSPPGModel):
     _admin_report_num_rounds = Column(st.String(255), default='')
 
     num_participants = Column(st.Integer)
+
+    _created = Column(st.DateTime, default=datetime.utcnow)
+
+    def _created_readable(self):
+        now = datetime.utcnow()
+        delta = now - self._created
+        days = delta.days
+        seconds = delta.seconds
+        if days > 1:
+            return f'{days} days ago'
+        if days == 1:
+            return '1 day ago'
+        num_hours = seconds // (60 * 60)
+        if num_hours >= 1:
+            return f'{num_hours} hours ago'
+        return '< 1 hour ago'
 
     _SETATTR_NO_FIELD_HINT = ' You can define it in the SESSION_FIELDS setting.'
 

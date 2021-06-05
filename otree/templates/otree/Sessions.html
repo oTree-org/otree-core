@@ -57,6 +57,7 @@
         <th>Code</th>
         <th>Size</th>
         <th>Config</th>
+        <th>Created</th>
         <th>Label</th>
         <th></th>
         </thead>
@@ -69,6 +70,7 @@
             <td><a href="{% url 'SessionStartLinks' s.code %}">{{ s.code }}</a></td>
             <td>{{ s.num_participants }}</td>
             <td>{{ s.config.name }}</td>
+            <td>{{ s._created_readable() }}</td>
             <td>{{ s.label }}</td>
             <td>
               {% if s.mturk_is_active() %}

@@ -110,7 +110,11 @@ def load_in_memory_db():
             )
             disk_cur.execute(select_cmd)
             rows = disk_cur.fetchall()
-            mem_cur.executemany(insert_cmd, rows)
+            try:
+                mem_cur.executemany(insert_cmd, rows)
+            except sqlite3.IntegrityError:
+                # for example if you change a StringField to a BooleanField
+                sys.exit(f'An error occurred. Please delete your database ({DB_FILE}).')
     sqlite_mem_conn.commit()
 
 
