@@ -35,28 +35,22 @@ function recentlyActiveParticipantsMsg(newIds) {
     return `Updates: ${listing}`;
 }
 
-// ajax request for advance session button
-function setup_ajax_advance(ajaxUrl) {
-    var csrftoken = $("[name=csrftoken]").val();
-
-    $('#advance_users').on('click', function () {
-        $('#advance_users').attr("disabled", true);
-        $.ajax({
-            url: ajaxUrl,
-            type: 'POST',
-            data: {
-                csrftoken: csrftoken
-            },
-            error: function (jqXHR, textStatus) {
-                $("#auto_advance_server_error").show();
-                // enable the button so they can try again?
-                $('#advance_users').attr("disabled", false);
-            },
-            success: function () {
-                $("div#auto_advance_server_error").hide();
-                $('#advance_users').attr("disabled", false);
-            }
-        });
+function advanceSlowestUsers() {
+    let csrftoken = document.querySelector("[name=csrftoken]").value;
+    let serverErrorDiv = $("#auto_advance_server_error");
+    $.ajax({
+        url: advanceUrl,
+        type: 'POST',
+        data: {
+            csrftoken: csrftoken
+        },
+        error: function (jqXHR, textStatus) {
+            serverErrorDiv.show();
+            // enable the button so they can try again?
+        },
+        success: function () {
+            serverErrorDiv.hide();
+        }
     });
 }
 

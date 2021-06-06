@@ -330,7 +330,6 @@ def get_rows_for_csv(app_name):
         for Model in [Player, Group, Subsession, Participant, Session]
     }
 
-    participant_ids = values_flat(dbq(Player), Player.participant_id)
     session_ids = values_flat(dbq(Subsession), Subsession.session_id)
 
     players = Player.values_dicts()
@@ -338,9 +337,11 @@ def get_rows_for_csv(app_name):
     value_dicts = dict(
         group={row['id']: row for row in Group.values_dicts()},
         subsession={row['id']: row for row in Subsession.values_dicts()},
+        # before we used Participant.id.in_(...)
+        # but a user got an error that the "in" clause of the query had too many vars
         participant={
             row['id']: row
-            for row in Participant.values_dicts(Participant.id.in_(participant_ids))
+            for row in Participant.values_dicts(Participant.session_id.in_(session_ids))
         },
         session={
             row['id']: row for row in Session.values_dicts(Session.id.in_(session_ids))

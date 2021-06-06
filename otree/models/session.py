@@ -178,40 +178,38 @@ class Session(MixinVars, otree.database.SSPPGModel):
         (1) this request already has the global asyncio.lock
         (2) there are apparently some issues with async/await and event loops.
         """
-        from otree.lookup import get_page_lookup
-        from otree.api import Page
 
         participants = self.get_participants()
 
-        # in case some participants haven't started
-        unvisited_participants = False
-        for p in participants:
-            if p._index_in_pages == 0:
-                p.initialize(None)
-                # need this in order to kick off any timeout, update the admin
-                p._visit_current_page()
-                unvisited_participants = True
-
-        if unvisited_participants:
-            # that's it -- just visit the start URL, advancing by 1
-            return
-
         last_place_page_index = min([p._index_in_pages for p in participants])
+        # max 20 at a time because:
+        # - you could run into Heroku 30s timeout.
+        # - in a huge session, if your finger slips you could mess up the whole session
+        # - less problems with responsiveness, needing to gray out the button, etc.
+        # - we could make a confirmation dialog on the client side, but JS less reliable,
+        #   slows people down more.
+        # this is more proportional to effort.
         last_place_participants = [
             p for p in participants if p._index_in_pages == last_place_page_index
-        ]
-        for p in last_place_participants:
-            p._submit_current_page()
-            # need to do this to update the monitor table, set any timeouts, etc.
-            p._visit_current_page()
+        ][:otree.constants.ADVANCE_SLOWEST_BATCH_SIZE]
 
-            # 2020-12-20: this is needed.
-            # do the auto-advancing here,
-            # rather than in increment_index_in_pages,
-            # because it's only needed here.
-            otree.channels.utils.sync_group_send(
-                group=auto_advance_group(p.code), data={'auto_advanced': True}
-            )
+        if last_place_page_index == 0:
+            for p in last_place_participants:
+                p.initialize(None)
+                p._visit_current_page()
+        else:
+            for p in last_place_participants:
+                p._submit_current_page()
+                # need to do this to update the monitor table, set any timeouts, etc.
+                p._visit_current_page()
+
+                # 2020-12-20: this is needed.
+                # do the auto-advancing here,
+                # rather than in increment_index_in_pages,
+                # because it's only needed here.
+                otree.channels.utils.sync_group_send(
+                    group=auto_advance_group(p.code), data={'auto_advanced': True}
+                )
 
     def get_room(self):
         from otree.room import ROOM_DICT

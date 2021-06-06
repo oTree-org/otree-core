@@ -77,3 +77,4 @@ wait_page_http_header = 'oTree-Wait-Page'
 redisplay_with_errors_http_header = 'oTree-Redisplay-With-Errors'
 field_required_msg = core_gettext('This field is required.')
 AUTO_NAME_BOTS_EXPORT_FOLDER = 'auto_name'
+ADVANCE_SLOWEST_BATCH_SIZE = 20

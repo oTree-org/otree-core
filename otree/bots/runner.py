@@ -150,9 +150,7 @@ def run_all_bots_for_session_config(session_config_name, num_participants, expor
 
             session = otree.session.create_session(
                 session_config_name=config_name,
-                num_participants=(
-                    num_participants or config['num_demo_participants']
-                ),
+                num_participants=(num_participants or config['num_demo_participants']),
             )
             session_id = session.id
 
@@ -173,7 +171,7 @@ def run_all_bots_for_session_config(session_config_name, num_participants, expor
             model_module = otree.common.get_models_module(app)
             if model_module.Player.objects_exists():
                 fpath = Path(export_path, "{}.csv".format(app))
-                with fpath.open("w", encoding="utf8") as fp:
+                with fpath.open("w", newline='', encoding="utf8") as fp:
                     otree.export.export_app(app, fp)
         fpath = Path(export_path, "all_apps_wide.csv")
         with fpath.open("w", encoding="utf8") as fp:

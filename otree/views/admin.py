@@ -22,6 +22,7 @@ from otree.common import (
     AUTH_COOKIE_NAME,
     AUTH_COOKIE_VALUE,
 )
+from otree.constants import ADVANCE_SLOWEST_BATCH_SIZE
 from otree.currency import RealWorldCurrency
 from otree.database import values_flat, save_sqlite_db, db
 from otree.models import Session
@@ -305,6 +306,7 @@ class SessionMonitor(AdminSessionPage):
         return dict(
             column_names=column_names,
             socket_url=channel_utils.session_monitor_path(self.session.code),
+            ADVANCE_SLOWEST_BATCH_SIZE=ADVANCE_SLOWEST_BATCH_SIZE
         )
 
 
