@@ -332,7 +332,7 @@ def get_rows_for_csv(app_name):
 
     session_ids = values_flat(dbq(Subsession), Subsession.session_id)
 
-    players = Player.values_dicts()
+    players = Player.values_dicts(order_by='id')
 
     value_dicts = dict(
         group={row['id']: row for row in Group.values_dicts()},
@@ -398,7 +398,7 @@ def get_rows_for_data_tab_app(session, app_name):
 
     pfields, gfields, sfields = get_fields_for_data_tab(app_name)
 
-    players = Player.values_dicts(session=session)
+    players = Player.values_dicts(session=session, order_by='id')
 
     players_by_round = defaultdict(list)
     for p in players:

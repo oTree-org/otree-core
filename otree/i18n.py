@@ -208,10 +208,14 @@ def format_number(number, places=None):
     str_number = str(number)
     if '.' in str_number:
         lhs, rhs = str_number.split('.')
-        if places == 0:
-            return lhs
-        return lhs + settings.DECIMAL_SEPARATOR + rhs[:places]
-    return str_number
+    else:
+        lhs = str_number
+        rhs = ''
+    if places is not None:
+        rhs = rhs.ljust(places, '0')
+    if places == 0:
+        return lhs
+    return lhs + settings.DECIMAL_SEPARATOR + rhs[:places]
 
 
 def extract_otreetemplate(fileobj, keywords, comment_tags, options):

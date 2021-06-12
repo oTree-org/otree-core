@@ -160,8 +160,14 @@ class RadioSelect(BaseWidget):
     has_value = False
 
     def get_html_fragments(self):
+
         yield '<div %s>' % html_params(**self.render_kw)
         for subfield in self.field:
+            # 'required' attribute is missing in wtforms
+            # https://github.com/wtforms/wtforms/pull/615
+            # let's wait until that change gets released,
+            # before fixing the case of {{ for option in field }}...
+            # which unfortunately skips past this workaround
             subfield_html = (
                 subfield(required=True)
                 if self.render_kw.get('required')

@@ -62,6 +62,8 @@ class RadioField(wtfields.RadioField):
     option_widget = wg.RadioOption()
 
 
+
+
 class RadioFieldHorizontal(wtfields.RadioField):
     widget = wg.RadioSelectHorizontal()
     option_widget = wg.RadioOption()

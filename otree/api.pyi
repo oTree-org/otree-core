@@ -217,6 +217,7 @@ GroupTV = TypeVar("GroupTV", bound=BaseGroup)
 
 class BasePlayer:
     id_in_group: int
+    id_in_subsession: int
     payoff: Currency
     participant: Any
     session: Any
