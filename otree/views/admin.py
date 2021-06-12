@@ -25,6 +25,7 @@ from otree.common import (
 from otree.constants import ADVANCE_SLOWEST_BATCH_SIZE
 from otree.currency import RealWorldCurrency
 from otree.database import values_flat, save_sqlite_db, db
+import otree.database
 from otree.models import Session
 from otree.session import SESSION_CONFIGS_DICT, SessionConfig
 from otree.templating import get_template_name_if_exists
@@ -306,7 +307,7 @@ class SessionMonitor(AdminSessionPage):
         return dict(
             column_names=column_names,
             socket_url=channel_utils.session_monitor_path(self.session.code),
-            ADVANCE_SLOWEST_BATCH_SIZE=ADVANCE_SLOWEST_BATCH_SIZE
+            ADVANCE_SLOWEST_BATCH_SIZE=ADVANCE_SLOWEST_BATCH_SIZE,
         )
 
 
@@ -441,11 +442,16 @@ class ServerCheck(AdminView):
     url_pattern = '/server_check'
 
     def get_context_data(self, **kwargs):
+        # is_sqlite = engine.url.database
+        backend_name = otree.database.engine.url.get_backend_name()
+        is_postgres = backend_name == 'postgres'
         return super().get_context_data(
             debug=settings.DEBUG,
             auth_level=settings.AUTH_LEVEL,
             auth_level_ok=settings.AUTH_LEVEL in {'DEMO', 'STUDY'},
             pypi_results=get_installed_and_pypi_version(),
+            is_postgres=is_postgres,
+            backend_name=backend_name,
             **kwargs,
         )
 

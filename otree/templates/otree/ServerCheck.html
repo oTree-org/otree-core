@@ -44,5 +44,19 @@
     </div>
   {% endif %}
 
+  {% if not is_postgres %}
+    <div class="alert alert-danger">
+      <strong>Not using PostgreSQL</strong>
+      Your database is {{ backend_name }}, not postgres.
+      When launching a study, it's recommended to use Postgres.
+    </div>
+  {% else %}
+    <div class="alert alert-success">
+      Postgres is configured.
+    </div>
+  {% endif %}
+
+
+
 {% endblock %}
 
