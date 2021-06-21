@@ -112,7 +112,7 @@ def load_in_memory_db():
             rows = disk_cur.fetchall()
             try:
                 mem_cur.executemany(insert_cmd, rows)
-            except sqlite3.IntegrityError:
+            except sqlite3.IntegrityError as exc:
                 # for example if you change a StringField to a BooleanField
                 sys.exit(f'An error occurred. Please delete your database ({DB_FILE}).')
     sqlite_mem_conn.commit()
@@ -224,13 +224,13 @@ def get_engine():
         engine = create_engine(
             DATABASE_URL, poolclass=sqlalchemy.pool.StaticPool, **kwargs,
         )
-    if engine.url.get_backend_name() == 'sqlite':
-        # https://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
-        from sqlalchemy import event
-
-        event.listen(
-            engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on')
-        )
+    # if engine.url.get_backend_name() == 'sqlite':
+    #     # https://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
+    #     from sqlalchemy import event
+    #
+    #     event.listen(
+    #         engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on')
+    #     )
     return engine
 
 
