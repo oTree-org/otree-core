@@ -224,6 +224,13 @@ def get_engine():
         engine = create_engine(
             DATABASE_URL, poolclass=sqlalchemy.pool.StaticPool, **kwargs,
         )
+    if engine.url.get_backend_name() == 'sqlite':
+        # https://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
+        from sqlalchemy import event
+
+        event.listen(
+            engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on')
+        )
     return engine
 
 

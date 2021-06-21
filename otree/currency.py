@@ -2,7 +2,12 @@ import json
 from decimal import Decimal, ROUND_HALF_UP
 
 from otree import settings
-from otree.i18n import CURRENCY_SYMBOLS, get_currency_format, format_number, core_ngettext
+from otree.i18n import (
+    CURRENCY_SYMBOLS,
+    get_currency_format,
+    format_number,
+    core_ngettext,
+)
 
 
 # Set up money arithmetic
@@ -189,7 +194,9 @@ class Currency(BaseCurrency):
             # and msgstr[1] is plural
             # the {} represents the number;
             # don't forget to include it in your translation
-            return core_ngettext('{} point', '{} points', number).format(formatted_number)
+            return core_ngettext('{} point', '{} points', number).format(
+                formatted_number
+            )
         else:
             return super()._format_currency(places=places)
 
