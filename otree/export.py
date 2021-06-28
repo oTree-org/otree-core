@@ -204,7 +204,7 @@ def get_rows_for_wide_csv(session_code):
     )
     session_cache = {row.id: row for row in sessions}
 
-    session_config_fields = set()
+    session_config_fields = {'name'}
     for session in sessions:
         for field_name in SessionConfig(session.config).editable_fields():
             session_config_fields.add(field_name)

@@ -110,11 +110,13 @@ def load_in_memory_db():
             )
             disk_cur.execute(select_cmd)
             rows = disk_cur.fetchall()
+            mem_cur.execute('pragma foreign_keys=off')
             try:
                 mem_cur.executemany(insert_cmd, rows)
             except sqlite3.IntegrityError as exc:
                 # for example if you change a StringField to a BooleanField
                 sys.exit(f'An error occurred. Please delete your database ({DB_FILE}).')
+            mem_cur.execute('pragma foreign_keys=on')
     sqlite_mem_conn.commit()
 
 
@@ -224,13 +226,13 @@ def get_engine():
         engine = create_engine(
             DATABASE_URL, poolclass=sqlalchemy.pool.StaticPool, **kwargs,
         )
-    # if engine.url.get_backend_name() == 'sqlite':
-    #     # https://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
-    #     from sqlalchemy import event
-    #
-    #     event.listen(
-    #         engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on')
-    #     )
+    if engine.url.get_backend_name() == 'sqlite':
+        # https://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
+        from sqlalchemy import event
+
+        event.listen(
+            engine, 'connect', lambda c, _: c.execute('pragma foreign_keys=on')
+        )
     return engine
 
 
@@ -721,6 +723,8 @@ AUTO_SUBMIT_DEFAULTS = {
 def wrap_column(coltype, *, initial=None, null=True, **form_props) -> OTreeColumn:
     if 'default' in form_props:
         initial = form_props.pop('default')
+    if 'verbose_name' in form_props:
+        form_props['label'] = form_props.pop('verbose_name')
 
     col = OTreeColumn(coltype, default=initial, nullable=null)
     col.form_props = form_props
