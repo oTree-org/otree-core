@@ -91,7 +91,7 @@ msgstr "Herzlich willkommen"
 #. Translators: If the user enters an invalid participant label
 #: .\templates\otree\RoomInputLabel.html:13
 msgid "Invalid entry; try again."
-msgstr ""
+msgstr "Ungültige Eingabe; Bitte versuchen Sie es noch einmal."
 
 #: .\templates\otree\RoomInputLabel.html:15
 msgid "Please enter your participant label."
@@ -142,4 +142,4 @@ msgstr "Bitte warten Sie bis der andere Teilnehmer bereit ist."
 
 #: .\views\participant.py:292
 msgid "Waiting for your session to begin"
-msgstr ""
+msgstr "Bitte warten Sie bis Ihre Sitzung startet."

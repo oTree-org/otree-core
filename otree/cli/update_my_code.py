@@ -6,6 +6,8 @@ from .base import BaseCommand
 item_index = 1
 
 NEW_MODELS_PY_IMPORTS = """
+from otree.api import *
+c = cu
 from otree.api import (
     models,
     widgets,

@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from importlib import import_module
+import sys
 
 
 class BaseCommand:
@@ -24,5 +25,8 @@ class BaseCommand:
 
 
 def call_command(cmd, *args):
-    module = import_module(f'otree.cli.{cmd}')
+    try:
+        module = import_module(f'otree.cli.{cmd}')
+    except ModuleNotFoundError:
+        sys.exit(f"No command named '{cmd}'")
     module.Command().outer_handle(args)

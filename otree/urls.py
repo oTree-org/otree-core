@@ -9,6 +9,8 @@ from starlette.endpoints import HTTPEndpoint
 from starlette.responses import RedirectResponse
 
 ALWAYS_UNRESTRICTED = {
+    # REST views don't need to be here because they don't use the
+    # _login_required flag to begin with. they are automatically open.
     'AssignVisitorToRoom',
     'InitializeParticipant',
     'Login',
@@ -16,11 +18,6 @@ ALWAYS_UNRESTRICTED = {
     'MTurkStart',
     'JoinSessionAnonymously',
     'OutOfRangeNotification',
-    'RESTCreateSession',
-    'RESTSessionVars',
-    'PostParticipantVarsThroughREST',
-    'CreateBrowserBotsSession',
-    'CloseBrowserBotsSession',
     'BrowserBotStartLink',
     'SaveDB',
     'WSSubsessionWaitPage',

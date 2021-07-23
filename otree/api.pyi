@@ -217,7 +217,8 @@ GroupTV = TypeVar("GroupTV", bound=BaseGroup)
 
 class BasePlayer:
     id_in_group: int
-    id_in_subsession: int
+    # remove this from autocomplete because it crowds out id_in_group which is much more relevant
+    # id_in_subsession: int
     payoff: Currency
     participant: Any
     session: Any

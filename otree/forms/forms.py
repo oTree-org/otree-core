@@ -71,12 +71,6 @@ def model_form(ModelClass, obj, only):
                 # wtforms expects widget instances
                 widget = widget()
             fa['widget'] = widget
-            if isinstance(
-                widget, (widgets.RadioSelect, widgets.RadioSelectHorizontal,)
-            ) and not fa.get('choices'):
-                msg = f'Field "{name}" uses a radio/select widget but no choices are defined'
-                raise Exception(msg)
-
         field_args[name] = fa
 
     return wtforms_sqlalchemy.orm.model_form(
@@ -90,6 +84,7 @@ def model_form(ModelClass, obj, only):
 
 def get_form(instance, field_names, view, formdata):
     instance._is_frozen = False
+
     FormClass = model_form(type(instance), obj=instance, only=field_names)
     form = FormClass(formdata=formdata, obj=instance, view=view)
     # because only= does not preserve order, so we need to store this
@@ -178,6 +173,7 @@ coerce_functions = {
 def get_choices_field(fa, datatype: FormDataTypes):
     # fa means field_args
     if datatype == FormDataTypes.bool:
+
         fa.setdefault(
             'choices', [(True, core_gettext('Yes')), (False, core_gettext('No'))]
         )
@@ -200,6 +196,11 @@ def get_choices_field(fa, datatype: FormDataTypes):
             widgets.TextInput: fields.StringField,
             None: fields.DropdownField,
         }[widget](**fa)
+    elif fa.get('widget') and isinstance(
+        fa['widget'], (widgets.RadioSelect, widgets.RadioSelectHorizontal)
+    ):
+        msg = f'Field uses a radio/select widget but no choices are defined'
+        raise Exception(msg)
 
 
 class ModelForm(wtforms.Form):

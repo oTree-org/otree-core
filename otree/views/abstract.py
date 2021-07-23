@@ -584,8 +584,10 @@ class Page(FormPageOrInGameWaitPage):
         has_secret_code = (
             post_data.get(otree.constants.admin_secret_code) == ADMIN_SECRET_CODE
         )
-        self.timeout_happened = auto_submitted and (
-            has_secret_code or self.has_timeout_()
+        # convert it to a bool so that you can do e.g.
+        # player.timeout_happened = timeout_happened
+        self.timeout_happened = bool(
+            auto_submitted and (has_secret_code or self.has_timeout_())
         )
         if self.participant.is_browser_bot:
             submission = browser_bots.pop_enqueued_post_data(

@@ -276,6 +276,7 @@ class ParticipantBot:
                         case=player_bot.case,
                         round_number=player_bot.round_number,
                         page_class=PageClass,
+                        group=player_bot.group,
                     )
                     db.commit()
                 self.executed_live_methods.add(record)

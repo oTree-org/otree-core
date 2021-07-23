@@ -6,6 +6,8 @@ from .base import BaseCommand
 
 logger = logging.getLogger(__name__)
 
+print_function = print
+
 
 def run_asgi_server(addr, port, *, is_devserver=False):
     run_uvicorn(addr, port, is_devserver=is_devserver)
@@ -53,4 +55,5 @@ class Command(BaseCommand):
         subprocess.Popen(
             ['otree', 'timeoutsubprocess', str(port)], env=os.environ.copy()
         )
+        print_function('Running prodserver')
         run_asgi_server(addr, port)
