@@ -171,7 +171,7 @@ REQS_BASE_DEFAULT = '''\
 # if someone needs that exact version, they can manage the file manually.
 _REQS_DEFAULT_FMT = f'''\
 # {OVERWRITE_TOKEN}
-# IF YOU MODIFY THIS FILE, remove these comments. 
+# IF YOU MODIFY THIS FILE, remove these comments.
 # otherwise, oTree will automatically overwrite it.
 otree%s>={otree_version}
 psycopg2>=2.8.4
