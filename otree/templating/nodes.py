@@ -7,7 +7,8 @@ import types
 
 import wtforms.fields as wtfields
 from otree.chat import chat_template_tag
-from otree.common import CSRF_TOKEN_NAME
+from otree.common import CSRF_TOKEN_NAME, FULL_DECIMAL_PLACES
+from otree.common2 import static_url_for
 from otree.i18n import format_number
 from gettext import gettext
 from otree.forms.fields import CheckboxField
@@ -792,7 +793,7 @@ class ChatNode(Node):
 
     def process_token(self, token):
         args = token.text.split()[1:]
-        assert len(args) <= 2, '{% chat %} tag takes at most 2 arguments'
+        assert len(args) <= 2, '{{ chat }} tag takes at most 2 arguments'
         for arg in args:
             if arg.startswith('channel='):
                 self.channel_expr = parse_as_kwarg(arg, 'channel', token)
@@ -832,9 +833,8 @@ class StaticNode(Node):
         self.path_expr = Expression(path, token)
 
     def wrender(self, context):
-        from otree.asgi import app
-
-        return app.router.url_path_for('static', path=self.path_expr.eval(context))
+        path = self.path_expr.eval(context)
+        return static_url_for(path)
 
 
 @register('url')
@@ -885,7 +885,7 @@ def smart_split(text):
 
 def localize(v):
     if isinstance(v, float):
-        return format_number(v)
+        return format_number(v, places=FULL_DECIMAL_PLACES)
     return str(v)
 
 

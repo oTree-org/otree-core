@@ -1,7 +1,8 @@
 import gettext as gettext_lib
-
+from otree.common import FULL_DECIMAL_PLACES
 from otree import settings
 import re
+
 
 # these symbols are a fallback if we don't have an explicit rule
 # for the currency/language combination.
@@ -190,7 +191,7 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
         return '# ¤'
     if lc == 'th':
         if CUR == 'THB':
-            return 'THB#'
+            return '฿#'
         return '¤#'
     if lc == 'tr':
         if CUR == 'TRY':
@@ -201,20 +202,34 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
     return '# ¤'
 
 
-def format_number(number, places=None):
+def format_number(number, *, places):
     """we don't use locale.setlocale because e.g.
     only english locale is installed on heroku
+
+    This is a complex function because it's is used by many different things.
+    - currency
+    - formatting any number (random floats, etc)
+    - forms
+    - to0, to1, to2
+
     """
+    # we use FULL_DECIMAL_PLACES as the arg because it's more explict than None.
+    if places is FULL_DECIMAL_PLACES:
+        places = None
     str_number = str(number)
     if '.' in str_number:
         lhs, rhs = str_number.split('.')
     else:
         lhs = str_number
+        if places is None:
+            return lhs
         rhs = ''
     if places is not None:
         rhs = rhs.ljust(places, '0')
     if places == 0:
         return lhs
+    # rhs[:None] just takes the whole thing, which is the desired behavior
+    # with floats.
     return lhs + settings.DECIMAL_SEPARATOR + rhs[:places]
 
 

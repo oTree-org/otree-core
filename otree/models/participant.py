@@ -18,7 +18,11 @@ from otree import settings
 class Participant(MixinVars, otree.database.SSPPGModel):
     __tablename__ = 'otree_participant'
 
-    session_id = Column(st.Integer, ForeignKey('otree_session.id', ondelete='CASCADE'))
+    session_id = Column(
+        st.Integer, ForeignKey('otree_session.id', ondelete='CASCADE')
+    )
+    # getting integrityerror, so trying passive_deletes
+    # https://stackoverflow.com/questions/5033547/sqlalchemy-cascade-delete
     session = relationship("Session", back_populates="pp_set")
 
     label = Column(st.String(100), nullable=True)

@@ -1,12 +1,14 @@
 import inspect
 from importlib import import_module
-from otree.channels.routing import websocket_routes
 from pathlib import Path
-from otree import common, settings
-from starlette.routing import Route, Mount
-from starlette.staticfiles import StaticFiles
+
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import RedirectResponse
+from starlette.routing import Route, Mount
+
+from otree import common, settings
+from otree.channels.routing import websocket_routes
+from otree.common2 import static_files_app
 
 ALWAYS_UNRESTRICTED = {
     # REST views don't need to be here because they don't use the
@@ -60,31 +62,6 @@ def view_classes_from_module(module_name):
         if hasattr(ViewCls, 'url_pattern')
         and inspect.getmodule(ViewCls) == views_module
     ]
-
-
-import importlib.util, os
-
-
-class OTreeStaticFiles(StaticFiles):
-    # copied from starlette, just to change 'statics' to 'static',
-    # and to fail silently if the dir does not exist.
-    def get_directories(self, directory, packages):
-        directories = []
-        if directory is not None:
-            directories.append(directory)
-
-        for package in packages or []:
-            spec = importlib.util.find_spec(package)
-            assert (
-                spec is not None and spec.origin is not None
-            ), f"Package {package!r} could not be found, or maybe __init__.py is missing"
-            package_directory = os.path.normpath(
-                os.path.join(spec.origin, "..", "static")
-            )
-            if os.path.isdir(package_directory):
-                directories.append(package_directory)
-
-        return directories
 
 
 def url_patterns_from_app_pages(app_name, name_in_url):
@@ -157,17 +134,10 @@ def get_urlpatterns():
     routes += url_patterns_from_builtin_module('otree.views.rest')
     routes += websocket_routes
     routes += [
-        Mount(
-            '/static',
-            app=OTreeStaticFiles(
-                directory='_static', packages=['otree'] + settings.OTREE_APPS
-            ),
-            name="static",
-        ),
+        Mount('/static', app=static_files_app, name="static",),
         Route("/favicon.ico", endpoint=Favicon),
         Route('/', endpoint=HomeRedirect),
     ]
-    # you can add an asgi_routes.py to your own project, to add custom pages & websockets
     if Path('asgi_routes.py').exists():
         routes += import_module('asgi_routes').routes
 

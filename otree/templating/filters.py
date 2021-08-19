@@ -1,6 +1,6 @@
 import html
 from otree.i18n import core_gettext
-
+from otree import common
 from otree.currency import Currency, json_dumps, BaseCurrency
 from otree.i18n import format_number
 
@@ -74,7 +74,7 @@ def json(val):
 def to_places(val, places):
     if isinstance(val, BaseCurrency):
         return val._format_currency(places=places)
-    return format_number(val, places)
+    return format_number(val, places=places)
 
 
 @register

@@ -54,7 +54,7 @@ class ChatMessage(AnyModel):
 
     # the name "channel" here is unrelated to Django channels
     channel = Column(st.String(255))
-    participant_id = Column(st.Integer, ForeignKey('otree_participant.id'))
+    participant_id = Column(st.Integer, ForeignKey('otree_participant.id', ondelete='CASCADE'))
     participant = relationship("Participant")
     nickname = Column(st.String(255))
 

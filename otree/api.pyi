@@ -142,9 +142,10 @@ class models:
             **kwargs
         ):
             pass
-    class Link:
-        def __init__(self, to):
-            pass
+
+    @staticmethod
+    def Link(to) -> Any:
+        pass
 
 class widgets:
     def __getattr__(self, item):
@@ -189,6 +190,9 @@ class BaseSubsession:
     def group_randomly(self, fixed_id_in_group: bool = False):
         pass
 
+    #def field_maybe_none(self, field_name: str):
+    #    pass
+
 # Using TypeVar instead of the BaseSubsession seems to make PyCharm
 # allow BaseSubsession be passed to a function marked as taking a Subsession arg
 SubsessionTV = TypeVar("SubsessionTV", bound=BaseSubsession)
@@ -212,6 +216,8 @@ class BaseGroup:
         pass
     def in_rounds(self: GroupTV, first: int, last: int) -> List[GroupTV]:
         pass
+    # def field_maybe_none(self, field_name: str):
+    #     pass
 
 GroupTV = TypeVar("GroupTV", bound=BaseGroup)
 
@@ -238,6 +244,8 @@ class BasePlayer:
         pass
     def in_rounds(self: PlayerTV, first, last) -> List[PlayerTV]:
         pass
+    # def field_maybe_none(self, field_name: str):
+    #     pass
 
 PlayerTV = TypeVar("PlayerTV", bound=BasePlayer)
 

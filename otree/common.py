@@ -248,3 +248,6 @@ AUTH_COOKIE_VALUE = signer_sign(AUTH_COOKIE_NAME)
 
 
 lock = asyncio.Lock()
+
+class FULL_DECIMAL_PLACES:
+    pass

@@ -22,7 +22,7 @@ i removed many linebreaks to make output HTML cleaner
                 {{ "Please fix the errors in the form."|gettext }}
               {% endif %}
             </div>
-        {% endif %}{% if is_defined('js_vars') and js_vars %}<script>var js_vars = {{ js_vars|json }};</script>{% endif %}
+        {% endif %}{% if is_defined('js_vars') and js_vars %}<script>var js_vars = {{ js_vars }};</script>{% endif %}
         <form class="otree-form" method="post" role="form" id="form" autocomplete="off">
             <div class="_otree-content">{% block content %}{% endblock %}</div>
         </form>

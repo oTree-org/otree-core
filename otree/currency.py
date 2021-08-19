@@ -90,6 +90,8 @@ class BaseCurrency(Decimal):
         return string
 
     def _format_currency(self, places=None):
+        if places is None:
+            places = self.get_num_decimal_places()
         number = Decimal(self)
         LANGUAGE_CODE = settings.LANGUAGE_CODE
         if '-' in LANGUAGE_CODE:

@@ -2,6 +2,7 @@ import decimal
 import wtforms.fields as wtfields
 from otree.currency import Currency, to_dec
 from otree.i18n import format_number
+from otree import common
 
 from . import widgets as wg
 
@@ -26,7 +27,7 @@ class FloatField(wtfields.FloatField):
     def _value(self):
         if self.data is None:
             return ''
-        return format_number(self.data)
+        return format_number(self.data, places=common.FULL_DECIMAL_PLACES)
 
 
 class CurrencyField(wtfields.Field):
@@ -46,7 +47,7 @@ class CurrencyField(wtfields.Field):
     def _value(self):
         if self.data is None:
             return ''
-        return format_number(to_dec(self.data))
+        return format_number(to_dec(self.data), places=common.FULL_DECIMAL_PLACES)
 
 
 class StringField(wtfields.StringField):
@@ -60,8 +61,6 @@ class IntegerField(wtfields.IntegerField):
 class RadioField(wtfields.RadioField):
     widget = wg.RadioSelect()
     option_widget = wg.RadioOption()
-
-
 
 
 class RadioFieldHorizontal(wtfields.RadioField):

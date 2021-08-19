@@ -1,7 +1,13 @@
 # like common, but can import models
+import importlib.util
+import os
 import time
 from dataclasses import dataclass, asdict
+from pathlib import Path
 
+from starlette.staticfiles import StaticFiles
+
+from otree import settings
 from otree.database import db
 from otree.models_concrete import PageTimeBatch
 
@@ -68,3 +74,48 @@ def write_page_completion_buffer():
     db.add(PageTimeBatch(text=''.join(page_completion_buffer)))
     page_completion_last_write = time.time()
     page_completion_buffer.clear()
+
+
+class OTreeStaticFiles(StaticFiles):
+    # copied from starlette, just to change 'statics' to 'static',
+    # and to fail silently if the dir does not exist.
+    def get_directories(self, directory, packages):
+        directories = []
+        if directory is not None:
+            directories.append(directory)
+
+        for package in packages or []:
+            spec = importlib.util.find_spec(package)
+            assert (
+                spec is not None and spec.origin is not None
+            ), f"Package {package!r} could not be found, or maybe __init__.py is missing"
+            package_directory = os.path.normpath(
+                os.path.join(spec.origin, "..", "static")
+            )
+            if os.path.isdir(package_directory):
+                directories.append(package_directory)
+
+        return directories
+
+    def assert_file_exists(self, path):
+        if path in existing_filenames_cache:
+            return
+        for _dir in self.all_directories:
+            if Path(_dir, path).is_file():
+                existing_filenames_cache.add(path)
+                return
+        raise FileNotFoundError(path)
+
+existing_filenames_cache = set()
+
+
+def static_url_for(path):
+    from otree.asgi import app
+
+    static_files_app.assert_file_exists(path)
+    return app.router.url_path_for('static', path=path)
+
+
+static_files_app = OTreeStaticFiles(
+    directory='_static', packages=['otree'] + settings.OTREE_APPS
+)

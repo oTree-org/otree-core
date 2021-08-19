@@ -135,7 +135,7 @@ class SubmissionMustFail(Submission):
         # CLI bots can only talk to server through post data
         self.post_data['must_fail'] = True
         if error_fields:
-            post_data['error_fields'] = error_fields
+            self.post_data['error_fields'] = error_fields
 
 
 class ExpectError(AssertionError):

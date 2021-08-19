@@ -202,6 +202,7 @@ class RadioOption(BaseWidget):
     def __call__(self, field, **kwargs):
         if field.checked:
             kwargs['checked'] = True
+        # see comment above about missing required attribute.
         return super().__call__(field, **kwargs)
 
     def get_html_fragments(self):

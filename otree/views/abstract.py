@@ -19,6 +19,7 @@ import otree.channels.utils as channel_utils
 import otree.common
 import otree.common2
 import otree.constants
+from otree.currency import json_dumps
 import otree.forms
 import otree.models
 import otree.tasks
@@ -160,7 +161,15 @@ class FormPageOrInGameWaitPage:
         user_vars = user_vars or {}
         if not isinstance(user_vars, dict):
             raise Exception('vars_for_template did not return a dict')
-        context['js_vars'] = self.call_user_defined('js_vars')
+
+        js_vars = self.call_user_defined('js_vars')
+
+        try:
+            # better to convert to json here so we can catch any errors,
+            # rather than applying the filter in the template.
+            context['js_vars'] = json_dumps(js_vars)
+        except TypeError as exc:
+            raise TypeError(f'js_vars contains an invalid value; {exc}') from None
 
         vars_for_template.update(user_vars)
 
@@ -517,6 +526,18 @@ class Page(FormPageOrInGameWaitPage):
 
         return response
 
+    def _check_submission_must_fail(self, is_bot, post_data):
+        if is_bot and post_data.get('must_fail'):
+            msg = (
+                'Page "{}": Bot tried to submit intentionally invalid '
+                'data with '
+                'SubmissionMustFail, but it passed validation anyway:'
+                ' {}.'.format(
+                    self.__class__.__name__, bot_prettify_post_data(post_data)
+                )
+            )
+            raise BotError(msg)
+
     def post_handle_form(self, post_data):
         obj = self.get_object()
         form = self.get_form(formdata=post_data, instance=obj)
@@ -527,16 +548,7 @@ class Page(FormPageOrInGameWaitPage):
         else:
             is_bot = self.participant._is_bot
             if form.validate():
-                if is_bot and post_data.get('must_fail'):
-                    msg = (
-                        'Page "{}": Bot tried to submit intentionally invalid '
-                        'data with '
-                        'SubmissionMustFail, but it passed validation anyway:'
-                        ' {}.'.format(
-                            self.__class__.__name__, bot_prettify_post_data(post_data)
-                        )
-                    )
-                    raise BotError(msg)
+                self._check_submission_must_fail(is_bot, post_data)
                 form.populate_obj(obj)
             else:
                 if is_bot:
@@ -555,10 +567,7 @@ class Page(FormPageOrInGameWaitPage):
                         )
                         raise BotError(msg)
                     if post_data.get('error_fields'):
-                        # need to convert to dict because MultiValueKeyDict
-                        # doesn't properly retrieve values that are lists
-                        post_data_dict = dict(post_data)
-                        expected_error_fields = set(post_data_dict['error_fields'])
+                        expected_error_fields = set(post_data.getlist('error_fields'))
                         actual_error_fields = set(form.errors.keys())
                         if not expected_error_fields == actual_error_fields:
                             msg = (
@@ -605,6 +614,32 @@ class Page(FormPageOrInGameWaitPage):
             resp = self.post_handle_form(post_data)
             if resp:
                 return resp
+        elif hasattr(self, 'error_message'):
+            # if the page has no form, we should still run error_message.
+            # this is useful for live pages.
+            # the code here is a stripped-down version of what happens with forms.
+            is_bot = self.participant._is_bot
+            error_message = self.call_user_defined('error_message', {})
+            if error_message:
+                if is_bot and not post_data.get('must_fail'):
+                    msg = (
+                        'Page "{}": Bot submission failed form validation: {} '
+                        'Check your bot code, '
+                        'then create a new session. '
+                    ).format(self.__class__.__name__, error_message)
+                    raise BotError(msg)
+                context = self.get_context_data(
+                    form=MockForm(error_message=error_message)
+                )
+                response = self.render_to_response(context)
+                response.headers[
+                    otree.constants.redisplay_with_errors_http_header
+                ] = otree.constants.get_param_truth_value
+                self.browser_bot_stuff(response)
+                return response
+            elif is_bot and post_data.get('must_fail'):
+                self._check_submission_must_fail(is_bot, post_data)
+
         extra_args = (
             dict(timeout_happened=self.timeout_happened) if self.is_noself else {}
         )
@@ -678,6 +713,7 @@ class Page(FormPageOrInGameWaitPage):
             setattr(obj, field_name, auto_submit_values_to_use[field_name])
 
     def has_timeout_(self):
+        # TODO: check that timeout_expiration is within seconds
         participant = self.participant
         return (
             participant._timeout_page_index == participant._index_in_pages
@@ -1148,5 +1184,11 @@ class MockForm:
         if False:
             yield
 
+    def __init__(self, error_message=None):
+        self.non_field_error = error_message
+
     field_names = []
-    errors = None
+
+    @property
+    def errors(self):
+        return bool(self.non_field_error)

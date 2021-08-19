@@ -177,6 +177,7 @@ def check_update_needed(
 
 
 def check_update_needed_line(line, current_version):
+    """This is for zipserver mainly"""
     version_dotted = re.search(r'>=([\d\.]+)\b', line)
     if version_dotted:
         try:

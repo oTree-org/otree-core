@@ -230,10 +230,18 @@ class ModelForm(wtforms.Form):
                     return meth
 
     def validate(self):
-        if not super().validate():
-            return False
+        super_validates = super().validate()
+        # even if super doesn't validate,
+        # we don't return False right away, because we want to validate all fields
+        # individually at once.
+        # this is useful e.g. for showing error messages in the UI, and SubmissionMustFail(error_fields=...)
+        # i think i remember that calculating form.errors was slow, so avoid if possible.
+        fields_with_errors = [] if super_validates else list(self.errors)
         ModelClass = type(self.instance)
         for name, field in self._fields.items():
+            if name in fields_with_errors:
+                continue
+
             column = getattr(ModelClass, name)
             if (
                 column.type == Boolean

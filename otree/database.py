@@ -57,7 +57,11 @@ def get_schema(conn):
         "SELECT name FROM sqlite_master WHERE type='table';"
     ).fetchall()
     try:
-        table_names = sorted(list(zip(*result))[0])
+        # maybe if i don't sort it, tables will be in natural order
+        # according to FKs,
+        # so we don't have to set foreign_keys=off which leads to this issue:
+        # https://stackoverflow.com/questions/68825624
+        table_names = list(zip(*result))[0]
     except IndexError:
         return {}
 
@@ -110,13 +114,11 @@ def load_in_memory_db():
             )
             disk_cur.execute(select_cmd)
             rows = disk_cur.fetchall()
-            mem_cur.execute('pragma foreign_keys=off')
             try:
                 mem_cur.executemany(insert_cmd, rows)
             except sqlite3.IntegrityError as exc:
                 # for example if you change a StringField to a BooleanField
                 sys.exit(f'An error occurred. Please delete your database ({DB_FILE}).')
-            mem_cur.execute('pragma foreign_keys=on')
     sqlite_mem_conn.commit()
 
 
@@ -544,10 +546,23 @@ class SPGModel(SSPPGModel):
             # - catch the TypeError
             msg = (
                 f'{object_name}.{attr} is None. '
-                f'Accessing a null field is generally considered an error. '
+                'Accessing a null field is generally considered an error. '
+                # wait until we make field_maybe_none official.
+                # f'Did you forget to set its value? '
+                # f"If this is intentional, use {object_name}.field_maybe_none('{attr}')"
             )
             raise TypeError(msg)
         return res
+
+    def field_maybe_none(self, field_name: str):
+        """
+        This isn't needed on ExtraModel because ExtraModel is used in a more unpredictable way,
+        e.g. in live pages where the flow is less predictable. Also by more advanced users.
+        """
+        try:
+            return getattr(self, field_name)
+        except TypeError:
+            return None
 
     def __repr__(self):
         cls = type(self)
@@ -594,6 +609,9 @@ class SPGModel(SSPPGModel):
             choices = getattr(type(self), name).form_props['choices']
         return dict(expand_choice_tuples(choices))[value]
 
+    def field_display(self, name):
+        return self.get_field_display(name)
+
 
 class UndefinedUserFunction(Exception):
     pass
@@ -616,7 +634,9 @@ class MixinSessionFK:
         # backref needed to ensure all objects are deleted with the session.
         return relationship(
             f'Session',
-            backref=sqlalchemy.orm.backref(backref_name, cascade="all, delete-orphan"),
+            backref=sqlalchemy.orm.backref(
+                backref_name, cascade="all, delete-orphan", passive_deletes=True
+            ),
         )
 
 
@@ -798,7 +818,7 @@ class Link:
         fk_colname = f'{key}_id'
 
         # zzeeek's example passed the string name as first arg
-        fk_col = Column(fk_colname, pk_col.type, ForeignKey(pk_col))
+        fk_col = Column(fk_colname, pk_col.type, ForeignKey(pk_col, ondelete='CASCADE'))
         setattr(cls, fk_colname, fk_col)
 
         rel = relationship(
@@ -824,9 +844,17 @@ class ExtraModel(AnyModel):
 
     @classmethod
     def create(cls, **kwargs):
+        # for reading from CSV, where everything is a string,
         # we could automatically convert the type here, but maybe not worth
         # the hassle, since we also need to think about None, empty string, etc.
+
+        # https://stackoverflow.com/questions/14002631/why-isnt-sqlalchemy-default-column-value-available-before-object-is-committed
+        # db.commit() is very expensive.
+        for key, column in cls.__table__.columns.items():
+            if column.default is not None:
+                kwargs.setdefault(key, column.default.arg)
         obj = cls(**kwargs)
+
         db.add(obj)
         return obj
 

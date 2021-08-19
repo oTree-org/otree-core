@@ -40,6 +40,7 @@ class Session(MixinVars, otree.database.SSPPGModel):
         back_populates="session",
         lazy='dynamic',
         cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     # label of this session instance
     label = Column(st.String, nullable=True)
@@ -191,7 +192,7 @@ class Session(MixinVars, otree.database.SSPPGModel):
         # this is more proportional to effort.
         last_place_participants = [
             p for p in participants if p._index_in_pages == last_place_page_index
-        ][:otree.constants.ADVANCE_SLOWEST_BATCH_SIZE]
+        ][: otree.constants.ADVANCE_SLOWEST_BATCH_SIZE]
 
         if last_place_page_index == 0:
             for p in last_place_participants:

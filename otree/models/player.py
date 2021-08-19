@@ -73,7 +73,7 @@ class BasePlayer(SPGModel, MixinSessionFK):
     @declared_attr
     def subsession_id(cls):
         app_name = cls.get_folder_name()
-        return Column(st.Integer, ForeignKey(f'{app_name}_subsession.id'))
+        return Column(st.Integer, ForeignKey(f'{app_name}_subsession.id', ondelete='CASCADE'))
 
     @declared_attr
     def subsession(cls):
