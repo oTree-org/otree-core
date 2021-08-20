@@ -284,6 +284,7 @@ class SessionData(AdminSessionPage):
             field_headers_json=json.dumps(field_headers),
             app_names_by_subsession=app_names_by_subsession,
             round_numbers_by_subsession=round_numbers_by_subsession,
+            DATA_EXPORT_HASH=otree.common.DATA_EXPORT_HASH,
         )
 
 

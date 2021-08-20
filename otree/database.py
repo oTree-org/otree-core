@@ -339,7 +339,21 @@ class AnyModel(DeclarativeBase):
     id = Column(st.Integer, primary_key=True)
 
     def __repr__(self):
-        return '<{} id={}>'.format(self.__class__.__name__, self.id)
+        cls_name = self.__class__.__name__
+        try:
+            attrs = ', '.join(
+                f'{k}={v}' for (k, v) in self._get_repr_attributes().items()
+            )
+        except Exception as exc:
+            # accessing even self.id during some DB errors raises an exception,
+            # which prevents errorpage.html from being shown and adds yet another
+            # exception to the chain.
+            attrs = '???'
+            logger.warning(f'Error during __repr__ of {cls_name}: {repr(exc)}')
+        return f'{cls_name}({attrs})'
+
+    def _get_repr_attributes(self):
+        return dict(id=self.id)
 
     @declared_attr
     def __tablename__(cls):
@@ -380,6 +394,10 @@ class AnyModel(DeclarativeBase):
         if order_by:
             query = query.order_by(order_by)
         names = [f.name for f in cls.__table__.columns]
+        # for some reason cls.quiz_passed returned False for a user?
+        # other fields were OK. I tested with an undefined field and it just gave
+        # AttributeError, so maybe the user didn't sync their DB etc?
+        # anyway it's just 1 user
         fields = [getattr(cls, name) for name in names]
         # i if I use .values(), I get 'no such column: id'
         return [dict(zip(names, row)) for row in query.with_entities(*fields)]
@@ -564,7 +582,7 @@ class SPGModel(SSPPGModel):
         except TypeError:
             return None
 
-    def __repr__(self):
+    def _get_repr_attributes(self):
         cls = type(self)
         colnames = [f.name for f in cls.__table__.columns]
         items = []
@@ -580,8 +598,7 @@ class SPGModel(SSPPGModel):
                 items.append((attr, v))
                 if len(items) >= 5:
                     break
-        attr_string = ', '.join(reversed(list(f'{k}={v}' for k, v in items)))
-        return f'{cls.__name__}({attr_string})'
+        return dict(reversed(items))
 
     def call_user_defined(self, funcname, *args, missing_ok=False, **kwargs):
         target = self.get_user_defined_target()
@@ -861,7 +878,7 @@ class ExtraModel(AnyModel):
     def delete(self):
         db.delete(self)
 
-    def __repr__(self):
+    def _get_repr_attributes(self):
         cls = type(self)
         items = []
         # a bit more complex to get all foreign keys, in case we want to
@@ -869,9 +886,9 @@ class ExtraModel(AnyModel):
         for col in cls.__table__.columns:
             name = col.name
             if not (col.primary_key or col.foreign_keys):
+                # this could be huge, maybe should truncate
                 items.append((name, repr(getattr(self, name))))
-        attr_string = ', '.join(list(f'{k}={v}' for k, v in items))
-        return f'{cls.__name__}({attr_string})'
+        return dict(items)
 
 
 @event.listens_for(mapper, "instrument_class")

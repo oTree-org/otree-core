@@ -123,6 +123,7 @@ def get_admin_secret_code():
 
 
 ADMIN_SECRET_CODE = get_admin_secret_code()
+DATA_EXPORT_HASH = make_hash('dataexport')
 
 _signer = Signer(_SECRET)
 

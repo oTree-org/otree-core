@@ -57,6 +57,11 @@ class ExportSessionWide(HTTPEndpoint):
 
     def get(self, request):
         code = request.path_params['code']
+        # we can't use AUTH_LEVEL to guard this, since it should ideally
+        # be available in demo mode. (so that the UI can be consistent,
+        # and it's also a good feature to demo oTree)
+        if request.query_params.get('token') != otree.common.DATA_EXPORT_HASH:
+            return Response(status_code=400, content="Missing or incorrect auth token")
         buf = StringIO()
         if bool(request.query_params.get('excel')):
             # BOM

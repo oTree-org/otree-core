@@ -438,7 +438,10 @@ class CreateSessionError(Exception):
 
 
 def create_session_traceback_wrapper(**kwargs):
-    '''so we can give smaller tracebacks on 'creating session' page'''
+    '''
+    catch it at an inner level,
+    so we can give smaller tracebacks on 'creating session' page
+    '''
     try:
         return create_session(**kwargs)
     except Exception as exc:

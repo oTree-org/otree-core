@@ -77,8 +77,8 @@
           <button class="btn btn-secondary btn-lg" id="btn-refresh">↻</button>
         </td>
         <td style="width: 12ch">
-          <a href="{% url 'ExportSessionWide' session.code %}">Plain</a> |
-          <a href="{% url 'ExportSessionWide' session.code %}?excel=1">Excel</a>
+          <a href="{% url 'ExportSessionWide' session.code %}?token={{ DATA_EXPORT_HASH }}">Plain</a> |
+          <a href="{% url 'ExportSessionWide' session.code %}?token={{ DATA_EXPORT_HASH }}&excel=1">Excel</a>
         </td>
       </tr>
       <tr>

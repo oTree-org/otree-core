@@ -138,8 +138,6 @@ def get_urlpatterns():
         Route("/favicon.ico", endpoint=Favicon),
         Route('/', endpoint=HomeRedirect),
     ]
-    if Path('asgi_routes.py').exists():
-        routes += import_module('asgi_routes').routes
 
     return routes
 
