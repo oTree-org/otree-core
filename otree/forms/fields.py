@@ -58,19 +58,53 @@ class IntegerField(wtfields.IntegerField):
     widget = wg.IntegerWidget()
 
 
+def _selectfield_getitem(self, index):
+    if not isinstance(index, int):
+        raise IndexError
+    for (i, choice) in enumerate(self):
+        if index == i:
+            return choice
+    raise IndexError
+
+
+def __iter__(self):
+    """
+    Add 'required' attribute to HTML:
+    https://github.com/wtforms/wtforms/pull/615/files
+    """
+    opts = dict(
+        widget=self.option_widget,
+        _name=self.name,
+        _form=None,
+        _meta=self.meta,
+        validators=self.validators,
+    )
+    for i, (value, label, checked) in enumerate(self.iter_choices()):
+        opt = self._Option(label=label, id='%s-%d' % (self.id, i), **opts)
+        opt.process(None, value)
+        opt.checked = checked
+        yield opt
+
+
 class RadioField(wtfields.RadioField):
     widget = wg.RadioSelect()
     option_widget = wg.RadioOption()
+    __getitem__ = _selectfield_getitem
+    __iter__ = __iter__
 
 
 class RadioFieldHorizontal(wtfields.RadioField):
     widget = wg.RadioSelectHorizontal()
     option_widget = wg.RadioOption()
+    __getitem__ = _selectfield_getitem
+    __iter__ = __iter__
 
 
 class DropdownField(wtfields.SelectField):
     widget = wg.Select()
     option_widget = wg.SelectOption()
+    __getitem__ = _selectfield_getitem
+    __iter__ = __iter__
 
 
 class TextAreaField(StringField):

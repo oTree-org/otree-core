@@ -6,7 +6,7 @@ import sys
 from otree import common
 from otree.api import BasePlayer, BaseGroup, BaseSubsession, Currency, WaitPage, Page
 from otree import settings
-from otree.common import get_pages_module, get_models_module
+from otree.common import get_pages_module, get_models_module, get_builtin_constant
 from collections import namedtuple
 
 Error = namedtuple('Error', ['title', 'id', 'app_name',])
@@ -123,28 +123,27 @@ def constants(helper: AppCheckHelper, app_name):
 
     models = get_models_module(app_name)
 
-    if not hasattr(models, 'Constants'):
-        helper.add_error('Constants class is missing', numeric_id=11)
+    if not hasattr(models, 'Constants') and not hasattr(models, 'C'):
+        helper.add_error('App is missing a constants class', numeric_id=11)
         return
 
-    Constants = models.Constants
     attrs = ['name_in_url', 'players_per_group', 'num_rounds']
     for attr_name in attrs:
-        if not hasattr(Constants, attr_name):
+        try:
+            get_builtin_constant(app_name, attr_name)
+        except AttributeError:
             msg = "'Constants' class needs to define '{}'"
             helper.add_error(msg.format(attr_name), numeric_id=12)
-    ppg = Constants.players_per_group
+    ppg = get_builtin_constant(app_name, 'players_per_group')
     if ppg == 0 or ppg == 1:
         helper.add_error(
-            "Constants.players_per_group cannot be {}. You "
+            "players_per_group cannot be {}. You "
             "should set it to None, which makes the group "
             "all players in the subsession.".format(ppg),
             numeric_id=13,
         )
-    if ' ' in Constants.name_in_url:
-        helper.add_error(
-            "models.py: Constants.name_in_url must not contain spaces", numeric_id=14
-        )
+    if ' ' in get_builtin_constant(app_name, 'name_in_url'):
+        helper.add_error("name_in_url must not contain spaces", numeric_id=14)
 
 
 def pages_function(helper: AppCheckHelper, app_name):

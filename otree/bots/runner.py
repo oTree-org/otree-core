@@ -11,7 +11,7 @@ import otree.session
 from otree import settings
 from otree.common import get_bots_module, get_models_module
 from otree.constants import AUTO_NAME_BOTS_EXPORT_FOLDER
-from otree.database import values_flat, session_scope
+from otree.database import values_flat, db
 from otree.models import Session, Participant
 from otree.session import SESSION_CONFIGS_DICT
 from .bot import ParticipantBot
@@ -120,6 +120,7 @@ def run_bots(session_id, case_number=None):
     )
     if session.get_room() is None:
         session.mock_exogenous_data()
+        db.commit()
     runner = SessionBotRunner(bots=bot_list)
     runner.play()
 

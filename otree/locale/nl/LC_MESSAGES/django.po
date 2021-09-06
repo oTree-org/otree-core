@@ -81,7 +81,7 @@ msgstr "Er zijn geen verdere pagina's te tonen."
 
 #: .\templates\otree\Page.html:17
 #: .\templates\otree\admin\MTurkCreateHIT.html:67
-msgid "Please fix the errors in the form."
+msgid "Please fix the errors."
 msgstr "Corrigeer de fouten in het formulier."
 
 #: .\templates\otree\RoomInputLabel.html:7

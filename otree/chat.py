@@ -16,7 +16,7 @@ class UNDEFINED:
 def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED) -> dict:
     player = context['player']
     group = context['group']
-    Constants = context['Constants']
+    Constants = context.get('C') or context['Constants']
     participant = context['participant']
 
     if channel == UNDEFINED:
@@ -33,7 +33,7 @@ def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED) -> dict
     # prefix the channel name with session code and app name
     prefixed_channel = '{}-{}-{}'.format(
         context['session'].id,
-        Constants.name_in_url,
+        Constants.get_normalized('name_in_url'),
         # previously used a hash() here to ensure name_in_url is the same,
         # but hash() is non-reproducible across processes
         channel,
@@ -58,7 +58,9 @@ def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED) -> dict
         participant_id=participant.id,
         nickname_signed=nickname_signed,
         nickname=nickname,
-        nickname_i_see_for_myself=core_gettext("{nickname} (Me)").format(nickname=nickname),
+        nickname_i_see_for_myself=core_gettext("{nickname} (Me)").format(
+            nickname=nickname
+        ),
     )
     return dict(
         channel=prefixed_channel,

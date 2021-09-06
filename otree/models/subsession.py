@@ -11,8 +11,14 @@ from sqlalchemy.sql.functions import func
 
 import otree.common
 import otree.database
-
-from otree.common import get_models_module, in_round, in_rounds
+from otree.constants import BaseConstants
+from otree.common import (
+    get_models_module,
+    in_round,
+    in_rounds,
+    get_constants,
+    get_builtin_constant,
+)
 from otree.common import has_group_by_arrival_time
 from otree.database import db, dbq, values_flat, SPGModel, MixinSessionFK
 
@@ -108,8 +114,8 @@ class BaseSubsession(SPGModel, MixinSessionFK):
         self.set_group_matrix(group_matrix)
 
     @property
-    def _Constants(self):
-        return get_models_module(self.get_folder_name()).Constants
+    def _Constants(self) -> BaseConstants:
+        return get_constants(self.get_folder_name())
 
     def _GroupClass(self):
         return get_models_module(self.get_folder_name()).Group
@@ -169,9 +175,9 @@ class BaseSubsession(SPGModel, MixinSessionFK):
         group_id_in_subsession = self._gbat_next_group_id_in_subsession()
 
         Constants = self._Constants
-
+        num_rounds = Constants.get_normalized('num_rounds')
         this_round_new_group = None
-        for round_number in range(self.round_number, Constants.num_rounds + 1):
+        for round_number in range(self.round_number, num_rounds + 1):
             subsession = self.in_round(round_number)
 
             unordered_players = subsession.player_set.filter(
@@ -226,8 +232,9 @@ class BaseSubsession(SPGModel, MixinSessionFK):
 
     def group_by_arrival_time_method(self, waiting_players):
         Constants = self._Constants
+        ppg = Constants.get_normalized('players_per_group')
 
-        if Constants.players_per_group is None:
+        if ppg is None:
             msg = (
                 'If using group_by_arrival_time, you must either set '
                 'Constants.players_per_group to a value other than None, '
@@ -235,8 +242,8 @@ class BaseSubsession(SPGModel, MixinSessionFK):
             )
             raise AssertionError(msg)
 
-        if len(waiting_players) >= Constants.players_per_group:
-            return waiting_players[: Constants.players_per_group]
+        if len(waiting_players) >= ppg:
+            return waiting_players[:ppg]
 
     @declared_attr
     def group_set(cls):

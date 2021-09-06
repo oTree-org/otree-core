@@ -82,7 +82,7 @@ msgstr "Žádné další stránky k zobrazení."
 
 #: .\templates\otree\Page.html:17
 #: .\templates\otree\admin\MTurkCreateHIT.html:67
-msgid "Please fix the errors in the form."
+msgid "Please fix the errors."
 msgstr "Opravte prosím chyby ve formuláři."
 
 #: .\templates\otree\RoomInputLabel.html:7

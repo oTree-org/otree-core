@@ -81,7 +81,7 @@ msgstr "Gösterecek başka sayfa kalmadı."
 
 #: .\templates\otree\Page.html:17
 #: .\templates\otree\admin\MTurkCreateHIT.html:67
-msgid "Please fix the errors in the form."
+msgid "Please fix the errors."
 msgstr "Lütfen formdaki hataları düzeltin."
 
 #: .\templates\otree\RoomInputLabel.html:7

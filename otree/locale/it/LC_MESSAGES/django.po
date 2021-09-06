@@ -81,7 +81,7 @@ msgstr "Non ci sono più pagine da mostrare."
 
 #: .\templates\otree\Page.html:17
 #: .\templates\otree\admin\MTurkCreateHIT.html:67
-msgid "Please fix the errors in the form."
+msgid "Please fix the errors."
 msgstr "Si prega di correggere gli errori del modulo."
 
 #: .\templates\otree\RoomInputLabel.html:7

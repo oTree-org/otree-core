@@ -86,7 +86,7 @@ msgstr "لا يوجد صفحات متبقية لعرضها‫."
 
 #: .\templates\otree\Page.html:17
 #: .\templates\otree\admin\MTurkCreateHIT.html:67
-msgid "Please fix the errors in the form."
+msgid "Please fix the errors."
 msgstr "الرجاء تصحيح الأخطاء في النموذج"
 
 #: .\templates\otree\RoomInputLabel.html:7

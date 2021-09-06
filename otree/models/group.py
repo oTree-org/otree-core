@@ -9,6 +9,7 @@ from otree.common import (
     in_round,
     in_rounds,
     InvalidRoundError,
+    get_constants,
 )
 from otree.constants import BaseConstants, get_role, get_roles
 from otree.database import db, NoResultFound, MixinSessionFK, SPGModel
@@ -23,7 +24,7 @@ class BaseGroup(SPGModel, MixinSessionFK):
 
     @property
     def _Constants(self) -> BaseConstants:
-        return get_models_module(self.get_folder_name()).Constants
+        return get_constants(self.get_folder_name())
 
     def get_players(self):
         return list(self.player_set.order_by('id_in_group'))
@@ -112,7 +113,9 @@ class BaseGroup(SPGModel, MixinSessionFK):
     @declared_attr
     def subsession_id(cls):
         app_name = cls.get_folder_name()
-        return C(st.Integer, ForeignKey(f'{app_name}_subsession.id', ondelete='CASCADE'))
+        return C(
+            st.Integer, ForeignKey(f'{app_name}_subsession.id', ondelete='CASCADE')
+        )
 
     @declared_attr
     def subsession(cls):

@@ -151,11 +151,6 @@ def sanitize_for_live_update(value):
     return value
 
 
-def get_payoff_plus_participation_fee(session, participant_values_dict):
-    payoff = Currency(participant_values_dict['payoff'])
-    return session._get_payoff_plus_participation_fee(payoff)
-
-
 def get_installed_apps_with_data() -> list:
     """
     this is just important for devserver.
@@ -215,15 +210,19 @@ def get_rows_for_wide_csv(session_code):
         return [[]]
 
     header_row = [f'participant.{fname}' for fname in participant_fields]
+    header_row += [f'participant.{fname}' for fname in settings.PARTICIPANT_FIELDS]
     header_row += [f'session.{fname}' for fname in session_fields]
     header_row += [f'session.config.{fname}' for fname in session_config_fields]
+    header_row += [f'session.{fname}' for fname in settings.SESSION_FIELDS]
     rows = [header_row]
 
     for pp in pps:
         session = session_cache[pp.session_id]
         row = [getattr(pp, fname) for fname in participant_fields]
+        row += [pp.vars.get(fname, None) for fname in settings.PARTICIPANT_FIELDS]
         row += [getattr(session, fname) for fname in session_fields]
         row += [session.config.get(fname) for fname in session_config_fields]
+        row += [session.vars.get(fname, None) for fname in settings.SESSION_FIELDS]
         rows.append(row)
 
     order_of_apps = _get_best_app_order(sessions)

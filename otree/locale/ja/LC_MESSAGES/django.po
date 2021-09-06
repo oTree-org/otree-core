@@ -81,7 +81,7 @@ msgstr "これ以上表示するページはありません"
 
 #: .\templates\otree\Page.html:17
 #: .\templates\otree\admin\MTurkCreateHIT.html:67
-msgid "Please fix the errors in the form."
+msgid "Please fix the errors."
 msgstr "誤りのある欄を修正してください"
 
 #: .\templates\otree\RoomInputLabel.html:7

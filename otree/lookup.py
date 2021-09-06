@@ -2,7 +2,7 @@ from collections import namedtuple
 from functools import lru_cache
 from typing import Dict
 
-from otree.common import get_pages_module, get_models_module
+from otree.common import get_pages_module, get_models_module, get_constants
 from otree.database import dbq
 from otree.models import Session
 
@@ -35,16 +35,18 @@ def _get_session_lookups(session_code) -> Dict[int, PageLookup]:
             )
         }
 
-        for rd in range(1, models.Constants.num_rounds + 1):
+        Constants = get_constants(app_name)
+        num_rounds = Constants.get_normalized('num_rounds')
+        name_in_url = Constants.get_normalized('name_in_url')
+        for rd in range(1, num_rounds + 1):
             for PageClass in page_sequence:
                 pages[idx] = PageLookup(
                     app_name=app_name,
                     page_class=PageClass,
                     round_number=rd,
                     subsession_id=subsessions[rd],
-                    # TODO: remove session ID, just use code everywhere
                     session_pk=session.id,
-                    name_in_url=models.Constants.name_in_url,
+                    name_in_url=name_in_url,
                 )
                 idx += 1
     return pages

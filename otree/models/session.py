@@ -15,6 +15,7 @@ from otree.common import (
     random_chars_8,
     random_chars_join_code,
     get_admin_secret_code,
+    get_builtin_constant,
 )
 from otree.database import NoResultFound, MixinVars
 from otree.models_concrete import RoomToSession
@@ -243,7 +244,7 @@ class Session(MixinVars, otree.database.SSPPGModel):
                 pass
             else:
                 admin_report_app_names.append(app_name)
-                num_rounds_list.append(models_module.Constants.num_rounds)
+                num_rounds_list.append(get_builtin_constant(app_name, 'num_rounds'))
 
         self._admin_report_app_names = ';'.join(admin_report_app_names)
         self._admin_report_num_rounds = ';'.join(str(n) for n in num_rounds_list)

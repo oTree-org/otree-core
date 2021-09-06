@@ -19,7 +19,7 @@ i removed many linebreaks to make output HTML cleaner
               {% if form.non_field_error %}
                 {{ form.non_field_error }}
               {% else %}
-                {{ "Please fix the errors in the form."|gettext }}
+                {{ "Please fix the errors."|gettext }}
               {% endif %}
             </div>
         {% endif %}{% if is_defined('js_vars') and js_vars %}<script>var js_vars = {{ js_vars }};</script>{% endif %}

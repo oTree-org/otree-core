@@ -33,6 +33,7 @@ from otree.common import (
     DebugTable,
     BotError,
     NON_FIELD_ERROR_KEY,
+    get_constants,
 )
 from otree.database import db, dbq
 from otree.forms.forms import get_form
@@ -149,11 +150,14 @@ class FormPageOrInGameWaitPage:
             subsession=self.subsession,
             session=self.session,
             participant=self.participant,
-            Constants=self._Constants,
             timer_text=getattr(self, 'timer_text', None),
             current_page_name=self.__class__.__name__,
             has_live_method=bool(getattr(self, 'live_method', None)),
         )
+
+        Constants = self._Constants
+        # it could be called C or Constants
+        context[Constants.__name__] = Constants
 
         vars_for_template = {}
 
@@ -244,7 +248,8 @@ class FormPageOrInGameWaitPage:
         app_name = lookup.app_name
 
         models_module = otree.common.get_models_module(app_name)
-        self._Constants = models_module.Constants
+
+        self._Constants = get_constants(app_name)
         self.PlayerClass = getattr(models_module, 'Player')
         self.GroupClass = getattr(models_module, 'Group')
         self.SubsessionClass = getattr(models_module, 'Subsession')

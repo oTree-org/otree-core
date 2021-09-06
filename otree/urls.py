@@ -112,12 +112,11 @@ def get_urlpatterns():
 
     used_names_in_url = set()
     for app_name in settings.OTREE_APPS:
-        models_module = common.get_models_module(app_name)
-        name_in_url = models_module.Constants.name_in_url
+        Constants = common.get_constants(app_name)
+        name_in_url = Constants.get_normalized('name_in_url')
         if name_in_url in used_names_in_url:
             msg = (
-                "App {} has Constants.name_in_url='{}', "
-                "which is already used by another app"
+                "App {} has name_in_url='{}', " "which is already used by another app"
             ).format(app_name, name_in_url)
             raise ValueError(msg)
 

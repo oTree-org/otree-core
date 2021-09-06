@@ -35,16 +35,11 @@ def run_reloader(port):
     proc = Popen(['otree', 'devserver_inner', port])
 
     root = Path('.')
-    files_to_watch = [
-        p
-        for p in list(root.glob('*.py')) + list(root.glob('*/*.py'))
-        if 'migrations' not in str(p)
-    ]
-
+    files_to_watch = list(root.glob('*.py')) + list(root.glob('*/*.py'))
     if os.getenv('OTREE_CORE_DEV'):
         # this code causes it to get stuck on proc.wait() for some reason
+        # 2021-09-05: is this why it got stuck?
         files_to_watch.extend(Path('c:/otree/nodj/otree').glob('**/*.py'))
-        files_to_watch.extend(Path('c:/otree/nodj/otree').glob('**/*.html'))
     mtimes = get_mtimes(files_to_watch)
     try:
         while True:

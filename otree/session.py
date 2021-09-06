@@ -8,9 +8,10 @@ from otree.database import db, dbq
 from otree import common
 from otree.common import (
     get_models_module,
-    get_app_constants,
+    get_builtin_constant,
     validate_alphanumeric,
     get_bots_module,
+    get_constants,
 )
 from otree.currency import RealWorldCurrency
 from otree.models import Participant, Session
@@ -61,9 +62,8 @@ class SessionConfig(dict):
     def get_lcm(self):
         min_multiple_list = []
         for app_name in self['app_sequence']:
-            Constants = get_app_constants(app_name)
             # if players_per_group is None, 0, etc.
-            min_multiple = Constants.players_per_group or 1
+            min_multiple = get_builtin_constant(app_name, 'players_per_group') or 1
             min_multiple_list.append(min_multiple)
         return lcmm(*min_multiple_list)
 
@@ -96,7 +96,7 @@ class SessionConfig(dict):
                 'app_sequence of "{}" '
                 'must not contain duplicate elements. '
                 'If you want multiple rounds, '
-                'you should set Constants.num_rounds.'
+                'you should set num_rounds.'
             )
             raise SessionConfigError(msg.format(self['name']))
 
@@ -112,8 +112,8 @@ class SessionConfig(dict):
     def app_sequence_display(self):
         app_sequence = []
         for app_name in self['app_sequence']:
+            num_rounds = get_builtin_constant(app_name, 'num_rounds')
             models_module = get_models_module(app_name)
-            num_rounds = models_module.Constants.num_rounds
             if num_rounds > 1:
                 formatted_app_name = '{} ({} rounds)'.format(app_name, num_rounds)
             else:
@@ -326,16 +326,17 @@ def create_session(
 
             views_module = common.get_pages_module(app_name)
             models_module = get_models_module(app_name)
-            Constants: BaseConstants = models_module.Constants
-            num_subsessions += Constants.num_rounds
+            num_rounds = get_builtin_constant(app_name, 'num_rounds')
+            num_subsessions += num_rounds
 
-            round_numbers = list(range(1, Constants.num_rounds + 1))
+            round_numbers = list(range(1, num_rounds + 1))
 
-            num_pages += Constants.num_rounds * len(views_module.page_sequence)
+            num_pages += num_rounds * len(views_module.page_sequence)
 
             Subsession = models_module.Subsession
             Group = models_module.Group
             Player = models_module.Player
+            Constants = get_constants(app_name)
 
             subsessions = [
                 Subsession(round_number=round_number, session=session)
@@ -352,7 +353,7 @@ def create_session(
                 .with_entities('id', 'round_number')
             )
 
-            ppg = Constants.players_per_group
+            ppg = Constants.get_normalized('players_per_group')
             if ppg is None or Subsession._has_group_by_arrival_time():
                 ppg = num_participants
 

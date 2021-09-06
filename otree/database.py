@@ -361,10 +361,17 @@ class AnyModel(DeclarativeBase):
 
     @classmethod
     def get_folder_name(cls):
-        """this works for models.py format and no-self format"""
-        for part in reversed(cls.__module__.split('.')):
-            if part != 'models':
-                return part
+        """
+        should be renamed to get_app_name, since we no longer care about
+        folders in otree-core. we treat all otree-core models as being in the
+        same namespace.
+        """
+        # 2021-08-21: previously i used a more complex algo, not sure
+        # if i'm missing something?
+        # this seems to work fine for user-defined models and built-in models
+        # their table name will now be otree_xyz rather than models_concrete_xyz
+        # i don't see any problem with that.
+        return cls.__module__.split('.')[0]
 
     def _clone(self):
         return type(self).objects_get(id=self.id)
@@ -499,6 +506,7 @@ class SSPPGModel(AnyModel):
     }
 
     def __setattr__(self, field_name: str, value):
+        """note: this is not yet active in creating_session"""
         if self._is_frozen and hasattr(self, '_setattr_fields'):
 
             if field_name in self._setattr_fields:
@@ -510,18 +518,29 @@ class SSPPGModel(AnyModel):
 
                 if field_type_name in self._setattr_datatypes:
                     allowed_types = self._setattr_datatypes[field_type_name]
-                    if (
-                        isinstance(value, allowed_types)
-                        # numpy uses its own datatypes, e.g. numpy._bool,
-                        # which doesn't inherit from python bool.
-                        or 'numpy' in str(type(value))
-                    ):
-                        pass
-                    else:
-                        msg = ('{} should be set to {}, not {}.').format(
-                            field_name, allowed_types[0].__name__, type(value).__name__,
-                        )
-                        raise TypeError(msg)
+                    if not isinstance(value, allowed_types):
+                        # numpy uses its own data types.
+                        # for example:
+                        # np.random.choice([True]) -> numpy.bool_
+                        # np.random.choice([1]) -> numpy.int32
+                        # np.random.choice([.1]) -> numpy.float64
+                        # they get saved in the DB as bytearray rather than as the proper type.
+                        # one option is to automatically convert them.
+                        # i don't know if Sqlalchemy has a built-in way of doing this,
+                        type_name = str(type(value))
+                        if type_name == "<class 'numpy.int32'>":
+                            value = int(value)
+                        elif type_name == "<class 'numpy.float64'>":
+                            value = float(value)
+                        elif type_name == "<class 'numpy.bool_'>":
+                            value = bool(value)
+                        else:
+                            msg = '{} should be set to {}, not {}.'.format(
+                                field_name,
+                                allowed_types[0].__name__,
+                                type(value).__name__,
+                            )
+                            raise TypeError(msg)
             elif (
                 field_name in self._setattr_attributes
                 or field_name in self._setattr_whitelist

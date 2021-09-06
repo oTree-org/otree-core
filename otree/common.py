@@ -84,8 +84,17 @@ def get_pages_module(app_name):
         sys.exit(1)
 
 
-def get_app_constants(app_name):
-    return get_models_module(app_name).Constants
+@lru_cache()
+def get_constants(app_name):
+    models = get_models_module(app_name)
+    if hasattr(models, 'Constants'):
+        return models.Constants
+    return models.C
+
+
+def get_builtin_constant(app_name, constant_name):
+    Constants = get_constants(app_name)
+    return Constants.get_normalized(constant_name)
 
 
 def get_dotted_name(Cls):
@@ -249,6 +258,7 @@ AUTH_COOKIE_VALUE = signer_sign(AUTH_COOKIE_NAME)
 
 
 lock = asyncio.Lock()
+
 
 class FULL_DECIMAL_PLACES:
     pass

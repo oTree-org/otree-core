@@ -80,7 +80,7 @@ msgstr "페이지의 끝입니다."
 
 #: .\templates\otree\Page.html:17
 #: .\templates\otree\admin\MTurkCreateHIT.html:67
-msgid "Please fix the errors in the form."
+msgid "Please fix the errors."
 msgstr "입력 양식의 내용이 잘못되었습니다. 바로잡아주세요."
 
 #: .\templates\otree\RoomInputLabel.html:7

@@ -80,7 +80,7 @@ msgstr "本页面已是最后一页。"
 
 #: .\templates\otree\Page.html:17
 #: .\templates\otree\admin\MTurkCreateHIT.html:67
-msgid "Please fix the errors in the form."
+msgid "Please fix the errors."
 msgstr "请修复表单中的错误。"
 
 #: .\templates\otree\RoomInputLabel.html:7

@@ -7,11 +7,8 @@ class MustCopyError(Exception):
 
 def _raise_must_copy(*args, **kwargs):
     msg = (
-        "Cannot modify a list that originated in Constants. "
-        "First, you must make a copy of it, for example: "
-        "'my_list = Constants.my_list.copy()' "
-        "or "
-        "'self.participant.vars['my_list'] = Constants.my_list.copy()'. "
+        "Cannot modify a list that originated in your constants class. "
+        "First, you must make a copy of it, e.g. mylist.copy() "
         "This is to prevent accidentally modifying the original list. "
     )
     raise MustCopyError(msg)
@@ -47,13 +44,17 @@ class BaseConstantsMeta(type):
 
 
 class BaseConstants(metaclass=BaseConstantsMeta):
-    pass
+    @classmethod
+    def get_normalized(cls, attr):
+        if cls.__name__ == 'C':
+            return getattr(cls, attr.upper())
+        return getattr(cls, attr)
 
 
 def get_roles(Constants) -> list:
     roles = []
     for k, v in Constants.__dict__.items():
-        if k.startswith('role_') or k.endswith('_role'):
+        if k.upper().endswith('_ROLE') or k.upper().startswith('ROLE_'):
             if not isinstance(v, str):
                 # this is especially for legacy apps before the role_* feature was introduced.
                 msg = f"{k}: any Constant that ends with '_role' must be a string, for example: sender_role = 'Sender'"

@@ -8,7 +8,7 @@ import types
 import wtforms.fields as wtfields
 from otree.chat import chat_template_tag
 from otree.common import CSRF_TOKEN_NAME, FULL_DECIMAL_PLACES
-from otree.common2 import static_url_for
+from otree.common2 import url_of_static
 from otree.i18n import format_number
 from gettext import gettext
 from otree.forms.fields import CheckboxField
@@ -741,6 +741,14 @@ class LoadShim(Node):
 
 @register('comment', 'endcomment')
 class BlockComment(Node):
+    """
+    It's better to use {# #} style comments because with a block like this,
+    because that prevents parsing of its contents,
+    whereas this style comment means children will get parsed,
+    meaning that any incorrectly used tags will cause
+    a TemplateSyntaxError. 
+    """
+
     def wrender(self, context):
         return ''
 
@@ -834,7 +842,7 @@ class StaticNode(Node):
 
     def wrender(self, context):
         path = self.path_expr.eval(context)
-        return static_url_for(path)
+        return url_of_static(path)
 
 
 @register('url')
