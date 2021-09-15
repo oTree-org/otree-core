@@ -189,9 +189,8 @@ class BaseSubsession:
         pass
     def group_randomly(self, fixed_id_in_group: bool = False):
         pass
-
-    #def field_maybe_none(self, field_name: str):
-    #    pass
+    def field_maybe_none(self, field_name: str):
+       pass
 
 # Using TypeVar instead of the BaseSubsession seems to make PyCharm
 # allow BaseSubsession be passed to a function marked as taking a Subsession arg
@@ -216,8 +215,10 @@ class BaseGroup:
         pass
     def in_rounds(self: GroupTV, first: int, last: int) -> List[GroupTV]:
         pass
-    # def field_maybe_none(self, field_name: str):
-    #     pass
+    def field_maybe_none(self, field_name: str):
+        pass
+    def field_display(self, field_name: str):
+        pass
 
 GroupTV = TypeVar("GroupTV", bound=BaseGroup)
 
@@ -244,8 +245,10 @@ class BasePlayer:
         pass
     def in_rounds(self: PlayerTV, first, last) -> List[PlayerTV]:
         pass
-    # def field_maybe_none(self, field_name: str):
-    #     pass
+    def field_maybe_none(self, field_name: str):
+        pass
+    def field_display(self, field_name: str):
+        pass
 
 PlayerTV = TypeVar("PlayerTV", bound=BasePlayer)
 

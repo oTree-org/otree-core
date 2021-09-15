@@ -4,11 +4,22 @@ from . import nodes
 
 
 class Template:
-    def __init__(self, template_string, template_id="UNIDENTIFIED", extends: str = ''):
-        self.root_node = compiler.compile(template_string, template_id)
+    def __init__(
+        self, template_string, template_id="UNIDENTIFIED", template_type: str = ''
+    ):
+        is_page_template = template_type in ['Page', 'WaitPage']
+
+        self.root_node = compiler.compile(
+            template_string, template_id, is_page_template=is_page_template
+        )
         children = self.root_node.children
         # this is so that {% extends 'otree/Page.html' %} can be omitted
-        if extends and children and not isinstance(children[0], nodes.ExtendsNode):
+        if (
+            template_type
+            and children
+            and not isinstance(children[0], nodes.ExtendsNode)
+        ):
+            extends = f'otree/{template_type}.html'
 
             token = compiler.Token(
                 'INSTRUCTION', f'extends "{extends}"', template_id, 1

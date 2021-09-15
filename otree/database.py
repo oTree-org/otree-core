@@ -584,9 +584,7 @@ class SPGModel(SSPPGModel):
             msg = (
                 f'{object_name}.{attr} is None. '
                 'Accessing a null field is generally considered an error. '
-                # wait until we make field_maybe_none official.
-                # f'Did you forget to set its value? '
-                # f"If this is intentional, use {object_name}.field_maybe_none('{attr}')"
+                f"Or, if this is intentional, use field_maybe_none()"
             )
             raise TypeError(msg)
         return res

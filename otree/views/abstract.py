@@ -184,9 +184,9 @@ class FormPageOrInGameWaitPage:
         return context
 
     def render_to_response(self, context):
-        return render(self.get_template_name(), context, extends=self._extends)
+        return render(self.get_template_name(), context, template_type=self._template_type)
 
-    _extends = None
+    _template_type = None
 
     def vars_for_template(self):
         return {}
@@ -407,7 +407,7 @@ class Page(FormPageOrInGameWaitPage):
     form_model = None
     form_fields = []
 
-    _extends = 'otree/Page.html'
+    _template_type = 'Page'
 
     def inner_dispatch(self, request):
         if request.method == 'POST':
@@ -834,7 +834,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
     wait_for_all_groups = False
     group_by_arrival_time = False
 
-    _extends = 'otree/WaitPage.html'
+    _template_type = 'WaitPage'
 
     def get_context_data(self):
         context = GenericWaitPageMixin.get_context_data(self)

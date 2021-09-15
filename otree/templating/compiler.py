@@ -3,17 +3,19 @@ from . import errors
 
 
 # Token delimiters.
-comment_start = '{#'
-comment_end = '#}'
-print_start = '{{'
-print_end = '}}'
-instruction_start = '{%'
-instruction_end = '%}'
+COMMENT_START = '{#'
+COMMENT_END = '#}'
+INSTRUCTION_START_OLD = '{%'
+INSTRUCTION_END_OLD = '%}'
+INSTRUCTION_START = '{{'
+INSTRUCTION_END = '}}'
 
 
 # Returns the root node of the compiled node tree.
-def compile(template_string, template_id):
-    return Parser(template_string, template_id).parse()
+def compile(template_string, template_id, is_page_template):
+    return Parser(
+        template_string, template_id, is_page_template=is_page_template
+    ).parse()
 
 
 # Tokens come in four different types: TEXT, PRINT, EPRINT, and INSTRUCTION.
@@ -43,11 +45,9 @@ class Lexer:
 
     def tokenize(self):
         while self.index < len(self.template_string):
-            if self.match(comment_start):
+            if self.match(COMMENT_START):
                 self.read_comment_tag()
-            elif self.match(print_start):
-                self.read_print_tag()
-            elif self.match(instruction_start):
+            elif self.match(INSTRUCTION_START) or self.match(INSTRUCTION_START_OLD):
                 self.read_instruction_tag()
             else:
                 self.read_text()
@@ -64,43 +64,27 @@ class Lexer:
         self.index += 1
 
     def read_comment_tag(self):
-        self.index += len(comment_start)
+        self.index += len(COMMENT_START)
         start_line_number = self.line_number
         while self.index < len(self.template_string):
-            if self.match(comment_end):
-                self.index += len(comment_end)
+            if self.match(COMMENT_END):
+                self.index += len(COMMENT_END)
                 return
             self.advance()
         msg = f"Unclosed comment tag"
         raise errors.TemplateLexingError(msg, self.template_id, start_line_number)
 
-    def read_print_tag(self):
-        self.index += len(print_start)
-        start_index = self.index
-        start_line_number = self.line_number
-        while self.index < len(self.template_string):
-            if self.match(print_end):
-                text = self.template_string[start_index : self.index].strip()
-                self.tokens.append(
-                    Token("PRINT", text, self.template_id, start_line_number)
-                )
-                self.index += len(print_end)
-                return
-            self.advance()
-        msg = f"Unclosed print tag"
-        raise errors.TemplateLexingError(msg, self.template_id, start_line_number)
-
     def read_instruction_tag(self):
-        self.index += len(instruction_start)
+        self.index += len(INSTRUCTION_START)
         start_index = self.index
         start_line_number = self.line_number
         while self.index < len(self.template_string):
-            if self.match(instruction_end):
+            if self.match(INSTRUCTION_END) or self.match(INSTRUCTION_END_OLD):
                 text = self.template_string[start_index : self.index].strip()
                 self.tokens.append(
                     Token("INSTRUCTION", text, self.template_id, start_line_number)
                 )
-                self.index += len(instruction_end)
+                self.index += len(INSTRUCTION_END)
                 return
             self.advance()
         msg = f"Unclosed instruction tag"
@@ -110,11 +94,9 @@ class Lexer:
         start_index = self.index
         start_line_number = self.line_number
         while self.index < len(self.template_string):
-            if self.match(comment_start):
+            if self.match(COMMENT_START):
                 break
-            elif self.match(print_start):
-                break
-            elif self.match(instruction_start):
+            elif self.match(INSTRUCTION_START) or self.match(INSTRUCTION_START_OLD):
                 break
             self.advance()
         text = self.template_string[start_index : self.index]
@@ -124,18 +106,37 @@ class Lexer:
 # The Parser takes a template string as input, lexes it into a token stream, then compiles the
 # token stream into a tree of nodes.
 class Parser:
-    def __init__(self, template_string, template_id):
+    def __init__(self, template_string, template_id, is_page_template):
         self.template_string = template_string
         self.template_id = template_id
+        self.num_nested_blocks = 0
+        self.is_page_template = is_page_template
 
     def parse(self):
         stack = [nodes.Node()]
         expecting = []
 
         for token in Lexer(self.template_string, self.template_id).tokenize():
+            if (
+                self.is_page_template
+                and self.num_nested_blocks == 0
+                and token.type == 'TEXT'
+                and token.text.strip()
+            ):
+                # technically the 'text' instruction also includes leading whitespace
+                # which is really confusing because it looks like it
+                # points to the previous instruction tag
+                num_leading_whitespace = len(token.text) - len(token.text.lstrip())
+                num_leading_newlines = token.text[:num_leading_whitespace].count('\n')
+                token.line_number += num_leading_newlines
+                raise errors.TemplateSyntaxError(
+                    "All content must be inside a block tag", token
+                )
             if token.type == "TEXT":
                 stack[-1].children.append(nodes.TextNode(token))
             elif token.keyword in nodes.instruction_keywords:
+                if token.keyword == 'block':
+                    self.num_nested_blocks += 1
                 node_class, endword = nodes.instruction_keywords[token.keyword]
                 node = node_class(token)
                 stack[-1].children.append(node)
@@ -147,8 +148,8 @@ class Parser:
                     msg = f"Unexpected tag"
                     raise errors.TemplateSyntaxError(msg, token)
                 elif expecting[-1] != token.keyword:
-                    msg = f"Unexpected '{token.keyword}' tag. "
-                    msg += (
+                    msg = (
+                        f"Unexpected '{token.keyword}' tag. "
                         f"Was expecting the following closing tag: '{expecting[-1]}'."
                     )
                     raise errors.TemplateSyntaxError(msg, token)
@@ -156,6 +157,8 @@ class Parser:
                     stack[-1].exit_scope()
                     stack.pop()
                     expecting.pop()
+                    if token.keyword == 'endblock':
+                        self.num_nested_blocks -= 1
             elif token.keyword == '':
                 msg = f"Empty instruction tag"
                 raise errors.TemplateSyntaxError(msg, token)
@@ -164,9 +167,11 @@ class Parser:
 
         if expecting:
             token = stack[-1].token
-            msg = f"Unexpected end of template. "
-            msg += f"Was expecting a closing tag '{expecting[-1]}' to close the "
-            msg += f"'{token.keyword}' tag opened in line {token.line_number}."
+            msg = (
+                f"Unexpected end of template. "
+                f"Was expecting a closing tag '{expecting[-1]}' to close the "
+                f"'{token.keyword}' tag opened in line {token.line_number}."
+            )
             raise errors.TemplateSyntaxError(msg, token)
 
         return stack.pop()
