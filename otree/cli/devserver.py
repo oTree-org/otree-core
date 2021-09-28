@@ -2,11 +2,11 @@ import os
 from pathlib import Path
 from subprocess import Popen
 from time import sleep
-
+import sys
 from otree.main import send_termination_notice
 from .base import BaseCommand
 
-stdout_write = print
+print_function = print
 
 
 def get_mtimes(files) -> dict:
@@ -27,6 +27,9 @@ class Command(BaseCommand):
         run_reloader(port)
 
 
+_OTREE_CORE_DEV = os.getenv('OTREE_CORE_DEV')
+
+
 def run_reloader(port):
     '''
     better to have my own autoreloader so i can easily swap between daphne/hypercorn/uvicorn
@@ -36,11 +39,12 @@ def run_reloader(port):
 
     root = Path('.')
     files_to_watch = list(root.glob('*.py')) + list(root.glob('*/*.py'))
-    if os.getenv('OTREE_CORE_DEV'):
+    if _OTREE_CORE_DEV:
         # this code causes it to get stuck on proc.wait() for some reason
         # 2021-09-05: is this why it got stuck?
         files_to_watch.extend(Path('c:/otree/nodj/otree').glob('**/*.py'))
     mtimes = get_mtimes(files_to_watch)
+    is_windows_venv = sys.platform.startswith("win") and sys.prefix != sys.base_prefix
     try:
         while True:
             exit_code = proc.poll()
@@ -53,16 +57,26 @@ def run_reloader(port):
                     changed_file = f
                     break
             if changed_file:
-                stdout_write(changed_file, 'changed, restarting')
+                print_function(changed_file, 'changed, restarting')
                 mtimes = new_mtimes
                 child_pid = send_termination_notice(port)
+
+                # with Windows + virtualenv, proc.terminate() doesn't work.
+                # sys.executable is a wrapper
+                # so the actual process that is binding the port has a different pid.
+                if is_windows_venv and not child_pid:
+                    for retry_num in [1, 2, 3]:
+                        print_function('Retrying shutdown', retry_num)
+                        sleep(1)
+                        child_pid = send_termination_notice(port)
+                        if child_pid:
+                            break
+                    if not child_pid:
+                        print_function('Failed to shut down')
+
                 # child_pid is not guaranteed to be returned, so we need proc.terminate()
                 proc.terminate()
                 if child_pid:
-                    # with Windows + virtualenv, proc.terminate() doesn't work.
-                    # sys.executable is a wrapper
-                    # so the actual process that is binding the port has a different pid.
-
                     os.kill(child_pid, 9)
                 proc = Popen(['otree', 'devserver_inner', port, '--is-reload'])
             sleep(1)

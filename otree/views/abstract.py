@@ -184,7 +184,9 @@ class FormPageOrInGameWaitPage:
         return context
 
     def render_to_response(self, context):
-        return render(self.get_template_name(), context, template_type=self._template_type)
+        return render(
+            self.get_template_name(), context, template_type=self._template_type
+        )
 
     _template_type = None
 
@@ -601,7 +603,7 @@ class Page(FormPageOrInGameWaitPage):
         # convert it to a bool so that you can do e.g.
         # player.timeout_happened = timeout_happened
         self.timeout_happened = bool(
-            auto_submitted and (has_secret_code or self.has_timeout_())
+            auto_submitted and (has_secret_code or self._is_past_timeout())
         )
         if self.participant.is_browser_bot:
             submission = browser_bots.pop_enqueued_post_data(
@@ -619,7 +621,7 @@ class Page(FormPageOrInGameWaitPage):
             resp = self.post_handle_form(post_data)
             if resp:
                 return resp
-        elif hasattr(self, 'error_message'):
+        elif hasattr(self, 'error_message') and not self.timeout_happened:
             # if the page has no form, we should still run error_message.
             # this is useful for live pages.
             # the code here is a stripped-down version of what happens with forms.
@@ -717,12 +719,19 @@ class Page(FormPageOrInGameWaitPage):
         for field_name in auto_submit_values_to_use:
             setattr(obj, field_name, auto_submit_values_to_use[field_name])
 
-    def has_timeout_(self):
-        # TODO: check that timeout_expiration is within seconds
-        participant = self.participant
+    def _is_past_timeout(self):
+        """
+        Need to check that we are actually past the expiration time.
+        Otherwise, a participant could skip past a page before it's ready,
+        by bypassing the execution of error_message(),
+        which is skipped when there is a timeout.
+        """
+        pp = self.participant
+        # the 2 seconds should not be necessary but there may be some unexpected case.
         return (
-            participant._timeout_page_index == participant._index_in_pages
-            and participant._timeout_expiration_time is not None
+            pp._timeout_page_index == pp._index_in_pages
+            and pp._timeout_expiration_time is not None
+            and (pp._timeout_expiration_time - time.time() < 2)
         )
 
     # don't use lru_cache. it is a global cache

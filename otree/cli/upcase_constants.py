@@ -10,15 +10,6 @@ from .remove_self import get_class_bounds
 print_function = print
 
 
-def get_classvar_offsets(txt, ClassName) -> List[Tuple[int, str]]:
-    class_start, class_end = get_class_bounds(txt, ClassName)
-    return [
-        (m.start(), m.group(1))
-        for m in re.finditer(r'^\s{4}(\w+)\(self\b', txt, re.MULTILINE)
-        if class_start < m.start() < class_end
-    ]
-
-
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('apps', nargs='*')
@@ -35,9 +26,7 @@ class Command(BaseCommand):
                 continue
             text = init_path.read_text('utf8')
             if 'class Constants(' not in text:
-                print_function(
-                    f"Skipping {app_name} because 'class Constants' not found in __init__.py"
-                )
+                print_function(f"Skipping {app_name}")
                 continue
             text = text.replace('class Constants(', 'class C(')
             module = import_module(app_name)

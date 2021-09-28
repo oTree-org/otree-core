@@ -1,8 +1,4 @@
-import sys
-from pathlib import Path
 from otree.checks import run_checks
-from otree import settings
-from otree import __version__ as CURRENT_VERSION
 from .base import BaseCommand
 from .prodserver1of2 import get_addr_port, run_asgi_server
 from ..database import save_sqlite_db, DB_FILE

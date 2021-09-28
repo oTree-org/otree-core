@@ -38,7 +38,7 @@
 {% block body_main %}{% if is_defined('js_vars') and js_vars %}<script>var js_vars = {{ js_vars }};</script>{% endif %}
 <div class="otree-wait-page container">
     <div class="card">
-        <h4 class="otree-wait-page__title card-header">
+        <h4 class="otree-wait-page__title card-header" id="_otree-title">
             {% block title %}{{ title_text }}{% endblock %}
         </h4>
         <div class="card-body">

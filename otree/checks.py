@@ -119,6 +119,42 @@ def model_classes(helper: AppCheckHelper, app_name):
                     helper.add_error(warning, numeric_id=112)
 
 
+def is_builtin(func_name):
+    if func_name in [
+        'creating_session',
+        'custom_export',
+        'group_by_arrival_time_method',
+        'vars_for_admin_report',
+    ]:
+        return True
+    endings = ['_min', '_max', '_choices', '_error_message']
+    for ending in endings:
+        if func_name.endswith(ending):
+            return True
+    return False
+
+
+def uncalled_functions(helper: AppCheckHelper, app_name):
+    import re
+
+    if not common.is_noself(app_name):
+        return
+
+    txt = Path(f'{app_name}/__init__.py').read_text('utf8')
+    for match in re.finditer(r'def (\w+)\(', txt):
+        func_name = match.group(1)
+        if is_builtin(func_name):
+            continue
+        # hasattr( is a double-check in case the function is commented out
+        # it's also ok if the function is used as as method, e.g. oTree Studio.
+        # also, some functions are assigned as variables, e.g. is_displayed = is_displayed
+        if txt.count(func_name) == 1:
+            app = import_module(app_name)
+            if hasattr(app, func_name):
+                msg = f"'{func_name}' is defined but not used"
+                helper.add_warning(msg, numeric_id=131)
+
+
 def constants(helper: AppCheckHelper, app_name):
 
     models = get_models_module(app_name)
@@ -132,7 +168,7 @@ def constants(helper: AppCheckHelper, app_name):
         try:
             get_builtin_constant(app_name, attr_name)
         except AttributeError:
-            msg = "'Constants' class needs to define '{}'"
+            msg = "Constants class needs to define '{}'".format(attr_name)
             helper.add_error(msg.format(attr_name), numeric_id=12)
     ppg = get_builtin_constant(app_name, 'players_per_group')
     if ppg == 0 or ppg == 1:
@@ -213,7 +249,12 @@ def get_checks_output(app_names=None):
     app_names = app_names or settings.OTREE_APPS
     errors = []
     warnings = []
-    for check_function in [model_classes, constants, pages_function]:
+    for check_function in [
+        model_classes,
+        constants,
+        pages_function,
+        uncalled_functions,
+    ]:
         for app_name in app_names:
             helper = AppCheckHelper(app_name)
             check_function(helper, app_name)
