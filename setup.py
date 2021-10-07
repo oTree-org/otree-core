@@ -12,11 +12,15 @@ import otree
 version = otree.__version__
 
 
+# make it visible so it stands out from the rest of the spew
 MSG_PY_VERSION = """
-Error: This version of oTree requires Python 3.7 or higher.
+*********************************************************************************
+* Error: This version of oTree is only compatible with Python 3.9, 3.8, or 3.7. *
+*********************************************************************************
 """
 
-if sys.version_info < (3, 7):
+
+if sys.version_info < (3, 7) or sys.version_info >= (3, 10):
     sys.exit(MSG_PY_VERSION)
 
 
