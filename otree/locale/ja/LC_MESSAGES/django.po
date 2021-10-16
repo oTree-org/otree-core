@@ -24,7 +24,7 @@ msgstr ""
 #: .\chat.py:21
 #, python-brace-format
 msgid "Player {id_in_group}"
-msgstr ""
+msgstr "プレイヤー {id_in_group}"
 
 #. Translators: the name someone sees displayed for themselves in a chat.
 #. It's their nickname followed by "(Me)". For example:
@@ -32,7 +32,7 @@ msgstr ""
 #: .\chat.py:60
 #, python-brace-format
 msgid "{nickname} (Me)"
-msgstr ""
+msgstr "{nickname} (自分)"
 
 #. Translators: for required form fields
 #: .\constants_internal.py:56
@@ -118,7 +118,7 @@ msgstr "次へ"
 #. Translators: Chat widget "send" button text
 #: .\templates\otreechat_core\widget.html:7
 msgid "Send"
-msgstr ""
+msgstr "送信"
 
 #: .\views\abstract.py:886
 msgid "Time left to complete this page:"
@@ -140,3 +140,35 @@ msgstr "他の参加者をお待ちください"
 #: .\views\participant.py:292
 msgid "Waiting for your session to begin"
 msgstr "セッションが始まるまでお待ちください"
+
+#. Translators: A player's default chat nickname,
+#. which is "Player" + their ID in group. For example:
+#. "Player 2".
+#: ../otree/chat.py:47
+msgid "Participant {id_in_group}"
+msgstr "プレイヤー {id_in_group}"
+
+#. Translators: the name you see in chat for yourself, for example:
+#. John (Me)
+#: ../otree/chat.py:63
+#, python-brace-format
+msgid "{nickname} (Me)"
+msgstr "{nickname} (自分)"
+
+#. Translators: if the user enters a number in a FloatField
+#. that is not a valid float.
+#: ../otree/forms/fields.py:27
+msgid "Not a valid float value"
+msgstr "有効な数値（浮動小数点数）ではありません"
+
+#: ../otree/forms/fields.py:44
+msgid "Not a valid decimal value"
+msgstr "有効な数値（固定小数点数）ではありません"
+
+#: ../otree/templates/otree/tags/chat.html:7
+msgid "Send"
+msgstr "送信"
+
+#: ../otree/views/participant.py:31
+msgid "Session is full."
+msgstr "セッションが満員です"
