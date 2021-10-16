@@ -197,6 +197,10 @@ def get_currency_format(lc: str, LO: str, CUR: str) -> str:
         if CUR == 'TRY':
             return '# ₺'
         return '# ¤'
+    if lc == 'hi':
+        if CUR == 'INR':
+            return '₺#'
+        return '¤#'
 
     # fallback if it's another language, etc.
     return '# ¤'
@@ -234,15 +238,27 @@ def format_number(number, *, places):
 
 
 def extract_otreetemplate(fileobj, keywords, comment_tags, options):
-    """babel custom extractor for {% trans %} tag in otree templates"""
+    """Deprecated"""
     for lineno, line in enumerate(fileobj, start=1):
         for msg in re.findall(r"""\{\{\s?trans ['"](.*)['"]\s?\}\}""", line.decode()):
             yield (lineno, 'trans', msg, [])
+
+
+def extract_otreetemplate_internal(fileobj, keywords, comment_tags, options):
+    """babel custom extractor for |gettext in otree templates"""
+    for lineno, line in enumerate(fileobj, start=1):
+        for msg in re.findall(
+            r"""\{\{\s?['"](.*)['"]\|gettext\s?\}\}""", line.decode()
+        ):
+            # not sure exactly what the 2nd arg is for
+            yield (lineno, 'gettext', msg, [])
 
 
 def core_gettext(msg):
     return gettext_lib.dgettext('django', msg)
 
 
-def core_ngettext(msg1, msg2, n):
-    return gettext_lib.dngettext('django', msg1, msg2, n)
+"""
+Don't use core-ngettext because pybabel doesn't recognize that it is for
+plurals 
+"""

@@ -28,6 +28,8 @@ def no_participants_left_http_response():
     this function exists because i'm not sure if Http response objects can be reused
     better to return 404 so browser bot client & tests can recognize it
     '''
+    # Translators: the message participants see if they open a start link
+    # but all participant links have been used.
     return Response(_("Session is full."), status_code=404)
 
 

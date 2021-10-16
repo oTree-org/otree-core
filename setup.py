@@ -11,16 +11,20 @@ import otree
 
 version = otree.__version__
 
+SUPPORTED_PY3_VERSIONS = [7, 8, 9]
 
 # make it visible so it stands out from the rest of the spew
 MSG_PY_VERSION = """
-*********************************************************************************
-* Error: This version of oTree is only compatible with Python 3.9, 3.8, or 3.7. *
-*********************************************************************************
-"""
+**********************************************************************************
+* Error: This version of oTree is only compatible with these Python versions:
+* {}
+**********************************************************************************
+""".format(
+    ', '.join(f'3.{x}' for x in SUPPORTED_PY3_VERSIONS)
+)
 
 
-if sys.version_info < (3, 7) or sys.version_info >= (3, 10):
+if sys.version_info[0] != 3 or sys.version_info[1] not in SUPPORTED_PY3_VERSIONS:
     sys.exit(MSG_PY_VERSION)
 
 

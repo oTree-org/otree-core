@@ -780,6 +780,7 @@ class CloseBlock(Node):
 @register('next_button')
 class NextButton(Node):
     def wrender(self, context):
+        # Translators: the text of the 'next' button
         NEXT_BTN_TEXT = gettext('Next')
         return f'''
         <p>

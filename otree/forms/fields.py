@@ -22,6 +22,8 @@ class FloatField(wtfields.FloatField):
                 self.data = float(handle_localized_number_input(valuelist[0]))
             except ValueError:
                 self.data = None
+                # Translators: if the user enters a number in a FloatField
+                # that is not a valid float.
                 raise ValueError(self.gettext('Not a valid float value'))
 
     def _value(self):

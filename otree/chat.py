@@ -58,6 +58,8 @@ def chat_template_tag(context, *, channel=UNDEFINED, nickname=UNDEFINED) -> dict
         participant_id=participant.id,
         nickname_signed=nickname_signed,
         nickname=nickname,
+        # Translators: the name you see in chat for yourself, for example:
+        # John (Me)
         nickname_i_see_for_myself=core_gettext("{nickname} (Me)").format(
             nickname=nickname
         ),
