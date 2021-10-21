@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-16 06:02+0200\n"
+"POT-Creation-Date: 2021-10-18 23:30+0200\n"
 "PO-Revision-Date: 2016-05-09 11:30+0200\n"
 "Last-Translator: \n"
 "Language: nb\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.9.0\n"
 
 #. Translators: A player's default chat nickname,
 #. which is "Player" + their ID in group. For example:
@@ -51,16 +51,6 @@ msgid_plural "{} points"
 msgstr[0] "{} poeng"
 msgstr[1] "{} poeng"
 
-#. Translators: if the user enters a number in a FloatField
-#. that is not a valid float.
-#: ../otree/forms/fields.py:27
-msgid "Not a valid float value"
-msgstr ""
-
-#: ../otree/forms/fields.py:44
-msgid "Not a valid decimal value"
-msgstr ""
-
 #: ../otree/forms/forms.py:178
 msgid "Yes"
 msgstr "Ja"
@@ -92,9 +82,7 @@ msgstr ""
 
 #: ../otree/templates/otree/WaitPage.html:46
 msgid "An error occurred."
-msgstr ""
-"En feil inntraff. Vennligst sjekk loggen eller spør en administrator om "
-"hjelp."
+msgstr "En feil inntraff"
 
 #: ../otree/templates/otree/tags/chat.html:7
 msgid "Send"
@@ -110,7 +98,7 @@ msgid "Time left to complete this page:"
 msgstr "Tid igjen for å fullføre denne siden:"
 
 #. Translators: the default title of a wait page
-#: ../otree/views/abstract.py:814 ../otree/views/participant.py:260
+#: ../otree/views/abstract.py:814 ../otree/views/participant.py:261
 msgid "Please wait"
 msgstr "Vennligst vent"
 
@@ -122,13 +110,13 @@ msgstr "Venter på de andre deltagerne."
 msgid "Waiting for the other participant."
 msgstr "Venter på den andre deltageren."
 
-#. Translators: the message participants see if they open a start link
-#. but all participant links have been used.
-#: ../otree/views/participant.py:33
+#. Translators: for example this is shown if you create a session for 10
+#. participant. The 11th person to click will get this message
+#. It means all participant slots have already been used.
+#: ../otree/views/participant.py:34
 msgid "Session is full."
 msgstr ""
 
-#: ../otree/views/participant.py:261
+#: ../otree/views/participant.py:262
 msgid "Waiting for your session to begin"
 msgstr ""
-

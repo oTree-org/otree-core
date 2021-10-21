@@ -295,7 +295,6 @@ class ForNode(Node):
         collection = self.expr.eval(context)
         if collection:
             collection = list(collection)
-            length = len(collection)
             unpack = len(self.loopvars) > 1
             output = []
             for index, item in enumerate(collection):

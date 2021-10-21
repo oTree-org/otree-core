@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-16 06:02+0200\n"
+"POT-Creation-Date: 2021-10-18 23:30+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -18,21 +18,21 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.9.0\n"
 
 #. Translators: A player's default chat nickname,
 #. which is "Player" + their ID in group. For example:
 #. "Player 2".
 #: ../otree/chat.py:47
 msgid "Participant {id_in_group}"
-msgstr ""
+msgstr "Участник {id_in_group}"
 
 #. Translators: the name you see in chat for yourself, for example:
 #. John (Me)
 #: ../otree/chat.py:63
 #, python-brace-format
 msgid "{nickname} (Me)"
-msgstr ""
+msgstr "{nickname} (я)"
 
 #: ../otree/constants.py:79
 msgid "This field is required."
@@ -54,16 +54,6 @@ msgstr[0] "{} очко"
 msgstr[1] "{} очка"
 msgstr[2] "{} очков"
 
-#. Translators: if the user enters a number in a FloatField
-#. that is not a valid float.
-#: ../otree/forms/fields.py:27
-msgid "Not a valid float value"
-msgstr ""
-
-#: ../otree/forms/fields.py:44
-msgid "Not a valid decimal value"
-msgstr ""
-
 #: ../otree/forms/forms.py:178
 msgid "Yes"
 msgstr "Да"
@@ -83,23 +73,23 @@ msgstr "Пожалуйста внесите исправления в поля �
 
 #: ../otree/templates/otree/RoomInputLabel.html:7
 msgid "Welcome"
-msgstr ""
+msgstr "Добро пожаловать"
 
 #: ../otree/templates/otree/RoomInputLabel.html:13
 msgid "Participant label not found"
-msgstr ""
+msgstr "Метка участника не найдена"
 
 #: ../otree/templates/otree/RoomInputLabel.html:15
 msgid "Please enter your participant label."
-msgstr ""
+msgstr "Пожалуйста, введите вашу метку"
 
 #: ../otree/templates/otree/WaitPage.html:46
 msgid "An error occurred."
-msgstr ""
+msgstr "Произошла ошибка"
 
 #: ../otree/templates/otree/tags/chat.html:7
 msgid "Send"
-msgstr ""
+msgstr "Отправить"
 
 #. Translators: the text of the 'next' button
 #: ../otree/templating/nodes.py:784
@@ -111,7 +101,7 @@ msgid "Time left to complete this page:"
 msgstr "Для выполнения задания на этой странице у вас осталось:"
 
 #. Translators: the default title of a wait page
-#: ../otree/views/abstract.py:814 ../otree/views/participant.py:260
+#: ../otree/views/abstract.py:814 ../otree/views/participant.py:261
 msgid "Please wait"
 msgstr "Пожалуйста подождите"
 
@@ -123,13 +113,13 @@ msgstr "Пожалуйста ожидайте других участников.
 msgid "Waiting for the other participant."
 msgstr "Пожалуйста ожидайте другого участника."
 
-#. Translators: the message participants see if they open a start link
-#. but all participant links have been used.
-#: ../otree/views/participant.py:33
+#. Translators: for example this is shown if you create a session for 10
+#. participant. The 11th person to click will get this message
+#. It means all participant slots have already been used.
+#: ../otree/views/participant.py:34
 msgid "Session is full."
-msgstr ""
+msgstr "Сессия заполнена"
 
-#: ../otree/views/participant.py:261
+#: ../otree/views/participant.py:262
 msgid "Waiting for your session to begin"
-msgstr ""
-
+msgstr "Ожидание начала сессии"

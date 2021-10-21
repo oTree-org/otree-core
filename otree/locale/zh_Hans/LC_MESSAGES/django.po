@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-16 06:02+0200\n"
+"POT-Creation-Date: 2021-10-18 23:30+0200\n"
 "PO-Revision-Date: 2015-11-03 19:32+0800\n"
 "Last-Translator: \n"
 "Language: zh\n"
@@ -16,14 +16,14 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.9.0\n"
 
 #. Translators: A player's default chat nickname,
 #. which is "Player" + their ID in group. For example:
 #. "Player 2".
 #: ../otree/chat.py:47
 msgid "Participant {id_in_group}"
-msgstr ""
+msgstr "玩家{id_in_group}"
 
 #. Translators: the name you see in chat for yourself, for example:
 #. John (Me)
@@ -50,16 +50,6 @@ msgid "{} point"
 msgid_plural "{} points"
 msgstr[0] "{}点"
 
-#. Translators: if the user enters a number in a FloatField
-#. that is not a valid float.
-#: ../otree/forms/fields.py:27
-msgid "Not a valid float value"
-msgstr ""
-
-#: ../otree/forms/fields.py:44
-msgid "Not a valid decimal value"
-msgstr ""
-
 #: ../otree/forms/forms.py:178
 msgid "Yes"
 msgstr "是"
@@ -75,7 +65,7 @@ msgstr "点"
 
 #: ../otree/templates/otree/Page.html:22
 msgid "Please fix the errors."
-msgstr "请修复表单中的错误。"
+msgstr "请修复错误。"
 
 #: ../otree/templates/otree/RoomInputLabel.html:7
 msgid "Welcome"
@@ -107,7 +97,7 @@ msgid "Time left to complete this page:"
 msgstr "本页面剩余时间"
 
 #. Translators: the default title of a wait page
-#: ../otree/views/abstract.py:814 ../otree/views/participant.py:260
+#: ../otree/views/abstract.py:814 ../otree/views/participant.py:261
 msgid "Please wait"
 msgstr "请等待"
 
@@ -119,13 +109,13 @@ msgstr "请等待其他参与者。"
 msgid "Waiting for the other participant."
 msgstr "请等待其他参与者。"
 
-#. Translators: the message participants see if they open a start link
-#. but all participant links have been used.
-#: ../otree/views/participant.py:33
+#. Translators: for example this is shown if you create a session for 10
+#. participant. The 11th person to click will get this message
+#. It means all participant slots have already been used.
+#: ../otree/views/participant.py:34
 msgid "Session is full."
-msgstr ""
+msgstr "会话已满。"
 
-#: ../otree/views/participant.py:261
+#: ../otree/views/participant.py:262
 msgid "Waiting for your session to begin"
-msgstr ""
-
+msgstr "等待会话开始"

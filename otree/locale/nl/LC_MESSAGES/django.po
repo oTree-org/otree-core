@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-16 06:02+0200\n"
+"POT-Creation-Date: 2021-10-18 23:30+0200\n"
 "PO-Revision-Date: 2016-05-04 19:45+0200\n"
 "Last-Translator: \n"
 "Language: nl\n"
@@ -16,7 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.9.1\n"
+"Generated-By: Babel 2.9.0\n"
 
 #. Translators: A player's default chat nickname,
 #. which is "Player" + their ID in group. For example:
@@ -50,16 +50,6 @@ msgid "{} point"
 msgid_plural "{} points"
 msgstr[0] "{} punt"
 msgstr[1] "{} punten"
-
-#. Translators: if the user enters a number in a FloatField
-#. that is not a valid float.
-#: ../otree/forms/fields.py:27
-msgid "Not a valid float value"
-msgstr "Geen geldige float-waarde"
-
-#: ../otree/forms/fields.py:44
-msgid "Not a valid decimal value"
-msgstr "Geen geldige decimale waarde"
 
 #: ../otree/forms/forms.py:178
 msgid "Yes"
@@ -110,7 +100,7 @@ msgid "Time left to complete this page:"
 msgstr "Resterende tijd om deze pagina te voltooien:"
 
 #. Translators: the default title of a wait page
-#: ../otree/views/abstract.py:814 ../otree/views/participant.py:260
+#: ../otree/views/abstract.py:814 ../otree/views/participant.py:261
 msgid "Please wait"
 msgstr "Even geduld alstublieft"
 
@@ -122,13 +112,13 @@ msgstr "Wachten op de overige deelnemers."
 msgid "Waiting for the other participant."
 msgstr "Wachten op de andere deelnemer."
 
-#. Translators: the message participants see if they open a start link
-#. but all participant links have been used.
-#: ../otree/views/participant.py:33
+#. Translators: for example this is shown if you create a session for 10
+#. participant. The 11th person to click will get this message
+#. It means all participant slots have already been used.
+#: ../otree/views/participant.py:34
 msgid "Session is full."
 msgstr "Sessie niet gevonden"
 
-#: ../otree/views/participant.py:261
+#: ../otree/views/participant.py:262
 msgid "Waiting for your session to begin"
 msgstr "Wachten tot je sessie begint"
-

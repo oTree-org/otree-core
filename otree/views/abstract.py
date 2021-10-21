@@ -150,6 +150,7 @@ class FormPageOrInGameWaitPage:
             subsession=self.subsession,
             session=self.session,
             participant=self.participant,
+            pax=self.participant,
             timer_text=getattr(self, 'timer_text', None),
             current_page_name=self.__class__.__name__,
             has_live_method=bool(getattr(self, 'live_method', None)),
