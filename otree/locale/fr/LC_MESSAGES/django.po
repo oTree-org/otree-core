@@ -74,7 +74,7 @@ msgid "Welcome"
 msgstr "Bienvenue"
 
 #: ../otree/templates/otree/RoomInputLabel.html:13
-msgid "Participant label not found"
+msgid "This participant label was not found"
 msgstr "Label de participant introuvable"
 
 #: ../otree/templates/otree/RoomInputLabel.html:15
@@ -96,7 +96,7 @@ msgstr "Suivant"
 
 #: ../otree/views/abstract.py:788
 msgid "Time left to complete this page:"
-msgstr "Temps restant pour compléter cette page"
+msgstr "Temps restant pour compléter cette page:"
 
 #. Translators: the default title of a wait page
 #: ../otree/views/abstract.py:814 ../otree/views/participant.py:261

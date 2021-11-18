@@ -106,7 +106,11 @@ class BaseSubsession(SPGModel, MixinSessionFK):
                 session=self.session,
                 round_number=self.round_number,
             )
+            # this line causes
+            # SAWarning: Identity map already had an identity for (<class 'set_group_matrix2.Group'>, (10,), None), replacing it with newly flushed object.   Are there load operations occurring inside of an event handler within the flush?
+            #   "within the flush?" % (instance_key,)
             group.set_players(row)
+
 
     def group_like_round(self, round_number):
         previous_round: BaseSubsession = self.in_round(round_number)

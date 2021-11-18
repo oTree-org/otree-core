@@ -73,7 +73,7 @@ msgid "Welcome"
 msgstr "ようこそ"
 
 #: ../otree/templates/otree/RoomInputLabel.html:13
-msgid "Participant label not found"
+msgid "This participant label was not found"
 msgstr "正しい値を入力してください"
 
 #: ../otree/templates/otree/RoomInputLabel.html:15

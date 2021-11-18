@@ -76,7 +76,7 @@ msgid "Welcome"
 msgstr "Добро пожаловать"
 
 #: ../otree/templates/otree/RoomInputLabel.html:13
-msgid "Participant label not found"
+msgid "This participant label was not found"
 msgstr "Метка участника не найдена"
 
 #: ../otree/templates/otree/RoomInputLabel.html:15

@@ -24,17 +24,6 @@ function makeReconnectingWebSocket(path) {
     $(document).ready(function () {
         $('title').text($('#_otree-title').text());
 
-        var selector = '[data-slider] input[type="range"]';
-        var setSliderValue = function () {
-            var $input = $(this),
-                $slider = $input.closest('[data-slider]'),
-                $valueTarget = $slider.find('[data-slider-value]'),
-                value = $input.val();
-            $valueTarget.text(value);
-        };
-
-        $(selector).each(setSliderValue);
-        $(document).on('change input', selector, setSliderValue);
         // block the user from spamming the next button which can make congestion
         // problems worse.
         // i can't use $('.otree-btn-next').click()

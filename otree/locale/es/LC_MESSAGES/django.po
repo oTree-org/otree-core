@@ -73,7 +73,7 @@ msgid "Welcome"
 msgstr "Bienvenido"
 
 #: ../otree/templates/otree/RoomInputLabel.html:13
-msgid "Participant label not found"
+msgid "This participant label was not found"
 msgstr "Entrada invalida; Intente de nuevo."
 
 #: ../otree/templates/otree/RoomInputLabel.html:15

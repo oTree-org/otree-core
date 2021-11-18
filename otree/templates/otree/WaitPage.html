@@ -92,12 +92,16 @@ $(document).ready(function () {
         {% comment %}
         Refresh the whole page. This is documented behavior that enables things like
         allowing people to proceed if they have been waiting too long.
+        We also make it random to prevent load times from syncing up
+        due to reload mechanisms. This will ensure that the page gets
+        reloaded regularly, which is useful e.g. for intergenerational
+        games.
         {% endcomment %}
 
         var SECOND = 1000;
         window.setInterval(function() {
                   window.location.reload();
-                }, 60*SECOND);
+                }, (10 + Math.random() * 60) * SECOND);
 
 
     {% endif %}
