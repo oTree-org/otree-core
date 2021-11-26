@@ -51,6 +51,7 @@ class Command(BaseCommand):
             # somehow \w also works with non-latin chars, nice
             txt = re.sub(r'\bConstants\.(\w+)\b', upcase, txt)
             p.write_text(txt, encoding='utf8')
+        print_function("Done")
 
 
 def upcase(match):
