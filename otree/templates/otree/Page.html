@@ -24,7 +24,7 @@ i removed many linebreaks to make output HTML cleaner
             </div>
         {% endif %}{% if is_defined('js_vars') and js_vars %}<script>var js_vars = {{ js_vars }};</script>{% endif %}
         <form class="otree-form" method="post" role="form" id="form" autocomplete="off">
-            <script>var formfields = document.getElementById('form').elements;</script>
+            <script>var formInputs = document.getElementById('form').elements;</script>
             <div class="_otree-content">{% block content %}{% endblock %}</div>
         </form>
         <br/>

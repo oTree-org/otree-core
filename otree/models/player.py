@@ -98,7 +98,3 @@ class BasePlayer(SPGModel, MixinSessionFK):
     @declared_attr
     def participant(cls):
         return relationship("Participant")
-
-    @property
-    def pax(self):
-        return self.participant
