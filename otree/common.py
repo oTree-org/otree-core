@@ -2,7 +2,7 @@ import asyncio
 import hashlib
 import itertools
 import os
-import random
+from random import Random
 import re
 import string
 import sys
@@ -21,6 +21,11 @@ from otree import settings
 
 USE_TIMEOUT_WORKER = bool(os.getenv('USE_TIMEOUT_WORKER'))
 
+# use a separate rng instance to avoid issues when another app
+# sets random.seed(),
+# for example every session getting the same code.
+rng = Random()
+
 
 def add_params_to_url(url, params):
     url_parts = list(urllib.parse.urlparse(url))
@@ -37,7 +42,7 @@ SESSION_CODE_CHARSET = string.ascii_lowercase + string.digits
 
 
 def random_chars(num_chars):
-    return ''.join(random.choice(SESSION_CODE_CHARSET) for _ in range(num_chars))
+    return ''.join(rng.choice(SESSION_CODE_CHARSET) for _ in range(num_chars))
 
 
 def random_chars_8():
@@ -51,7 +56,7 @@ SYLLABLES = [c + v for c in CONSONANTS for v in VOWELS]
 
 
 def random_chars_join_code():
-    return ''.join(random.sample(SYLLABLES, 4))
+    return ''.join(rng.sample(SYLLABLES, 4))
 
 
 @lru_cache()
@@ -240,10 +245,10 @@ def _group_randomly(group_matrix, fixed_id_in_group=False):
     if fixed_id_in_group:
         group_matrix = [list(col) for col in zip(*group_matrix)]
         for column in group_matrix:
-            random.shuffle(column)
+            rng.shuffle(column)
         return list(zip(*group_matrix))
     else:
-        random.shuffle(players)
+        rng.shuffle(players)
         return _group_by_rank(players, players_per_group)
 
 

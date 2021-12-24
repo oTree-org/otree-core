@@ -1,5 +1,5 @@
 import logging
-import random
+from otree.common import rng
 from collections import OrderedDict
 from typing import Dict
 from otree.models import Session
@@ -52,7 +52,7 @@ class BotWorker:
 
             config = SessionConfig(session.config)
             num_cases = config.get_num_bot_cases()
-            case_number = random.choice(range(num_cases))
+            case_number = rng.choice(range(num_cases))
 
         bots = make_bots(
             session_pk=session_pk, case_number=case_number, use_browser_bots=True

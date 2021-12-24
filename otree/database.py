@@ -641,9 +641,16 @@ class SPGModel(SSPPGModel):
             choices = choices_func(self)
         else:
             choices = getattr(type(self), name).form_props['choices']
-        return dict(expand_choice_tuples(choices))[value]
+        choice_dict = dict(expand_choice_tuples(choices))
+        try:
+            return choice_dict[value]
+        except KeyError:
+            raise Exception(
+                f"Current value {repr(value)} is not a valid choice for field '{name}'"
+            ) from None
 
     def field_display(self, name):
+        """Deprecated"""
         return self.get_field_display(name)
 
 

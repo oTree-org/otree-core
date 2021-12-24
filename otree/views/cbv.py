@@ -1,6 +1,5 @@
 import asyncio
 import os
-import random
 import json
 
 from starlette.concurrency import run_in_threadpool
@@ -10,7 +9,7 @@ from starlette.requests import Request
 from starlette.responses import Response, RedirectResponse
 
 from otree import settings
-from otree.common import CSRF_TOKEN_NAME, AUTH_COOKIE_NAME, AUTH_COOKIE_VALUE
+from otree.common import CSRF_TOKEN_NAME, AUTH_COOKIE_NAME, AUTH_COOKIE_VALUE, rng
 from otree.database import db
 from otree.models import Session
 from otree.templating import render
@@ -97,7 +96,7 @@ class AdminView(HTTPEndpoint):
     def get_context_data(self, **kwargs):
         csrf_value = self.request.session.get(CSRF_TOKEN_NAME)
         if not csrf_value:
-            csrf_value = str(random.randint(10 ** 9, 10 ** 10))
+            csrf_value = str(rng.randint(10 ** 9, 10 ** 10))
             self.request.session[CSRF_TOKEN_NAME] = csrf_value
         token_input = (
             f'<input type="hidden" name="{CSRF_TOKEN_NAME}" value="{csrf_value}">'

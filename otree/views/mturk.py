@@ -318,9 +318,9 @@ class PayMTurk(AdminSessionPage):
         )
 
         for p in participants:
-            # need the try/except so that we try to pay the rest of the participants
-            payoff = p.payoff_in_real_world_currency()
+            payoff = p.payoff.to_real_world_currency(session)
 
+            # need the try/except so that we try to pay the rest of the participants
             try:
                 if payoff > 0:
                     mturk_client.send_bonus(

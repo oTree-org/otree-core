@@ -234,7 +234,7 @@ def pages_function(helper: AppCheckHelper, app_name):
                     if hasattr(ViewCls, 'get_players_for_group'):
                         helper.add_error(
                             'Page "{}" defines get_players_for_group, which is deprecated. '
-                            'You should instead define group_by_arrival_time_method on the Subsession. '
+                            'You should instead define a top-level function called group_by_arrival_time_method. '
                             ''.format(ViewCls.__name__),
                             numeric_id=25,
                         )
