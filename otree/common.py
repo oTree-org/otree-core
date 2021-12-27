@@ -267,3 +267,10 @@ lock = asyncio.Lock()
 
 class FULL_DECIMAL_PLACES:
     pass
+
+
+def get_class_bounds(txt, ClassName):
+    class_start = txt.index(f'\nclass {ClassName}(')
+    m = list(re.finditer(r'^\w', txt[class_start:], re.MULTILINE))[1]
+    class_end = class_start + m.start()
+    return class_start, class_end

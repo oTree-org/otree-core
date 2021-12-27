@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List, Tuple
 
 from .base import BaseCommand
+from ..common import get_class_bounds
 
 try:
 
@@ -61,11 +62,15 @@ class Command(BaseCommand):
         manage_py = Path('manage.py')
         if manage_py.exists():
             manage_py.unlink()
-        print_function('Done.')
+
+        print_function('Done. You should also run:')
 
 
 class CannotConvert(Exception):
     pass
+
+
+CURRENCY_C_IMPORT = 'Currency as c'
 
 
 def make_noself(app_name):
@@ -89,8 +94,11 @@ def make_noself(app_name):
 
     END_OF_MODELS = '"""endofmodels"""'
     lines = [
+        # 2021-12-25: don't know why this is here
         'from otree.api import Page, WaitPage',
         'from otree.api import *',
+        # for some reason rope considers this a duplicate import
+        'from otree.api import Currency as c',
         *models_path.read_text('utf8').splitlines(),
         END_OF_MODELS,
     ]
@@ -172,6 +180,18 @@ You have 2 choices:
 \t(b) manually convert {name} back to a method
 ))))))))))))))))))))))))))))))"""
                         )
+
+    app_txt = read()
+
+    try:
+        currency_offset = app_txt.index(CURRENCY_C_IMPORT)
+    except ValueError:
+        pass
+    else:
+        changes = Rename(
+            proj, app_res, currency_offset + len(CURRENCY_C_IMPORT) - 1
+        ).get_changes('cu')
+        proj.do(changes)
 
     import_tools = ImportTools(proj)
 
@@ -336,13 +356,6 @@ def get_method_offsets(txt, ClassName) -> List[Tuple[int, str]]:
         for m in re.finditer(r'^\s{4}def (\w+)\(self\b', txt, re.MULTILINE)
         if class_start < m.start() < class_end
     ]
-
-
-def get_class_bounds(txt, ClassName):
-    class_start = txt.index(f'\nclass {ClassName}(')
-    m = list(re.finditer(r'^\w', txt[class_start:], re.MULTILINE))[1]
-    class_end = class_start + m.start()
-    return class_start, class_end
 
 
 BACKUP_FOLDER = '_REMOVE_SELF_BACKUP'

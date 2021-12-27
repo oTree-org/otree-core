@@ -1,11 +1,11 @@
 import re
 from importlib import import_module
 from pathlib import Path
-from typing import List, Tuple
 
+"""Don't import from remove_self, because that requires rope to be installed."""
+from otree.common import get_class_bounds
 from otree.constants import BaseConstants
 from .base import BaseCommand
-from .remove_self import get_class_bounds
 
 print_function = print
 
