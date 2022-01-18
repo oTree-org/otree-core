@@ -366,7 +366,8 @@ class AdminReport(AdminSessionPage):
 
     def get_context_data(self, **kwargs):
         form = kwargs['form']
-        models_module = get_models_module(form.app_name.data)
+        app_name = form.app_name.data
+        models_module = get_models_module(app_name)
         subsession = models_module.Subsession.objects_get(
             session=self.session, round_number=form.round_number.data
         )
@@ -384,17 +385,17 @@ class AdminReport(AdminSessionPage):
             )
         ]
 
+        # todo: i think app_label and app_name are the same always
         app_label = subsession.get_folder_name()
         user_template = get_template_name_if_exists(
             [f'{app_label}/admin_report.html', f'{app_label}/AdminReport.html']
         )
 
+        Constants = otree.common.get_constants(app_name)
         context = super().get_context_data(
-            subsession=subsession,
-            Constants=models_module.Constants,
-            user_template=user_template,
-            **kwargs,
+            subsession=subsession, user_template=user_template, **kwargs,
         )
+        context[Constants.__name__] = Constants
         # it's passed by parent class
         assert 'session' in context
 
