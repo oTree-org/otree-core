@@ -42,6 +42,8 @@ LOGGING_CONFIG = {
         "uvicorn": {"handlers": ["default"], "level": "INFO"},
         "uvicorn.error": {"level": "INFO", "propagate": False},
         "uvicorn.access": {"handlers": ["access"], "level": "INFO", "propagate": False},
+        # otherwise we get 'connection open', 'connection closed' on each page
+        "websockets.server": {"propagate": False, "level": "WARNING"},
     },
     'root': {'handlers': ['default'], 'level': logging.INFO,},
 }

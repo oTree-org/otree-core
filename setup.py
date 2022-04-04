@@ -11,7 +11,7 @@ import otree
 
 version = otree.__version__
 
-SUPPORTED_PY3_VERSIONS = [7, 8, 9]
+SUPPORTED_PY3_VERSIONS = [7, 8, 9, 10]
 
 # make it visible so it stands out from the rest of the spew
 MSG_PY_VERSION = """

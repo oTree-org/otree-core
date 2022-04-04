@@ -24,8 +24,12 @@ i removed many linebreaks to make output HTML cleaner
             </div>
         {% endif %}{% if is_defined('js_vars') and js_vars %}<script>var js_vars = {{ js_vars }};</script>{% endif %}
         <form class="otree-form" method="post" role="form" id="form" autocomplete="off">
-            <script>var formInputs = document.getElementById('form').elements;</script>
-            <div class="_otree-content">{% block content %}{% endblock %}</div>
+            <script src="{% static 'otree/js/formInputs.js' %}"></script>
+            <div class="_otree-content">
+<!-- (((((((((((((((((((((((((((((((((((((((((((((((((((((((( CONTENT BLOCK -->
+              {% block content %}{% endblock %}
+<!-- )))))))))))))))))))))))))))))))))))))))))))))))))))))))) END OF CONTENT BLOCK -->
+            </div>
         </form>
         <br/>
         {# need the check for projects with old MTurkLandingPage #}

@@ -21,15 +21,6 @@
         </li>
       {% endif %}
 
-      {% if not is_new_format %}
-        <li>
-          Add <code>template</code> to your MTurk settings,
-          and remove <code>preview_template</code>.
-          Then create a new session.
-          This is a new requirement as of oTree 2.4.
-        </li>
-      {% endif %}
-
       {% if not is_usd %}
         <li>
           Set your <code>REAL_WORLD_CURRENCY_CODE</code> to <code>USD</code>

@@ -98,11 +98,37 @@ $(document).ready(function () {
         games.
         {% endcomment %}
 
-        var SECOND = 1000;
-        window.setInterval(function() {
-                  window.location.reload();
-                }, (10 + Math.random() * 60) * SECOND);
+        var RELOAD_PARAM = "?reload=1";
 
+        var SECOND = 1000;
+        window.setInterval(function () {
+          window.location.href = window.location.pathname + RELOAD_PARAM;
+        }, (10 + Math.random() * 60) * SECOND);
+
+
+        function sendTabHiddenStatus(isHidden) {
+          socket.send(JSON.stringify({
+            'tab_hidden': isHidden
+          }));
+        }
+
+        document.addEventListener("visibilitychange", event => {
+
+          // {# if the user tabs in, we mark the tab active.
+          // but not vice versa, since then it would be impossible for
+          // someone to test a multiplayer game on a single PC #}
+          if (!document.hidden)
+            sendTabHiddenStatus(false);
+        })
+
+        // for first page load, we don't consider unfocused tabs to be abandoned.
+        // that way, browser bots and manual testing etc still work.
+        function sendTabHiddenStatusInitial() {
+          let gotDistracted = window.location.search.includes(RELOAD_PARAM) && document.hidden;
+          sendTabHiddenStatus(gotDistracted);
+        }
+
+        sendTabHiddenStatusInitial();
 
     {% endif %}
 

@@ -20,7 +20,7 @@ except ModuleNotFoundError:
     import sys
 
     sys.exit(
-        'Before running this command, you need to run "pip3 install -U black rope" '
+        'Before running this command, you need to run "pip3 install -U rope black==20.8b1" '
     )
 from rope.refactor.importutils import ImportTools
 from collections import namedtuple
@@ -63,7 +63,7 @@ class Command(BaseCommand):
         if manage_py.exists():
             manage_py.unlink()
 
-        print_function('Done. You should also run:')
+        print_function('Done. You should also run: otree upcase_constants')
 
 
 class CannotConvert(Exception):

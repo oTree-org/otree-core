@@ -62,7 +62,7 @@ class _OTreeAsyncJsonWebsocketConsumer(WebSocketEndpoint):
 
     def clean_kwargs(self, **kwargs):
         '''
-        subclasses should override if the route receives a comma-separated params arg.
+        subclasses should override if the route accesses query params.
         otherwise, this just passes the route kwargs as is (usually there is just one).
         The output of this method is passed to self.group_name(), self.post_connect,
         and self.pre_disconnect, so within each class, all 3 of those methods must
@@ -83,8 +83,8 @@ class _OTreeAsyncJsonWebsocketConsumer(WebSocketEndpoint):
         return
 
     async def on_connect(self, websocket: WebSocket) -> None:
-        AUTH_LEVEL = settings.AUTH_LEVEL
-
+        # patch the instance
+        websocket.send = channel_utils.wrap_websocket_send(websocket.send)
         # need to accept no matter what, so we can at least send
         # an error message
         await websocket.accept()
@@ -237,7 +237,7 @@ class WSGroupByArrivalTime(_OTreeAsyncJsonWebsocketConsumer):
             session_id=session_pk,
         )
 
-    def mark_ready_status(self, is_ready):
+    def mark_gbat_is_waiting(self, is_ready):
         Participant.objects_filter(id=self.participant_id).update(
             {Participant._gbat_is_waiting: is_ready}
         )
@@ -248,7 +248,6 @@ class WSGroupByArrivalTime(_OTreeAsyncJsonWebsocketConsumer):
         self.app_name = app_name
         self.player_id = player_id
         self.participant_id = participant_id
-        self.mark_ready_status(True)
         try:
             is_ready = self.is_ready(
                 app_name=app_name,
@@ -266,7 +265,12 @@ class WSGroupByArrivalTime(_OTreeAsyncJsonWebsocketConsumer):
     async def pre_disconnect(
         self, app_name, player_id, page_index, session_pk, participant_id
     ):
-        self.mark_ready_status(False)
+        self.mark_gbat_is_waiting(False)
+
+    async def post_receive_json(self, content, **kwargs):
+        if 'tab_hidden' in content:
+            is_ready = not content['tab_hidden']
+            self.mark_gbat_is_waiting(is_ready)
 
 
 class DetectAutoAdvance(_OTreeAsyncJsonWebsocketConsumer):
