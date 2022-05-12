@@ -964,6 +964,7 @@ class WaitPage(FormPageOrInGameWaitPage, GenericWaitPageMixin):
 
         participant = self.participant
 
+        # self.request could be None if used instantiate_without_request.
         if not (self.request and self.request.query_params.get('reload')):
             # on the first page load, we set _gbat_is_waiting,
             # so that the wait page can be bypassed immediately.

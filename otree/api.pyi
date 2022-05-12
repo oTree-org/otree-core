@@ -1,5 +1,6 @@
 from typing import Union, List, Any, Optional, TypeVar, Type
 from otree.currency import RealWorldCurrency, Currency
+from otree.database import AnyModel
 
 class Currency(Currency):
     """
@@ -349,6 +350,12 @@ def SubmissionMustFail(
 def expect(*args):
     pass
 
+# if i use Type[AnyModel] it doesn't get recognized as a superclass
+#app_models = Union[Type[ExtraModel], Type[BasePlayer], Type[BaseGroup], Type[BaseSubsession]]
+app_models = Union[Type[ExtraModel], Type[BasePlayer], Type[BaseGroup], Type[BaseSubsession]]
+
+def read_csv(path: str, type_model: app_models) -> list[dict]:
+    pass
 
 __all__ = [
     "Currency",
@@ -367,4 +374,5 @@ __all__ = [
     "Submission",
     "SubmissionMustFail",
     "expect",
+    "read_csv",
 ]
