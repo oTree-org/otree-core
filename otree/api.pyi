@@ -354,7 +354,7 @@ def expect(*args):
 #app_models = Union[Type[ExtraModel], Type[BasePlayer], Type[BaseGroup], Type[BaseSubsession]]
 app_models = Union[Type[ExtraModel], Type[BasePlayer], Type[BaseGroup], Type[BaseSubsession]]
 
-def read_csv(path: str, type_model: app_models) -> list[dict]:
+def read_csv(path: str, type_model: app_models) -> List[dict]:
     pass
 
 __all__ = [

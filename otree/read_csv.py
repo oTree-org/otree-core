@@ -51,7 +51,7 @@ class MissingFieldError(Exception):
     pass
 
 
-def read_csv(path: str, type_model) -> list[dict]:
+def read_csv(path: str, type_model):
     import csv
 
     CONVERSION_FUNCTIONS = {
