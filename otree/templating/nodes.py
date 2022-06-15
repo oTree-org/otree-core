@@ -4,6 +4,7 @@ import logging
 import operator
 import re
 import types
+import os.path
 
 import wtforms.fields as wtfields
 from otree.chat import chat_template_tag
@@ -457,17 +458,12 @@ class ElseNode(Node):
     pass
 
 
-# IncludeNodes include a sub-template.
-#
-#     {% include <expr> %}
-#
-# Requires a template name which can be supplied as either a string literal or a variable
-# resolving to a string. This name will be passed to the registered template loader.
-@register('include')
-class IncludeNode(Node):
+class BaseIncludeNode(Node):
+    tagname = None
+
     def process_token(self, token):
         self.variables = {}
-        parts = utils.splitre(token.text[7:], ["with"])
+        parts = utils.splitre(token.text[len(self.tagname) :], ["with"])
         if len(parts) == 1:
             self.template_arg = parts[0]
             self.template_expr = Expression(parts[0], token)
@@ -489,7 +485,7 @@ class IncludeNode(Node):
     def wrender(self, context):
         template_name = self.template_expr.eval(context)
         if isinstance(template_name, str):
-            template = ibis_loader.load(template_name)
+            template = ibis_loader.load(self.resolve_template_name(template_name))
             context.push()
             for name, expr in self.variables.items():
                 context[name] = expr.eval(context)
@@ -501,6 +497,33 @@ class IncludeNode(Node):
             msg += f"The variable '{self.template_arg}' should evaluate to a string. "
             msg += f"This variable has the value: {repr(template_name)}."
             raise errors.TemplateRenderingError(msg, self.token)
+
+
+# IncludeNodes include a sub-template.
+#
+#     {% include <expr> %}
+#
+# Requires a template name which can be supplied as either a string literal or a variable
+# resolving to a string. This name will be passed to the registered template loader.
+@register('include')
+class IncludeNode(BaseIncludeNode):
+    tagname = 'include'
+
+    def resolve_template_name(self, name):
+        return name
+
+
+@register('include_sibling')
+class IncludeSiblingNode(BaseIncludeNode):
+    tagname = 'include_sibling'
+
+    def resolve_template_name(self, name):
+        if '/' in name:
+            raise errors.TemplateRenderingError(
+                "Argument to 'include_sibling' must be a file name with no path parts",
+                self.token,
+            )
+        return os.path.join(os.path.dirname(self.token.template_id), name)
 
 
 # ExtendNodes implement template inheritance. They indicate that the current template inherits
@@ -745,7 +768,7 @@ class BlockComment(Node):
     because that prevents parsing of its contents,
     whereas this style comment means children will get parsed,
     meaning that any incorrectly used tags will cause
-    a TemplateSyntaxError. 
+    a TemplateSyntaxError.
     """
 
     def wrender(self, context):

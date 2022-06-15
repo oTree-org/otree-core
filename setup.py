@@ -73,10 +73,7 @@ setup(
     # not sure why. so instead i use
     # recursive-exclude in MANIFEST.in.
     packages=find_packages(),
-    description=(
-        'oTree is a toolset that makes it easy to create and '
-        'administer web-based social science experiments.'
-    ),
+    description=('Framework for multiplayer strategy games and complex surveys.'),
     long_description=README,
     url='http://otree.org/',
     author='chris@otree.org',

@@ -20,8 +20,11 @@ from otree.templating import ibis_loader
 
 try:
     import boto3
-except ImportError:
-    boto3 = None
+except ModuleNotFoundError as exc:
+    if exc.name == 'boto3':
+        boto3 = None
+    else:
+        raise
 
 logger = logging.getLogger('otree')
 
