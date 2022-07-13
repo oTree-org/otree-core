@@ -34,7 +34,10 @@ class RoundMismatchError(GroupMatrixError):
 class BaseSubsession(SPGModel, MixinSessionFK):
     __abstract__ = True
 
-    round_number = C(st.Integer, index=True,)
+    round_number = C(
+        st.Integer,
+        index=True,
+    )
 
     def in_round(self, round_number):
         return in_round(type(self), round_number, session=self.session)
@@ -111,7 +114,6 @@ class BaseSubsession(SPGModel, MixinSessionFK):
             #   "within the flush?" % (instance_key,)
             group.set_players(row)
 
-
     def group_like_round(self, round_number):
         previous_round: BaseSubsession = self.in_round(round_number)
         group_matrix = previous_round.get_group_matrix()
@@ -153,7 +155,8 @@ class BaseSubsession(SPGModel, MixinSessionFK):
         # count how many are re-grouped
         waiting_players = list(
             self.player_set.join(Participant).filter(
-                Participant._gbat_is_waiting == True,
+                Participant._gbat_is_connected == True,
+                Participant._gbat_tab_hidden == False,
                 Participant._index_in_pages == page_index,
                 Participant._gbat_grouped == False,
                 # this is just a failsafe
@@ -217,7 +220,7 @@ class BaseSubsession(SPGModel, MixinSessionFK):
 
         for participant in participants:
             participant._gbat_grouped = True
-            participant._gbat_is_waiting = False
+            participant._gbat_is_connected = False
 
         return this_round_new_group
 

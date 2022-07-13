@@ -226,7 +226,9 @@ def get_engine():
         if DATABASE_URL.startswith('sqlite'):
             kwargs['creator'] = lambda: sqlite_disk_conn
         engine = create_engine(
-            DATABASE_URL, poolclass=sqlalchemy.pool.StaticPool, **kwargs,
+            DATABASE_URL,
+            poolclass=sqlalchemy.pool.StaticPool,
+            **kwargs,
         )
     if engine.url.get_backend_name() == 'sqlite':
         # https://stackoverflow.com/questions/2614984/sqlite-sqlalchemy-how-to-enforce-foreign-keys
@@ -261,9 +263,9 @@ def init_orm():
 
     # import all models so it's loaded into the engine?
     for app in OTREE_APPS:
-        if len(app) > 45:
-            msg = f'App name is too long: {app}'
-            sys.exit(msg)
+        err_msg = common.app_name_validity_message(app)
+        if err_msg:
+            sys.exit(err_msg)
         try:
             models = get_models_module(app)
         except Exception as exc:
@@ -272,12 +274,6 @@ def init_orm():
 
             traceback.print_exc()
             sys.exit(1)
-
-        if not hasattr(models, 'Player'):
-            if Path(app, 'app.py').exists():
-                sys.exit(
-                    'app.py has been replaced by __init__.py. run "otree remove_self" again'
-                )
 
         # make get_FIELD_display
 
@@ -454,7 +450,14 @@ class MRU:
         if (
             item.startswith('_')
             or item.endswith('_id')
-            or item in ['id', 'group', 'subsession', 'session', 'participant',]
+            or item
+            in [
+                'id',
+                'group',
+                'subsession',
+                'session',
+                'participant',
+            ]
         ):
             return
         # make it a bit bigger than we need because we will need to throw out methods
@@ -801,7 +804,10 @@ def BooleanField(**kwargs):
 
 
 def StringField(**kwargs):
-    return wrap_column(st.String(length=kwargs.get('max_length', 10000)), **kwargs,)
+    return wrap_column(
+        st.String(length=kwargs.get('max_length', 10000)),
+        **kwargs,
+    )
 
 
 def LongStringField(**kwargs):
@@ -863,7 +869,9 @@ class Link:
         setattr(cls, fk_colname, fk_col)
 
         rel = relationship(
-            target_cls, primaryjoin=fk_col == pk_col, collection_class=set,
+            target_cls,
+            primaryjoin=fk_col == pk_col,
+            collection_class=set,
         )
         setattr(cls, key, rel)
 

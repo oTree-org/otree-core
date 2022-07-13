@@ -1,11 +1,9 @@
 import logging
 import os
-import re
 import sys
 from logging.config import dictConfig
 from pathlib import Path
 from sys import argv
-from typing import Optional
 
 from otree import __version__
 
@@ -106,9 +104,6 @@ def execute_from_command_line(*args, **kwargs):
         if cmd in ['devserver_inner', 'bots']:
             os.environ['OTREE_IN_MEMORY'] = '1'
         setup()
-    warning = check_update_needed(Path('.').resolve().joinpath('requirements.txt'))
-    if warning:
-        logger.warning(warning)
 
     from otree.cli.base import call_command
 
@@ -158,37 +153,6 @@ def init_i18n(LANGUAGE_CODE_ISO):
         gettext.textdomain('messages')
 
 
-def split_dotted_version(version):
-    return [int(n) for n in version.split('.')]
-
-
-def check_update_needed(
-    requirements_path: Path, current_version=__version__
-) -> Optional[str]:
-    '''rewrote this without pkg_resources since that takes 0.4 seconds just to import'''
-
-    if not requirements_path.exists():
-        return
-
-    for line in requirements_path.read_text('utf8').splitlines():
-        if (not line.startswith('otree')) or ' ' in line or '\t' in line:
-            continue
-        for start in ['otree>=', 'otree[mturk]>=']:
-            if line.startswith(start):
-                return check_update_needed_line(line, current_version)
-
-
-def check_update_needed_line(line, current_version):
-    """This is for zipserver mainly"""
-    version_dotted = re.search(r'>=([\d\.]+)\b', line)
-    if version_dotted:
-        try:
-            required_version = split_dotted_version(version_dotted.group(1))
-            installed_version = split_dotted_version(current_version)
-        except ValueError:
-            return
-        if required_version > installed_version:
-            return f'''This project requires a newer oTree version. Enter: pip3 install "{line}"'''
 
 
 def send_termination_notice(PORT) -> int:

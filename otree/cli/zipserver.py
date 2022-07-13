@@ -13,6 +13,7 @@ from typing import Optional
 from . import unzip
 from otree.main import send_termination_notice
 from .base import BaseCommand
+from otree.update import check_update_needed
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +33,7 @@ class Command(BaseCommand):
                 exit_code = run_single_zipfile(zipfile)
             else:
                 exit_code = autoreload_for_new_zipfiles()
-            # the rest is based on dj@ngo autoreload, not sure why it's done
+            # the rest is based on django autoreload, not sure why it's done
             # this way
             if exit_code < 0:
                 os.kill(os.getpid(), -exit_code)
@@ -127,8 +128,13 @@ class Project:
         unzip.unzip(str(self._otreezip), self.tmpdir.name)
 
     def start(self):
+        self.check_update_needed()
         self._proc = subprocess.Popen(
-            ['otree', 'devserver_inner', PORT,],
+            [
+                'otree',
+                'devserver_inner',
+                PORT,
+            ],
             cwd=self.tmpdir.name,
             env=os.environ.copy(),
         )
@@ -153,6 +159,24 @@ class Project:
             item_path = Path(other_tmpdir) / item
             if item_path.exists():
                 shutil.move(str(item_path), self.tmpdir.name)
+
+    def check_update_needed(self):
+        """
+        The main need to check if requirements.txt matches the current version
+        is for oTree Studio users, since they have no way to control what version
+        is installed on the server. we instead need the otreezip file to tell
+        their local installation what version to use.
+
+        We used to check if an update was needed for any otree command (devserver etc),
+        but i think putting it here is more targeted with a clearer scenario.
+        other cases are not really essential and there are already other ways
+        to handle those.
+        """
+        warning = check_update_needed(
+            Path(self.tmpdir.name).joinpath('requirements.txt')
+        )
+        if warning:
+            logger.warning(warning)
 
 
 MAX_OTREEZIP_FILES = 10

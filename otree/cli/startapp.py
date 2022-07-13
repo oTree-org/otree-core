@@ -5,6 +5,7 @@ from sys import exit as sys_exit
 
 import otree
 from .base import BaseCommand
+from otree.common import app_name_validity_message
 
 print_function = print
 
@@ -20,15 +21,6 @@ class Command(BaseCommand):
                 f'There is already an app called "{name}" '
                 'in this folder. Either delete that folder first, or use a different name.'
             )
-        if not name.isidentifier():
-            sys_exit(
-                f"'{name}' is not a valid name. Please make sure the "
-                "name is a valid Python identifier."
-            )
-        max_chars = 40
-        if len(name) > max_chars:
-            sys_exit(f"Name must be shorter than {max_chars} characters")
-
         try:
             import_module(name)
         except ModuleNotFoundError:
@@ -39,6 +31,9 @@ class Command(BaseCommand):
                 "module. Please try "
                 "another name."
             )
+        msg = app_name_validity_message(name)
+        if msg:
+            sys_exit(msg)
 
         use_noself = False
         for p in Path('.').glob('*/__init__.py'):

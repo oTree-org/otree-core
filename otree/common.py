@@ -274,3 +274,14 @@ def get_class_bounds(txt, ClassName):
     m = list(re.finditer(r'^\w', txt[class_start:], re.MULTILINE))[1]
     class_end = class_start + m.start()
     return class_start, class_end
+
+
+def app_name_validity_message(name):
+    if not name.isidentifier():
+        return (
+            f"'{name}' is not a valid name. Please make sure the "
+            "name is a valid Python identifier."
+        )
+    max_chars = 40
+    if len(name) > max_chars:
+        return f"Name must be shorter than {max_chars} characters"

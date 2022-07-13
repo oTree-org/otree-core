@@ -86,7 +86,8 @@ class Participant(MixinVars, otree.database.SSPPGModel):
     _timeout_expiration_time = otree.database.FloatField()
     _timeout_page_index = Column(st.Integer,)
 
-    _gbat_is_waiting = Column(st.Boolean, default=False)
+    _gbat_is_connected = Column(st.Boolean, default=False)
+    _gbat_tab_hidden = Column(st.Boolean, default=False)
     _gbat_page_index = Column(st.Integer,)
     _gbat_grouped = Column(st.Boolean,)
 

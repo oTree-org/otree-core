@@ -101,6 +101,9 @@ $(document).ready(function () {
         var RELOAD_PARAM = "?reload=1";
 
         var SECOND = 1000;
+        // the randomness is useful so that when there are many players,
+        // the GBAT page loads get spaced apart. I think this helps wait pages
+        // finish quicker, and may prevent some other bugs.
         window.setInterval(function () {
           window.location.href = window.location.pathname + RELOAD_PARAM;
         }, (10 + Math.random() * 60) * SECOND);
@@ -124,6 +127,10 @@ $(document).ready(function () {
         // for first page load, we don't consider unfocused tabs to be abandoned.
         // that way, browser bots and manual testing etc still work.
         function sendTabHiddenStatusInitial() {
+          // {# better to use hidden rather than hasFocus()
+          // because it's OK if the user has a split window with another window
+          // focused. that should not be considered getting distracted.
+          // hasFocus is too strict. even if you are in the page's JS console it considers you unfocused #}
           let gotDistracted = window.location.search.includes(RELOAD_PARAM) && document.hidden;
           sendTabHiddenStatus(gotDistracted);
         }

@@ -2,6 +2,7 @@ import datetime
 import datetime
 import io
 import logging
+import time
 import traceback
 import urllib.parse
 from starlette.endpoints import WebSocketEndpoint
@@ -237,9 +238,14 @@ class WSGroupByArrivalTime(_OTreeAsyncJsonWebsocketConsumer):
             session_id=session_pk,
         )
 
-    def mark_gbat_is_waiting(self, is_ready):
+    def mark_gbat_is_connected(self, is_connected):
         Participant.objects_filter(id=self.participant_id).update(
-            {Participant._gbat_is_waiting: is_ready}
+            {Participant._gbat_is_connected: is_connected}
+        )
+
+    def mark_gbat_tab_hidden(self, tab_hidden):
+        Participant.objects_filter(id=self.participant_id).update(
+            {Participant._gbat_tab_hidden: tab_hidden}
         )
 
     async def post_connect(
@@ -265,12 +271,11 @@ class WSGroupByArrivalTime(_OTreeAsyncJsonWebsocketConsumer):
     async def pre_disconnect(
         self, app_name, player_id, page_index, session_pk, participant_id
     ):
-        self.mark_gbat_is_waiting(False)
+        self.mark_gbat_is_connected(False)
 
     async def post_receive_json(self, content, **kwargs):
         if 'tab_hidden' in content:
-            is_ready = not content['tab_hidden']
-            self.mark_gbat_is_waiting(is_ready)
+            self.mark_gbat_tab_hidden(content['tab_hidden'])
 
 
 class DetectAutoAdvance(_OTreeAsyncJsonWebsocketConsumer):

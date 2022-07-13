@@ -485,7 +485,7 @@ class BaseIncludeNode(Node):
     def wrender(self, context):
         template_name = self.template_expr.eval(context)
         if isinstance(template_name, str):
-            template = ibis_loader.load(self.resolve_template_name(template_name))
+            template = ibis_loader.load(self.expand_template_name(template_name))
             context.push()
             for name, expr in self.variables.items():
                 context[name] = expr.eval(context)
@@ -509,7 +509,7 @@ class BaseIncludeNode(Node):
 class IncludeNode(BaseIncludeNode):
     tagname = 'include'
 
-    def resolve_template_name(self, name):
+    def expand_template_name(self, name):
         return name
 
 
@@ -517,7 +517,7 @@ class IncludeNode(BaseIncludeNode):
 class IncludeSiblingNode(BaseIncludeNode):
     tagname = 'include_sibling'
 
-    def resolve_template_name(self, name):
+    def expand_template_name(self, name):
         if '/' in name:
             raise errors.TemplateRenderingError(
                 "Argument to 'include_sibling' must be a file name with no path parts",
