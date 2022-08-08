@@ -1,6 +1,7 @@
 import contextlib
 import json
 import logging
+import sys
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass
 from datetime import datetime
@@ -17,14 +18,22 @@ from otree.views.cbv import AdminSessionPage
 from .cbv import enqueue_admin_message
 from otree.templating import ibis_loader
 
+# Our current Botocore is not compat with Python 3.10 because of this.
+# we are maintaining essentially the same mturk code in oTree core and
+# oTree HR. Long term, we should favor oTree HR.
+INCOMPAT_MTURK_PY_VERSION = (3, 10)
+IS_SUPPORTED_PY_VERSION_FOR_MTURK = sys.version_info < INCOMPAT_MTURK_PY_VERSION
 
-try:
-    import boto3
-except ModuleNotFoundError as exc:
-    if exc.name == 'boto3':
-        boto3 = None
-    else:
-        raise
+if IS_SUPPORTED_PY_VERSION_FOR_MTURK:
+    try:
+        import boto3
+    except ModuleNotFoundError as exc:
+        if exc.name == 'boto3':
+            boto3 = None
+        else:
+            raise
+else:
+    boto3 = None
 
 logger = logging.getLogger('otree')
 
@@ -101,7 +110,12 @@ class MTurkCreateHIT(AdminSessionPage):
         mturk_settings = session.config['mturk_hit_settings']
 
         is_usd = settings.REAL_WORLD_CURRENCY_CODE == 'USD'
-        mturk_ready = self.aws_keys_exist and self.boto3_installed and is_usd
+        mturk_ready = (
+            self.aws_keys_exist
+            and self.boto3_installed
+            and is_usd
+            and IS_SUPPORTED_PY_VERSION_FOR_MTURK
+        )
 
         return dict(
             mturk_settings=mturk_settings,
@@ -111,6 +125,8 @@ class MTurkCreateHIT(AdminSessionPage):
             boto3_installed=self.boto3_installed,
             aws_keys_exist=self.aws_keys_exist,
             is_usd=is_usd,
+            IS_SUPPORTED_PY_VERSION_FOR_MTURK=IS_SUPPORTED_PY_VERSION_FOR_MTURK,
+            incompat_mturk_py_version='.'.join(map(str, INCOMPAT_MTURK_PY_VERSION)),
         )
 
     def post(self, request, code):

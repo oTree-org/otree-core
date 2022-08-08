@@ -34,6 +34,13 @@
         </li>
       {% endif %}
 
+      {% if not IS_SUPPORTED_PY_VERSION_FOR_MTURK %}
+          <li>
+            MTurk support is not available on Python {{ incompat_mturk_py_version }}
+            or newer. Please use oTree HR or downgrade Python.
+          </li>
+      {% endif %}
+
     </ol>
 
   {% elif session.mturk_is_expired() %}
