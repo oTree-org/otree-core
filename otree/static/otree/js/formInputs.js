@@ -20,6 +20,9 @@ window[_FORM_INPUTS_NAME] = (function () {
         },
         get: function (target, prop, receiver) {
             var input = Reflect.get(...arguments);
+            if (input == null) {
+                throw `Field "${prop}" does not exist.`
+            }
             var proxyInput = new Proxy(input, {
                 set: function (obj, prop2, value) {
                     if (!(prop2 in obj) && NodeList.prototype.isPrototypeOf(obj)) {
