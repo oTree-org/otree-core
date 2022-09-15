@@ -69,11 +69,10 @@ class CurrencyWidget(BaseWidget):
         if settings.USE_POINTS:
             if getattr(settings, 'POINTS_CUSTOM_NAME', None):
                 CURRENCY_SYMBOL = settings.POINTS_CUSTOM_NAME
-                places = settings.POINTS_DECIMAL_PLACES
             else:
                 # Translators: the label next to a "points" input field
                 CURRENCY_SYMBOL = core_gettext('points')
-                places = settings.REAL_WORLD_CURRENCY_DECIMAL_PLACES
+            places = settings.POINTS_DECIMAL_PLACES
         else:
             CURRENCY_SYMBOL = CURRENCY_SYMBOLS.get(
                 settings.REAL_WORLD_CURRENCY_CODE, settings.REAL_WORLD_CURRENCY_CODE

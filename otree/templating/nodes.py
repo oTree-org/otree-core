@@ -384,9 +384,9 @@ class IfNode(Node):
         self.condition_groups = [
             [
                 self.parse_condition(condstr)
-                for condstr in utils.splitre(or_block, (r'\s+and\s+', r'&&'))
+                for condstr in utils.splitre(or_block, (r'\s+and\s+',))
             ]
-            for or_block in utils.splitre(conditions, (r'\s+or\s+', r'\|\|'))
+            for or_block in utils.splitre(conditions, (r'\s+or\s+',))
         ]
 
     def parse_condition(self, condstr):

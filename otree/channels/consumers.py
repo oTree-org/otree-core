@@ -267,6 +267,12 @@ class WSGroupByArrivalTime(_OTreeAsyncJsonWebsocketConsumer):
         else:
             if is_ready:
                 await self.websocket.send_json({'status': 'ready'})
+        # previously we were just marking connected=True in the dispatch() method
+        # of the view, and connected=False with WS disconnect.
+        # but the flaw is that WS disconnect seems to fire AFTER dispatch
+        # so add some redundancy here because i'm pretty sure connect() must run
+        # after disconnect() of the previous page load.
+        self.mark_gbat_is_connected(True)
 
     async def pre_disconnect(
         self, app_name, player_id, page_index, session_pk, participant_id

@@ -108,11 +108,13 @@ $(document).ready(function () {
           window.location.href = window.location.pathname + RELOAD_PARAM;
         }, (10 + Math.random() * 60) * SECOND);
 
-
-        function sendTabHiddenStatus(isHidden) {
+        function setTabHiddenStatus(isHidden) {
           socket.send(JSON.stringify({
             'tab_hidden': isHidden
           }));
+          var titleText = document.getElementById('_otree-title').textContent;
+          var newIcon = isHidden ? '🟡' : '🟢';
+          document.querySelector('title').textContent = newIcon + ' ' + titleText;
         }
 
         document.addEventListener("visibilitychange", event => {
@@ -121,7 +123,7 @@ $(document).ready(function () {
           // but not vice versa, since then it would be impossible for
           // someone to test a multiplayer game on a single PC #}
           if (!document.hidden)
-            sendTabHiddenStatus(false);
+            setTabHiddenStatus(false);
         })
 
         // for first page load, we don't consider unfocused tabs to be abandoned.
@@ -132,7 +134,7 @@ $(document).ready(function () {
           // focused. that should not be considered getting distracted.
           // hasFocus is too strict. even if you are in the page's JS console it considers you unfocused #}
           let gotDistracted = window.location.search.includes(RELOAD_PARAM) && document.hidden;
-          sendTabHiddenStatus(gotDistracted);
+          setTabHiddenStatus(gotDistracted);
         }
 
         sendTabHiddenStatusInitial();
