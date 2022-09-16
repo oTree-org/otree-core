@@ -138,6 +138,11 @@ def session_scope():
 
 
 def save_sqlite_db():
+    if not IN_MEMORY:
+        # if it's not in memory, then we shouldn't dump, because
+        # the sqlite memory connection will be empty and we overwrite the
+        # real database.
+        return
     global _dumped
     if _dumped:
         return
@@ -817,14 +822,17 @@ def LongStringField(**kwargs):
 
 
 def FloatField(**kwargs):
+    kwargs.setdefault('min', 0)
     return wrap_column(st.Float, **kwargs)
 
 
 def IntegerField(**kwargs):
+    kwargs.setdefault('min', 0)
     return wrap_column(st.Integer, **kwargs)
 
 
 def CurrencyField(**kwargs):
+    kwargs.setdefault('min', 0)
     return wrap_column(CurrencyType, **kwargs)
 
 
