@@ -213,14 +213,7 @@ class ModelForm(wtforms.Form):
     field_names = []
 
     def __init__(
-        self,
-        view,
-        formdata=None,
-        obj=None,
-        prefix='',
-        data=None,
-        meta=None,
-        **kwargs,
+        self, view, formdata=None, obj=None, prefix='', data=None, meta=None, **kwargs,
     ):
         self.view = view
         self.instance = obj
