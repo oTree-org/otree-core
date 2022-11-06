@@ -435,15 +435,15 @@ class IfNode(Node):
             return self.false_branch.render(context)
 
     def exit_scope(self):
-        if_nodes, elif_node, elif_nodes = self.split_children(ElifNode)
-        if elif_node:
-            self.true_branch = Node(None, if_nodes)
-            self.false_branch = IfNode(elif_node.token, elif_nodes)
+        before_elif, first_elif, after_first_elif = self.split_children(ElifNode)
+        if first_elif:
+            self.true_branch = Node(None, before_elif)
+            self.false_branch = IfNode(first_elif.token, after_first_elif)
             self.false_branch.exit_scope()
             return
-        if_nodes, _, else_nodes = self.split_children(ElseNode)
-        self.true_branch = Node(None, if_nodes)
-        self.false_branch = Node(None, else_nodes)
+        before_else, _, after_first_else = self.split_children(ElseNode)
+        self.true_branch = Node(None, before_else)
+        self.false_branch = Node(None, after_first_else)
 
 
 # Delimiter node to implement if/elif branching.
@@ -455,7 +455,12 @@ class ElifNode(Node):
 # Delimiter node to implement if/else branching.
 @register('else')
 class ElseNode(Node):
-    pass
+    def process_token(self, token):
+        # prevent people from mistakenly using {{ else if }} instead of {{ elif }}
+        content = token.text.strip()
+        if content != token.keyword:
+            msg = f"""Invalid 'else' tag: "{content}"."""
+            raise errors.TemplateSyntaxError(msg, token) from None
 
 
 class BaseIncludeNode(Node):

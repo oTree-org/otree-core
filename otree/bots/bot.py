@@ -184,10 +184,13 @@ def expect(*args):
 class ParticipantBot:
     def __init__(self, participant_or_code, *, player_bots, executed_live_methods=None):
 
-        if isinstance(participant_or_code, Participant):
-            self.participant_code = participant_or_code.code
+        if isinstance(participant_or_code, str):
+            participant = Participant.objects_get(code=participant_or_code)
         else:
-            self.participant_code = participant_or_code
+            participant = participant_or_code
+
+        self.participant_code = participant.code
+        self.session_code = participant._session_code
 
         self._client = None
         self.url = None
@@ -242,7 +245,7 @@ class ParticipantBot:
             for submission in generator:
                 if not isinstance(submission, Submission):
                     submission = BareYieldToSubmission(submission)
-                self.assert_correct_page(submission)
+                self.assert_correct_page(submission, player_bot.player)
                 self.assert_html_ok(submission)
                 self.live_method_stuff(player_bot, submission)
                 yield submission
@@ -315,14 +318,29 @@ class ParticipantBot:
                     HTML_MISSING_BUTTON_WARNING.format(page_name=page_name)
                 )
 
-    def assert_correct_page(self, submission):
+    def assert_correct_page(self, submission, player):
         ClassName = submission.page_class.__name__
         if not f'/{ClassName}/' in self.path:
+            from otree.lookup import get_page_lookup
+
+            idx = int(self.path.rsplit('/', maxsplit=1)[-1])
+            lookup = get_page_lookup(self.session_code, idx)
+            expected = dict(
+                app=type(player).__module__,
+                round_number=player.round_number,
+                page=ClassName,
+            )
+            actual = dict(
+                app=lookup.app_name,
+                round_number=lookup.round_number,
+                page=lookup.page_class.__name__,
+            )
             msg = (
-                f"Bot expects to be on page {ClassName} "
-                f"but current page is {self.path}. "
-                "Check your bot code, "
-                "then create a new session."
+                "Discrepancy between bot code and app code. "
+                f"Bot is trying to submit this page:\n"
+                f"{expected}\n"
+                f"But the participant is actually here:\n"
+                f"{actual}\n"
             )
             raise AssertionError(msg)
 

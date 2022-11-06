@@ -104,7 +104,7 @@ class ExportChat(HTTPEndpoint):
             .with_entities(
                 Participant._session_code,
                 Participant.id_in_session,
-                Participant.session_id,
+                Participant.code,
                 ChatMessage.channel,
                 ChatMessage.nickname,
                 ChatMessage.body,

@@ -49,7 +49,13 @@ class IntegerWidget(BaseWidget):
     """
 
     def get_html_fragments(self):
-        yield f'<input type="number" class="form-control" %s>' % self.attrs()
+        min = self.render_kw.get('min')
+        if min is not None and min >= 0:
+            inputmode = 'numeric'
+        else:
+            inputmode = ''
+
+        yield f'<input type="number" class="form-control" inputmode="{inputmode}" %s>' % self.attrs()
 
 
 class FloatWidget(BaseWidget):
@@ -61,7 +67,12 @@ class FloatWidget(BaseWidget):
     """
 
     def get_html_fragments(self):
-        yield f'<input type="text" class="form-control" %s>' % self.attrs()
+        min = self.render_kw.get('min')
+        if min is not None and min >= 0:
+            inputmode = 'decimal'
+        else:
+            inputmode = ''
+        yield f'<input type="text" class="form-control" inputmode="{inputmode}" %s>' % self.attrs()
 
 
 class CurrencyWidget(BaseWidget):
@@ -83,10 +94,19 @@ class CurrencyWidget(BaseWidget):
 
     def get_html_fragments(self):
         yield '''<div class="input-group input-group-narrow">'''
-        if self.places == 0:
-            yield f'<input type="number" class="form-control" {self.attrs()}>'
+
+        min = self.render_kw.get('min')
+        if min is None or min < 0:
+            inputmode = ''
+        elif self.places == 0:
+            inputmode = 'numeric'
         else:
-            yield f'<input type="text" class="form-control" {self.attrs()}>'
+            inputmode = 'decimal'
+
+        if self.places == 0:
+            yield f'<input type="number" class="form-control" inputmode="{inputmode}" {self.attrs()}>'
+        else:
+            yield f'<input type="text" class="form-control" inputmode="{inputmode}" {self.attrs()}>'
         yield f'''<span class="input-group-text">{self.symbol}</span>'''
         yield '</div>'
 

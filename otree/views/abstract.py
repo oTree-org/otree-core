@@ -137,6 +137,8 @@ class FormPageOrInGameWaitPage:
     @classmethod
     def get_url(cls, participant_code, name_in_url, page_index):
         '''need this because reverse() is too slow in create_session'''
+        # if i change this URL pattern, i should also change assert_correct_page()
+        # in bot.py
         return f'/p/{participant_code}/{name_in_url}/{cls.__name__}/{page_index}'
 
     @classmethod
