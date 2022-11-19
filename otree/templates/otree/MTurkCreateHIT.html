@@ -12,20 +12,6 @@
     </p>
 
     <ol>
-      {% if not IS_SUPPORTED_PY_VERSION_FOR_MTURK %}
-          <li>
-            MTurk support is not available on Python {{ incompat_mturk_py_version }}
-            or newer. Please use oTree HR or downgrade Python.
-          </li>
-      {% endif %}
-      {% if not boto3_installed %}
-        <li>
-          Run <code>pip3 install "otree[mturk]"</code>
-          and in your <code>requirements</code> file,
-          replace <code>otree>=N.N.N</code> with <code>otree[mturk]>=N.N.N</code>.
-          This will install oTree along with extra MTurk-specific packages.
-        </li>
-      {% endif %}
 
       {% if not is_usd %}
         <li>
@@ -97,5 +83,6 @@
     </form>
   {% endif %}
 
+    <br>
   {% include "otree/includes/messages.html" %}
 {% endblock %}

@@ -1,9 +1,9 @@
 import enum
-from ..i18n import core_gettext
 from typing import Dict
 
 import wtforms
 import wtforms_sqlalchemy.orm
+from sqlalchemy.sql import sqltypes as st
 from sqlalchemy.types import Boolean
 from wtforms import validators
 from wtforms_sqlalchemy.orm import converts
@@ -13,15 +13,18 @@ import otree.constants
 import otree.models
 from otree import settings
 from otree.currency import Currency, to_dec
+from otree.database import CurrencyType
 from . import fields
 from . import widgets
+from ..i18n import core_gettext
 
 
 def model_form(ModelClass, obj, only):
     field_args = {}
 
     for name in only:
-        field_props = getattr(ModelClass, name).form_props
+        model_field = getattr(ModelClass, name)
+        field_props = model_field.form_props
 
         # fa = field_args
         fa = {
@@ -34,35 +37,46 @@ def model_form(ModelClass, obj, only):
             fa['label'] = field_props['label']
 
         target = obj.get_user_defined_target()
-        func = getattr(target, f'{name}_min', None)
-        if func:
-            min = func(obj)
-        else:
-            min = field_props.get('min')
 
-        func = getattr(target, f'{name}_max', None)
+        func = getattr(target, f'{name}_choices', None)
+        has_choices = False
         if func:
-            max = func(obj)
-        else:
-            max = field_props.get('max')
+            fa['choices'] = func(obj)
+            has_choices = True
+        elif 'choices' in field_props:
+            fa['choices'] = field_props['choices']
+            has_choices = True
 
-        if [min, max] != [None, None]:
-            fa['validators'].append(validators.NumberRange(min=min, max=max))
-        if min is not None:
-            fa['render_kw'].update(min=to_dec(min))
-        if max is not None:
-            fa['render_kw'].update(max=to_dec(max))
+        if not has_choices and type(model_field.type) in [
+            st.Integer,
+            st.Float,
+            CurrencyType,
+        ]:
+
+            func = getattr(target, f'{name}_min', None)
+            if func:
+                min = func(obj)
+            else:
+                # 0 is the default, not None
+                min = field_props.get('min', 0)
+
+            func = getattr(target, f'{name}_max', None)
+            if func:
+                max = func(obj)
+            else:
+                max = field_props.get('max')
+
+            if [min, max] != [None, None]:
+                fa['validators'].append(validators.NumberRange(min=min, max=max))
+            if min is not None:
+                fa['render_kw'].update(min=to_dec(min))
+            if max is not None:
+                fa['render_kw'].update(max=to_dec(max))
 
         if not field_props.get('blank'):
             fa['validators'].append(validators.InputRequired())
 
         fa['description'] = field_props.get('help_text')
-
-        func = getattr(target, f'{name}_choices', None)
-        if func:
-            fa['choices'] = func(obj)
-        elif 'choices' in field_props:
-            fa['choices'] = field_props['choices']
 
         widget = field_props.get('widget')
         if widget:
@@ -213,7 +227,14 @@ class ModelForm(wtforms.Form):
     field_names = []
 
     def __init__(
-        self, view, formdata=None, obj=None, prefix='', data=None, meta=None, **kwargs,
+        self,
+        view,
+        formdata=None,
+        obj=None,
+        prefix='',
+        data=None,
+        meta=None,
+        **kwargs,
     ):
         self.view = view
         self.instance = obj

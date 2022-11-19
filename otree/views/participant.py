@@ -21,6 +21,7 @@ from otree.models_concrete import ParticipantVarsFromREST
 from otree.room import ROOM_DICT
 from otree.templating import ibis_loader, render
 from otree.views.abstract import GenericWaitPageMixin
+from otree.mturk_client import TurkClient
 
 
 def no_participants_left_http_response():
@@ -66,7 +67,7 @@ class InitializeParticipant(HTTPEndpoint):
     url_pattern = '/InitializeParticipant/{code}'
 
     def get(self, request: Request):
-        """anything essential should be done in """
+        """anything essential should be done in"""
         code = request.path_params['code']
         pp = db.get_or_404(Participant, code=code)
         label = request.query_params.get(otree.constants.participant_label)
@@ -118,14 +119,16 @@ class MTurkStart(HTTPEndpoint):
 
             # don't pass request arg, because we don't want to show a message.
             # using the fully qualified name because that seems to make mock.patch work
-            mturk_client = otree.views.mturk.get_mturk_client(use_sandbox=use_sandbox)
 
             # seems OK to assign this multiple times
-            mturk_client.associate_qualification_with_worker(
-                QualificationTypeId=qual_id,
-                WorkerId=worker_id,
-                # Mturk complains if I omit IntegerValue
-                IntegerValue=1,
+            TurkClient.assign_qualification(
+                dict(
+                    QualificationTypeId=qual_id,
+                    WorkerId=worker_id,
+                    # Mturk complains if I omit IntegerValue
+                    IntegerValue=1,
+                ),
+                use_sandbox=use_sandbox,
             )
 
         try:
@@ -233,7 +236,8 @@ class AssignVisitorToRoom(GenericWaitPageMixin, HTTPEndpoint):
             # mode
             if missing_label or invalid_label and not room.use_secure_urls:
                 return render(
-                    "otree/RoomInputLabel.html", {'invalid_label': invalid_label},
+                    "otree/RoomInputLabel.html",
+                    {'invalid_label': invalid_label},
                 )
 
             if room.use_secure_urls:

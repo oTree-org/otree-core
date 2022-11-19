@@ -1,39 +1,22 @@
 import contextlib
 import json
 import logging
-import sys
 from collections import defaultdict, namedtuple
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
 from typing import List, Dict, Union, Optional
-from starlette.responses import Response, RedirectResponse
-import otree.views.cbv
-from otree import settings
+
 from starlette.requests import Request
+from starlette.responses import Response
+
+from otree import settings
 from otree.database import values_flat, db
-import otree
 from otree.models import Session, Participant
+from otree.mturk_client import TurkClient, MTurkError
+from otree.templating import ibis_loader
 from otree.views.cbv import AdminSessionPage
 from .cbv import enqueue_admin_message
-from otree.templating import ibis_loader
-
-# Our current Botocore is not compat with Python 3.10 because of this.
-# we are maintaining essentially the same mturk code in oTree core and
-# oTree HR. Long term, we should favor oTree HR.
-INCOMPAT_MTURK_PY_VERSION = (3, 10)
-IS_SUPPORTED_PY_VERSION_FOR_MTURK = sys.version_info < INCOMPAT_MTURK_PY_VERSION
-
-if IS_SUPPORTED_PY_VERSION_FOR_MTURK:
-    try:
-        import boto3
-    except ModuleNotFoundError as exc:
-        if exc.name == 'boto3':
-            boto3 = None
-        else:
-            raise
-else:
-    boto3 = None
 
 logger = logging.getLogger('otree')
 
@@ -51,33 +34,18 @@ class MTurkSettings:
     grant_qualification_id: Optional[str] = None
 
 
-def get_mturk_client(*, use_sandbox=True):
-    if use_sandbox:
-        endpoint_url = 'https://mturk-requester-sandbox.us-east-1.amazonaws.com'
-    else:
-        endpoint_url = 'https://mturk-requester.us-east-1.amazonaws.com'
-    return boto3.client(
-        'mturk',
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        endpoint_url=endpoint_url,
-        # if I specify endpoint_url without region_name, it complains
-        region_name='us-east-1',
-    )
-
-
 @contextlib.contextmanager
-def MTurkClient(*, use_sandbox=True, request):
+def ReportMTurkErrors():
     '''Alternative to get_mturk_client, for when we need exception handling
     in admin views, we should pass it, so that we can show the user the message
     without crashing.
     for participant-facing views and commandline tools, should use get_mturk_client.
     '''
     try:
-        yield get_mturk_client(use_sandbox=use_sandbox)
-    except Exception as exc:
+        yield
+    except MTurkError as exc:
         logger.error('MTurk error', exc_info=True)
-        enqueue_admin_message('error', repr(exc))
+        enqueue_admin_message('danger', repr(exc))
 
 
 def in_public_domain(request: Request):
@@ -102,7 +70,6 @@ class MTurkCreateHIT(AdminSessionPage):
         getattr(settings, 'AWS_ACCESS_KEY_ID', None)
         and getattr(settings, 'AWS_SECRET_ACCESS_KEY', None)
     )
-    boto3_installed = bool(boto3)
 
     def vars_for_template(self):
         session = self.session
@@ -110,30 +77,22 @@ class MTurkCreateHIT(AdminSessionPage):
         mturk_settings = session.config['mturk_hit_settings']
 
         is_usd = settings.REAL_WORLD_CURRENCY_CODE == 'USD'
-        mturk_ready = (
-            self.aws_keys_exist
-            and self.boto3_installed
-            and is_usd
-            and IS_SUPPORTED_PY_VERSION_FOR_MTURK
-        )
+        mturk_ready = self.aws_keys_exist and is_usd
 
         return dict(
             mturk_settings=mturk_settings,
             participation_fee=session.config['participation_fee'],
             mturk_num_workers=session.mturk_num_workers(),
             mturk_ready=mturk_ready,
-            boto3_installed=self.boto3_installed,
             aws_keys_exist=self.aws_keys_exist,
             is_usd=is_usd,
-            IS_SUPPORTED_PY_VERSION_FOR_MTURK=IS_SUPPORTED_PY_VERSION_FOR_MTURK,
-            incompat_mturk_py_version='.'.join(map(str, INCOMPAT_MTURK_PY_VERSION)),
         )
 
     def post(self, request, code):
         session = self.session
         use_sandbox = bool(self.get_post_data().get('use_sandbox'))
         if not in_public_domain(request) and not use_sandbox:
-            msg = 'oTree must run on a public domain for Mechanical Turk'
+            msg = 'oTree must run on a public domain for Mechanical Turk (e.g. not a localhost server)'
             return Response(msg)
         mturk_settings = MTurkSettings(**session.config['mturk_hit_settings'])
 
@@ -169,14 +128,16 @@ class MTurkCreateHIT(AdminSessionPage):
                 'QualificationRequirements'
             ] = mturk_settings.qualification_requirements
 
-        with MTurkClient(use_sandbox=use_sandbox, request=request) as mturk_client:
+        with ReportMTurkErrors():
 
-            hit = mturk_client.create_hit(**mturk_hit_parameters)['HIT']
+            hit = TurkClient.create_hit(mturk_hit_parameters, use_sandbox=use_sandbox)[
+                'HIT'
+            ]
 
             session.mturk_HITId = hit['HITId']
             session.mturk_HITGroupId = hit['HITGroupId']
             session.mturk_use_sandbox = use_sandbox
-            session.mturk_expiration = hit['Expiration'].timestamp()
+            session.mturk_expiration = hit['Expiration']
             session.mturk_qual_id = mturk_settings.grant_qualification_id or ''
 
         return self.redirect('MTurkCreateHIT', code=session.code)
@@ -187,7 +148,7 @@ Assignment = namedtuple(
 )
 
 
-def get_all_assignments(mturk_client, hit_id) -> List[Assignment]:
+def get_all_assignments(hit_id, *, use_sandbox) -> List[Assignment]:
     # Accumulate all relevant assignments, one page of results at
     # a time.
     assignments = []
@@ -200,7 +161,7 @@ def get_all_assignments(mturk_client, hit_id) -> List[Assignment]:
     )
 
     while True:
-        response = mturk_client.list_assignments_for_hit(**args)
+        response = TurkClient.list_assignments_for_hit(args, use_sandbox=use_sandbox)
         if not response['Assignments']:
             break
         for d in response['Assignments']:
@@ -232,10 +193,10 @@ class MTurkSessionPayments(AdminSessionPage):
         if not session.mturk_HITId:
             return dict(published=False)
 
-        with MTurkClient(
-            use_sandbox=session.mturk_use_sandbox, request=self.request
-        ) as mturk_client:
-            all_assignments = get_all_assignments(mturk_client, session.mturk_HITId)
+        with ReportMTurkErrors():
+            all_assignments = get_all_assignments(
+                hit_id=session.mturk_HITId, use_sandbox=session.mturk_use_sandbox
+            )
 
             # auto-reject logic
             assignment_ids_in_db = values_flat(
@@ -250,9 +211,12 @@ class MTurkSessionPayments(AdminSessionPage):
             auto_rejects = set(submitted_assignment_ids) - set(assignment_ids_in_db)
 
             for assignment_id in auto_rejects:
-                mturk_client.reject_assignment(
-                    AssignmentId=assignment_id,
-                    RequesterFeedback='Auto-rejecting because this assignment was not found in our database.',
+                TurkClient.reject_assignment(
+                    dict(
+                        AssignmentId=assignment_id,
+                        RequesterFeedback='Auto-rejecting because this assignment was not found in our database.',
+                    ),
+                    use_sandbox=session.mturk_use_sandbox,
                 )
 
         workers_by_status = get_workers_by_status(all_assignments)
@@ -321,7 +285,7 @@ class PayMTurk(AdminSessionPage):
         successful_payments = 0
         failed_payments = 0
         post_data = self.get_post_data()
-        mturk_client = get_mturk_client(use_sandbox=session.mturk_use_sandbox)
+
         payment_page_response = self.redirect('MTurkSessionPayments', code=session.code)
         # use worker ID instead of assignment ID. Because 2 workers can have
         # the same assignment (if 1 starts it then returns it). we can't really
@@ -338,30 +302,37 @@ class PayMTurk(AdminSessionPage):
             # need the try/except so that we try to pay the rest of the participants
             try:
                 if payoff > 0:
-                    mturk_client.send_bonus(
-                        WorkerId=p.mturk_worker_id,
-                        AssignmentId=p.mturk_assignment_id,
-                        BonusAmount='{0:.2f}'.format(Decimal(payoff)),
-                        # prevent duplicate payments
-                        UniqueRequestToken='{}_{}'.format(
-                            p.mturk_worker_id, p.mturk_assignment_id
+                    TurkClient.send_bonus(
+                        dict(
+                            WorkerId=p.mturk_worker_id,
+                            AssignmentId=p.mturk_assignment_id,
+                            BonusAmount='{0:.2f}'.format(Decimal(payoff)),
+                            # prevent duplicate payments
+                            UniqueRequestToken='{}_{}'.format(
+                                p.mturk_worker_id, p.mturk_assignment_id
+                            ),
+                            # this field is required.
+                            Reason='Thank you',
                         ),
-                        # this field is required.
-                        Reason='Thank you',
+                        use_sandbox=session.mturk_use_sandbox,
                     )
+
                 # approve assignment should happen AFTER bonus, so that if bonus fails,
                 # the user will still show up in assignments_not_reviewed.
                 # worst case is that bonus succeeds but approval fails.
                 # in that case, exception will be raised on send_bonus because of UniqueRequestToken.
                 # but that's OK, then you can just unselect that participant and pay the others.
-                mturk_client.approve_assignment(AssignmentId=p.mturk_assignment_id)
+                TurkClient.approve_assignment(
+                    dict(AssignmentId=p.mturk_assignment_id),
+                    use_sandbox=session.mturk_use_sandbox,
+                )
                 successful_payments += 1
             except Exception as e:
                 msg = (
                     'Could not pay {} because of an error communicating '
                     'with MTurk: {}'.format(p._numeric_label(), str(e))
                 )
-                enqueue_admin_message('error', msg)
+                enqueue_admin_message('danger', msg)
                 logger.error(msg)
                 failed_payments += 1
                 if failed_payments > 10:
@@ -382,19 +353,20 @@ class RejectMTurk(AdminSessionPage):
 
     def post(self, request, code):
         session = db.get_or_404(Session, code=code)
-        with MTurkClient(
-            use_sandbox=session.mturk_use_sandbox, request=request
-        ) as mturk_client:
+        with ReportMTurkErrors():
             for p in session.pp_set.filter(
                 Participant.mturk_worker_id.in_(self.get_post_data().getlist('workers'))
             ):
-                mturk_client.reject_assignment(
-                    AssignmentId=p.mturk_assignment_id,
-                    # The boto3 docs say this param is optional, but if I omit it, I get:
-                    # An error occurred (ValidationException) when calling the RejectAssignment operation:
-                    # 1 validation error detected: Value null at 'requesterFeedback'
-                    # failed to satisfy constraint: Member must not be null
-                    RequesterFeedback='',
+                TurkClient.reject_assignment(
+                    dict(
+                        AssignmentId=p.mturk_assignment_id,
+                        # The boto3 docs say this param is optional, but if I omit it, I get:
+                        # An error occurred (ValidationException) when calling the RejectAssignment operation:
+                        # 1 validation error detected: Value null at 'requesterFeedback'
+                        # failed to satisfy constraint: Member must not be null
+                        RequesterFeedback='',
+                    ),
+                    use_sandbox=session.mturk_use_sandbox,
                 )
 
             enqueue_admin_message('success', "Rejected the selected assignments")
@@ -408,17 +380,18 @@ class MTurkExpireHIT(AdminSessionPage):
 
     def post(self, request, code):
         session = db.get_or_404(Session, code=code)
-        with MTurkClient(
-            use_sandbox=session.mturk_use_sandbox, request=request
-        ) as mturk_client:
-            expiration = datetime(2015, 1, 1)
-            mturk_client.update_expiration_for_hit(
-                HITId=session.mturk_HITId,
-                # If you update it to a time in the past,
-                # the HIT will be immediately expired.
-                ExpireAt=expiration,
+        with ReportMTurkErrors():
+            expiration = datetime(2015, 1, 1).timestamp()
+            TurkClient.update_expiration(
+                dict(
+                    HITId=session.mturk_HITId,
+                    # If you update it to a time in the past,
+                    # the HIT will be immediately expired.
+                    ExpireAt=expiration,
+                ),
+                use_sandbox=session.mturk_use_sandbox,
             )
-            session.mturk_expiration = expiration.timestamp()
+            session.mturk_expiration = expiration
         # don't need a message because the MTurkCreateHIT page will
         # statically say the HIT has expired.
         return self.redirect('MTurkCreateHIT', code=code)
