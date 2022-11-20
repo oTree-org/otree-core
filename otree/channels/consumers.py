@@ -646,28 +646,33 @@ class WSExportData(_OTreeAsyncJsonWebsocketConsumer):
         is_custom = content.get('is_custom')
 
         iso_date = datetime.date.today().isoformat()
-        with io.StringIO() as fp:
-            # Excel requires BOM; otherwise non-english characters are garbled
-            if content.get('for_excel'):
-                fp.write(BOM)
-            if app_name:
-                if is_custom:
-                    fxn = custom_export_app
+        try:
+            with io.StringIO() as fp:
+                # Excel requires BOM; otherwise non-english characters are garbled
+                if content.get('for_excel'):
+                    fp.write(BOM)
+                if app_name:
+                    if is_custom:
+                        fxn = custom_export_app
+                    else:
+                        fxn = export_app
+                    fxn(app_name, fp)
+                    file_name_prefix = app_name
                 else:
-                    fxn = export_app
-                fxn(app_name, fp)
-                file_name_prefix = app_name
-            else:
-                export_wide(fp)
-                file_name_prefix = 'all_apps_wide'
-            data = fp.getvalue()
-
-        file_name = f'{file_name_prefix}_{iso_date}.csv'
-
-        content.update(file_name=file_name, data=data, mime_type='text/csv')
-        # this doesn't go through channel layer, so it is probably safer
-        # in terms of sending large data
-        await self.send_json(content)
+                    export_wide(fp)
+                    file_name_prefix = 'all_apps_wide'
+                data = fp.getvalue()
+        except Exception:
+            content.update(
+                error="Error exporting data. Check the server logs for details."
+            )
+            await self.send_json(content)
+            raise
+        else:
+            file_name = f'{file_name_prefix}_{iso_date}.csv'
+            content.update(file_name=file_name, data=data, mime_type='text/csv')
+            # note, this doesn't go through channel layer currently
+            await self.send_json(content)
 
     def group_name(self, **kwargs):
         return None
