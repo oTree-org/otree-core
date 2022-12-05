@@ -143,7 +143,9 @@ def call_api(operation: str, request_parameters: dict, *, use_sandbox: bool) -> 
     try:
         resp = urlopen(request, data=request_body)
     except HTTPError as exc:
-        msg = json.loads(exc.read().decode('utf8'))['Message']
+        # 2022-12-05: I used to use ['Message'],
+        # but it seems this key is not always present.
+        msg = json.loads(exc.read().decode('utf8'))
         raise MTurkError(msg)
     res_body = resp.read()
     return json.loads(res_body.decode("utf-8"))

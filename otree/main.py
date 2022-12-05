@@ -85,6 +85,8 @@ def execute_from_command_line(*args, **kwargs):
     # that module cannot be loaded yet.
     if cmd in ['prodserver', 'prodserver1of2']:
         os.environ['USE_TIMEOUT_WORKER'] = '1'
+    if 'devserver' in cmd:
+        os.environ['USE_TEMPLATE_RELOADER'] = '1'
 
     if cmd in [
         'startproject',
