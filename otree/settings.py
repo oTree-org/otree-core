@@ -49,7 +49,15 @@ def get_OTREE_APPS(SESSION_CONFIGS):
 
 OTREE_APPS = get_OTREE_APPS(settings.SESSION_CONFIGS)
 if not hasattr(settings, 'REAL_WORLD_CURRENCY_DECIMAL_PLACES'):
-    if REAL_WORLD_CURRENCY_CODE in ['KRW', 'JPY', 'HUF']:
+    if REAL_WORLD_CURRENCY_CODE in [
+        'KRW',
+        'JPY',
+        'HUF',
+        'IRR',
+        'COP',
+        'VND',
+        'IDR',
+    ]:
         REAL_WORLD_CURRENCY_DECIMAL_PLACES = 0
     else:
         REAL_WORLD_CURRENCY_DECIMAL_PLACES = 2
