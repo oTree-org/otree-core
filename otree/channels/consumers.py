@@ -84,13 +84,17 @@ class _OTreeAsyncJsonWebsocketConsumer(WebSocketEndpoint):
         return
 
     def mark_is_connected_to_ws(self, is_connected):
+        # some kwargs contain code others contain id
         participant_code = self.cleaned_kwargs.get('participant_code', None)
-        if not participant_code:
-            # ignore pages without participant_code argument
-            return
-        Participant.objects_filter(code=participant_code).update(
-            {Participant.is_connected_to_ws: is_connected}
-        )
+        participant_id = self.cleaned_kwargs.get('participant_id', None)
+        if participant_code:
+            Participant.objects_filter(code=participant_code).update(
+                {Participant.is_connected_to_ws: is_connected}
+            )
+        elif participant_id:
+            Participant.objects_filter(id=participant_id).update(
+                {Participant.is_connected_to_ws: is_connected}
+            )
         if not is_connected:
             # force database commit only when webscoket is closed.
             db.commit()
