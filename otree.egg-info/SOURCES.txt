@@ -3,7 +3,6 @@ MANIFEST.in
 README.rst
 requirements.txt
 requirements_mturk.txt
-setup.cfg
 setup.py
 otree/__init__.py
 otree/api.py
@@ -183,7 +182,6 @@ otree/templates/otree/SessionStartLinks.html
 otree/templates/otree/Sessions.html
 otree/templates/otree/WaitPage.html
 otree/templates/otree/WaitPageRoom.html
-otree/templates/otree/login.html
 otree/templates/otree/includes/CreateSessionForm.html
 otree/templates/otree/includes/RoomParticipantLinks.html
 otree/templates/otree/includes/SessionInfo.html
