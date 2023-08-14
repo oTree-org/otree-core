@@ -83,6 +83,22 @@ class _OTreeAsyncJsonWebsocketConsumer(WebSocketEndpoint):
     def _is_unauthorized(self):
         return
 
+    def mark_is_connected_to_ws(self, is_connected):
+        # some kwargs contain code others contain id
+        participant_code = self.cleaned_kwargs.get('participant_code', None)
+        participant_id = self.cleaned_kwargs.get('participant_id', None)
+        if participant_code:
+            Participant.objects_filter(code=participant_code).update(
+                {Participant.is_connected_to_ws: is_connected}
+            )
+        elif participant_id:
+            Participant.objects_filter(id=participant_id).update(
+                {Participant.is_connected_to_ws: is_connected}
+            )
+        if not is_connected:
+            # force database commit only when webscoket is closed.
+            db.commit()
+
     async def on_connect(self, websocket: WebSocket) -> None:
         AUTH_LEVEL = settings.AUTH_LEVEL
 
@@ -102,6 +118,7 @@ class _OTreeAsyncJsonWebsocketConsumer(WebSocketEndpoint):
             return
 
         self.websocket = websocket
+        self.mark_is_connected_to_ws(True)
         async with lock2:
             with session_scope():
                 await self.post_connect(**self.cleaned_kwargs)
@@ -112,6 +129,7 @@ class _OTreeAsyncJsonWebsocketConsumer(WebSocketEndpoint):
         pass
 
     async def on_disconnect(self, websocket: WebSocket, close_code: int):
+        self.mark_is_connected_to_ws(False)
         async with lock2:
             with session_scope():
                 await self.pre_disconnect(**self.cleaned_kwargs)

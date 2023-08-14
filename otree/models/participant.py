@@ -56,6 +56,9 @@ class Participant(otree.database.SSPPGModel, MixinVars):
 
     is_on_wait_page = Column(st.Boolean, default=False)
 
+    # track participants' connection to a websocket
+    is_connected_to_ws = Column(st.Boolean, default=False)
+
     # these are both for the admin
     # In the changelist, simply call these "page" and "app"
     _current_page_name = Column(st.String(200), nullable=True)
