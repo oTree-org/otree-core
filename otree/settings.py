@@ -62,7 +62,6 @@ def get_locale_name(language_code):
     parts = language_code.split('-')
     if len(parts) == 2:
         return parts[0] + '_' + parts[1].upper()
-    print(language_code)
     return language_code
 
 
