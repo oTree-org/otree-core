@@ -1,0 +1,122 @@
+# Hebrew translations for PROJECT.
+# Copyright (C) 2021 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2021.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2021-10-18 23:30+0200\n"
+"PO-Revision-Date: 2021-10-21 04:23+0200\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: he\n"
+"Language-Team: he <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+#. Translators: A player's default chat nickname,
+#. which is "Player" + their ID in group. For example:
+#. "Player 2".
+#: ../otree/chat.py:47
+msgid "Participant {id_in_group}"
+msgstr "{id_in_group} משתתף"
+
+#. Translators: the name you see in chat for yourself, for example:
+#. John (Me)
+#: ../otree/chat.py:63
+msgid "{nickname} (Me)"
+msgstr "(אני) {nickname}"
+
+#: ../otree/constants.py:79
+msgid "This field is required."
+msgstr "זהו שדה חובה"
+
+#. Translators: display a number of points,
+#. like "1 point", "2 points", ...
+#. See "Plural-Forms" above for pluralization rules
+#. in this language.
+#. Explanation at http://bit.ly/1IurMu7
+#. In most languages, msgstr[0] is singular,
+#. and msgstr[1] is plural
+#. the {} represents the number;
+#. don't forget to include it in your translation
+#: ../otree/currency.py:199
+msgid "{} point"
+msgid_plural "{} points"
+msgstr[0] "נקודה אחת"
+msgstr[1] "נקודות {}"
+
+#: ../otree/forms/forms.py:178
+msgid "Yes"
+msgstr "כן"
+
+#: ../otree/forms/forms.py:178
+msgid "No"
+msgstr "לא"
+
+#. Translators: the label next to a "points" input field
+#: ../otree/forms/widgets.py:75
+msgid "points"
+msgstr "נקודות"
+
+#: ../otree/templates/otree/Page.html:22
+msgid "Please fix the errors."
+msgstr "נא לתקן את השגיאות"
+
+#: ../otree/templates/otree/RoomInputLabel.html:7
+msgid "Welcome"
+msgstr "ברוכים הבאים"
+
+#: ../otree/templates/otree/RoomInputLabel.html:13
+msgid "This participant label was not found"
+msgstr "תווית משתתף חסרה"
+
+#: ../otree/templates/otree/RoomInputLabel.html:15
+msgid "Please enter your participant label."
+msgstr "נא להכניס את תווית המשתתף שלך"
+
+#: ../otree/templates/otree/WaitPage.html:46
+msgid "An error occurred."
+msgstr "יש שגיאה"
+
+#: ../otree/templates/otree/tags/chat.html:7
+msgid "Send"
+msgstr "שלח"
+
+#. Translators: the text of the 'next' button
+#: ../otree/templating/nodes.py:784
+msgid "Next"
+msgstr "הבא"
+
+#: ../otree/views/abstract.py:788
+msgid "Time left to complete this page:"
+msgstr "זמן נותר להשלמת העמוד"
+
+#. Translators: the default title of a wait page
+#: ../otree/views/abstract.py:814 ../otree/views/participant.py:261
+msgid "Please wait"
+msgstr "נא להמתין"
+
+#: ../otree/views/abstract.py:1186
+msgid "Waiting for the other participants."
+msgstr "ממתינים לשאר המשתתפים"
+
+#: ../otree/views/abstract.py:1188
+msgid "Waiting for the other participant."
+msgstr "ממתינים למשתתף הנוסף"
+
+#. Translators: for example this is shown if you create a session for 10
+#. participant. The 11th person to click will get this message
+#. It means all participant slots have already been used.
+#: ../otree/views/participant.py:34
+msgid "Session is full."
+msgstr "הסשן מלא"
+
+#: ../otree/views/participant.py:262
+msgid "Waiting for your session to begin"
+msgstr "ממתינים לתחילת הסשן"
+

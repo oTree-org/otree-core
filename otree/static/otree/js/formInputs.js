@@ -1,0 +1,1 @@
+window.forminputs = document.getElementById('form').elements;

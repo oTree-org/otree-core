@@ -1,0 +1,146 @@
+{% extends "otree/BaseAdmin.html" %}
+
+
+{% block title %}
+    Room: {{ room.display_name }}
+{% endblock %}
+
+{% block content %}
+
+    <h3>Create a new session</h3>
+
+    {% include "otree/includes/CreateSessionForm.html" %}
+
+    <hr/>
+
+    <h3><span id="present_count"></span> participants present</h3>
+    {% if room.has_participant_labels %}
+
+      <details>
+        <summary>Show/Hide</summary>
+        <div style="font-size:20px">
+          {% for participant_label in room.get_participant_labels() %}
+            <span style="display: none" class="badge bg-success present-participant-label"
+                  id="present-participant-label-{{ participant_label|escape }}">
+                {{ participant_label }}
+            </span>
+          {% endfor %}
+        </div>
+      </details>
+
+    {# if there's no participant labels, there's no concept of participants absent #}
+    <h3><span id="absent_count"></span> participants not present</h3>
+      <details>
+        <summary>Show/hide</summary>
+        <div style="font-size:20px">
+          {% for participant_label in room.get_participant_labels() %}
+            <span class="badge bg-secondary absent-participant-label count-this"
+                  id="absent-participant-label-{{ participant_label|escape }}">{{ participant_label }}</span>
+          {% endfor %}
+        </div>
+      </details>
+
+    {% endif %}
+
+    <hr/>
+
+    {% include "otree/includes/RoomParticipantLinks.html" %}
+
+{% endblock %}
+
+{% block internal_styles %}
+    {{ super() }}
+
+    <style>
+    .label {
+        margin-left: 5px;
+    }
+    </style>
+
+{% endblock %}
+
+
+{% block internal_scripts %}
+    {{ super() }}
+
+<script>
+$(document).ready(function () {
+
+    calcCountsFromDOM();
+
+    var has_participant_labels = {{ room.has_participant_labels ?? "true" :: "false" }};
+    var no_labels_present_count = 0;
+
+    var socket;
+    initWebSocket();
+
+    function setParticipantPresence(participant_label, is_present) {
+        var pres_el = $('#present-participant-label-' + participant_label);
+        var abs_el = $('#absent-participant-label-' + participant_label);
+
+        if (is_present) {
+            show_el = pres_el;
+            hide_el = abs_el;
+        } else {
+            show_el = abs_el;
+            hide_el = pres_el;
+        }
+
+        show_el.show();
+        show_el.addClass('count-this');
+
+        hide_el.hide();
+        hide_el.removeClass('count-this');
+
+    }
+
+    function calcCountsFromDOM() {
+        var present_count = $('.present-participant-label.count-this').length;
+        var absent_count = $('.absent-participant-label.count-this').length;
+        $('#present_count').text(present_count);
+        $('#absent_count').text(absent_count);
+    }
+
+    function initWebSocket() {
+        socket = makeReconnectingWebSocket("{{ view.socket_url() }}");
+        socket.onmessage = function (e) {
+            var data = JSON.parse(e.data);
+
+            if (data.error) {
+                $("#_otree-server-error").show();
+                return;
+            }
+
+            var status = data["status"];
+            if (has_participant_labels) {
+                if (status === "init") {
+                    for (let label of data["present_labels"]) {
+                        setParticipantPresence(label, true);
+                    }
+                }
+                if (status === "add_participant") {
+                    setParticipantPresence(data["participant"], true);
+
+                }
+                if (status === "remove_participant") {
+                    setParticipantPresence(data["participant"], false);
+                }
+                calcCountsFromDOM();
+            } else {
+                if (status === "init") {
+                  no_labels_present_count = data['present_count']
+                }
+                if (status === "add_participant") {
+                    no_labels_present_count++;
+                }
+                if (status === "remove_participant") {
+                    no_labels_present_count--;
+                }
+                $('#present_count').text(no_labels_present_count);
+            }
+        };
+    }
+
+});
+</script>
+{% endblock %}

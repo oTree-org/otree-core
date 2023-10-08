@@ -1,0 +1,63 @@
+{% extends "otree/Session.html" %}
+{% block content %}
+  {{ super() }}
+  <div class="container" style='max-width:970px'>
+
+    <h3>Session</h3>
+    <table class="table">
+      <tr>
+        <th>Session config</th>
+        <td>{{ session.config.name }}</td>
+      </tr>
+
+      <tr>
+        <th>Session code</th>
+        <td style="font-family: 'Courier New'">{{ session.code }}</td>
+      </tr>
+
+      <tr>
+        <th>Participation fee</th>
+        <td>{{ participation_fee }}</td>
+      </tr>
+
+    </table>
+
+    <h3>Participants</h3>
+
+
+    <table class="table table-striped">
+      <tr>
+        <th>Code</th>
+        <th>Label</th>
+        <th>Progress</th>
+        {% if show_finished_status %} <th>Finished</th> {% endif %}
+        <th>Payoff (bonus)</th>
+        <th>Total</th>
+      </tr>
+
+      {% for p in participants %}
+        <tr>
+          <td style="font-family: 'Courier New'">{{ p.code }}</td>
+          <td>{{ p.label || "" }}</td>
+          <td>{{ p.current_page_() }}</td>
+          {% if show_finished_status %} <td>{{ p._get_finished() ?? "1" :: "" }}</td> {% endif %}
+          <td>{{ p.payoff_in_real_world_currency() }}</td>
+          <td>{{ p.payoff_plus_participation_fee() }}</td>
+        </tr>
+      {% endfor %}
+
+    </table>
+
+    <h3>Summary</h3>
+    <table class="table">
+      <tr>
+        <th>Total payments</th>
+        <td>{{ total_payments }}</td>
+      </tr>
+      <tr>
+        <th>Mean payment</th>
+        <td>{{ mean_payment }}</td>
+      </tr>
+    </table>
+  </div>
+{% endblock %}

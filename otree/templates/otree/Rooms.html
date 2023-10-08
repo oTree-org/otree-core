@@ -1,0 +1,17 @@
+{% extends "otree/BaseAdmin.html" %}
+
+{% block title %}
+  Rooms
+{% endblock %}
+
+{% block content %}
+
+  <h4>Current rooms:</h4>
+
+  <div class="list-group">
+    {% for room in rooms %}
+        <a class="list-group-item" href="{% url "RoomWithoutSession" room.name %}">{{ room.display_name }}</a>
+    {% endfor %}
+  </div>
+
+{% endblock %}

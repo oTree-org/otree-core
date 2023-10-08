@@ -1,0 +1,29 @@
+{% extends "otree/BaseAdmin.html" %}
+
+{% block title %}
+    Room: {{ room.display_name }}
+{% endblock %}
+
+{% block content %}
+
+    <form method="post" action="{% url "CloseRoom" room.name %}">
+        {% csrf_token %}
+
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-success">
+                    <a href="{{ session_url }}">Go to active session.</a>
+                </div>
+            </div>
+            <div class="col">
+                <button class="btn btn-secondary" id="close-room">
+                    Close this room
+                </button>
+            </div>
+        </div>
+
+    </form>
+
+    {% include "otree/includes/RoomParticipantLinks.html" %}
+
+{% endblock %}

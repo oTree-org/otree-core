@@ -1,0 +1,59 @@
+{% extends "otree/Base.html" %}
+
+
+{% comment %}
+NOTE:
+we should keep this page as simple as possible so that 'view source' is friendly
+i removed many linebreaks to make output HTML cleaner
+{% endcomment %}
+{% block body_main %}
+    <div class="otree-body container">
+        <h2 class="otree-title page-header" id="_otree-title">{% block title %}{% endblock %}</h2>
+        {% if view.remaining_timeout_seconds() != None %}
+          {% with form_element_id="form" %}
+            {% include 'otree/includes/TimeLimit.html'  %}
+          {% endwith %}
+        {% endif %}
+        {% if form.errors %}
+            <div class="otree-form-errors alert alert-danger">
+              {% if form.non_field_error %}
+                {{ form.non_field_error }}
+              {% else %}
+                {{ "Please fix the errors."|gettext }}
+              {% endif %}
+            </div>
+        {% endif %}{% if is_defined('js_vars') and js_vars %}<script>var js_vars = {{ js_vars }};</script>{% endif %}
+        <form class="otree-form" method="post" role="form" id="form" autocomplete="off">
+            <script src="{% static 'otree/js/formInputs.js' %}"></script>
+            <div class="_otree-content">
+<!-- (((((((((((((((((((((((((((((((((((((((((((((((((((((((( CONTENT BLOCK -->
+              {% block content %}{% endblock %}
+<!-- )))))))))))))))))))))))))))))))))))))))))))))))))))))))) END OF CONTENT BLOCK -->
+            </div>
+        </form>
+        <br/>
+        {# need the check for projects with old MTurkLandingPage #}
+        {% if is_defined('view.is_debug') and view.is_debug %}
+            <br>
+            {% include 'otree/includes/debug_info.html' %}
+        {% endif %}
+    </div>
+{% endblock %}
+{% block internal_scripts %}
+
+    {{ super() }}
+    <script id="websocket-redirect" src="{% static 'otree/js/page-websocket-redirect.js' %}"
+            data-socket-url="{{ view.socket_url() }}"
+            data-is-debug="{{ view.is_debug || '' }}"
+    ></script>
+    {% if view.remaining_timeout_seconds() != None %}
+        {% include 'otree/includes/TimeLimit.js.html' %}
+    {% endif %}
+{% endblock %}
+
+{% block live %}
+  {% if has_live_method %}
+    <form id="liveform"></form>
+    <script src="{% static 'otree/js/live.js' %}" id="otree-live" data-socket-url="{{ view.live_url() }}"></script>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "otree/Page.html" %}
+
+{% comment %}
+Since we might remove _templates/ from the project template,
+this is a stopgap in case a user tries to do % extends "global/Page.html" %
+
+If the user has a Page.html, however, it must take precedence over this
+template.
+{% endcomment %}

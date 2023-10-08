@@ -1,0 +1,216 @@
+{% extends "otree/Session.html" %}
+
+{% block internal_styles %}
+  {{ super() }}
+  <style>
+    #bottom-toolbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      background-color: white;
+      padding-bottom: 5px;
+      padding-left: 5px;
+      width: 100%;
+    }
+
+    .field-header {
+      position: sticky;
+      top: 0;
+      background-color: white;
+    }
+
+    .id-in-session {
+      position: sticky;
+      left: 0;
+      background-color: white;
+    }
+
+    #cur-app {
+      font-weight: bold;
+      width: 30ch;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis"
+    }
+
+  </style>
+{% endblock %}
+
+{% block no_container_content %}
+  {{ super() }}
+
+  {% for table in tables %}
+    <table class="table results-table table-hover">
+      <thead style="background-color: white; z-index: 1000">
+      <tr>
+        <th></th>
+        {% for header in table.pfields %}
+          <th class="field-header">{{ header }}</th>
+        {% endfor %}
+        {% for header in table.gfields %}
+          <th class="field-header">group.<br>{{ header }}</th>
+        {% endfor %}
+        {% for header in table.sfields %}
+          <th class="field-header">subsession.<br>{{ header }}</th>
+        {% endfor %}
+
+      </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  {% endfor %}
+  {# some extra whitespace so people can scroll past the fixed bottom toolbar #}
+  <br><br>
+  <br><br>
+  <div id="bottom-toolbar">
+    <table style="white-space:nowrap; width: 100%">
+      <tr>
+        <td>
+          <button class="btn btn-secondary btn-lg" id="app-prev">&lt;</button>
+          <button class="btn btn-secondary btn-lg" id="app-next">&gt;</button>
+        </td>
+        <td>
+          <button class="btn btn-secondary btn-lg" id="round-prev">&lt;</button>
+          <button class="btn btn-secondary btn-lg" id="round-next">&gt;</button>
+        </td>
+        <td>
+          <button class="btn btn-secondary btn-lg" id="btn-refresh">↻</button>
+        </td>
+        <td style="width: 12ch">
+          <a href="{% url 'ExportSessionWide' session.code %}?token={{ DATA_EXPORT_HASH }}">Plain</a> |
+          <a href="{% url 'ExportSessionWide' session.code %}?token={{ DATA_EXPORT_HASH }}&excel=1">Excel</a>
+        </td>
+      </tr>
+      <tr>
+        <td style="width: 30ch">
+          <div id="cur-app"></div>
+        </td>
+        <td style="width: 10ch; font-weight: bold">Round <span id="cur-round"></span></td>
+        <td><small><span id="msg-refreshed" style="display: none; color: darkgreen"></span></small></td>
+        <td></td>
+      </tr>
+    </table>
+  </div>
+  <div id="server_error" class="alert alert-danger" style="display: none;">
+    <a href="#" class="close" data-bs-dismiss="alert">&times;</a>
+    Failed to connect to server
+  </div>
+{% endblock %}
+
+{% block internal_scripts %}
+  {{ super() }}
+  <script>
+      let getElementById = (id) => document.getElementById(id);
+      let visibleTableIndex = 0;
+      let old_json = null;
+      let curAppSpan = getElementById('cur-app');
+      let curRoundSpan = getElementById('cur-round');
+      let tables = document.getElementsByClassName('results-table');
+      const round_numbers_by_subsession = {{ round_numbers_by_subsession|safe }};
+      const app_names_by_subsession = {{ app_names_by_subsession|safe }};
+      const FIELD_HEADERS = {{ field_headers_json|safe }};
+      $(document).ready(function () {
+          $('#btn-refresh').click(function () {
+              ajax_json_results(true);
+          })
+          ajax_json_results(false);
+      });
+
+      function updateTableVisibility() {
+          for (let table of tables) {
+              table.style.display = 'none';
+          }
+          tables[visibleTableIndex].style.display = 'block';
+          let curApp = app_names_by_subsession[visibleTableIndex];
+          let curRound = round_numbers_by_subsession[visibleTableIndex];
+          curAppSpan.innerText = curApp;
+          curRoundSpan.innerText = curRound;
+          getElementById('app-prev').disabled = curApp === app_names_by_subsession[0];
+          getElementById('app-next').disabled = curApp === app_names_by_subsession[app_names_by_subsession.length - 1];
+          getElementById('round-prev').disabled = visibleTableIndex === 0;
+          getElementById('round-next').disabled = visibleTableIndex === tables.length - 1;
+
+      }
+
+      updateTableVisibility();
+
+      getElementById('app-prev').addEventListener('click', function () {
+          let curApp = app_names_by_subsession[visibleTableIndex];
+          for (let i = visibleTableIndex - 1; i >= 0; i--) {
+              if (app_names_by_subsession[i] !== curApp && round_numbers_by_subsession[i] === 1) {
+                  visibleTableIndex = i;
+                  break;
+              }
+          }
+          updateTableVisibility();
+      })
+
+      getElementById('app-next').addEventListener('click', function () {
+          let curApp = app_names_by_subsession[visibleTableIndex];
+          for (let i = visibleTableIndex + 1; i < app_names_by_subsession.length; i++) {
+              if (app_names_by_subsession[i] !== curApp) {
+                  visibleTableIndex = i;
+                  break;
+              }
+          }
+          updateTableVisibility();
+      })
+
+      getElementById('round-prev').addEventListener('click', function () {
+          if (visibleTableIndex > 0) visibleTableIndex--;
+          updateTableVisibility();
+      })
+
+      getElementById('round-next').addEventListener('click', function () {
+          if (visibleTableIndex < tables.length - 1) visibleTableIndex++;
+          updateTableVisibility();
+      })
+
+
+      function ajax_json_results(isRefresh) {
+          let $msgRefreshed = $('#msg-refreshed');
+
+          $.ajax({
+              url: '{% url "SessionDataAjax" session.code %}',
+              type: 'GET',
+              contentType: "application/json",
+              error: function (jqXHR, textStatus) {
+                  $("div#server_error").show();
+              },
+              success: function (new_json) {
+                  $("div#server_error").hide();
+                  let changeDescriptions = [];
+                  for (let i = 0; i < new_json.length; i++) {
+                      let table = tables[i];
+                      let appName = app_names_by_subsession[i];
+                      let headers = FIELD_HEADERS[appName];
+                      let data = new_json[i];
+                      if (old_json === null) {
+                          populateTableBody(table.querySelector('tbody'), data);
+                      } else {
+                          changeDescriptions = changeDescriptions.concat(updateDataTable($(table), data, old_json[i], headers));
+                      }
+                  }
+                  old_json = new_json;
+                  if (!isRefresh) return;
+                  let numChanges = changeDescriptions.length;
+                  let msg;
+                  if (numChanges === 0) {
+                      msg = 'No updates';
+                  } else {
+                      msg = `Updated ${numChanges} row(s): ${changeDescriptions.join('; ')}`;
+                  }
+                  // keep it short to avoid linebreak/resizing issues
+                  if (msg.length > 100) {
+                      msg = truncateStringEllipsis(msg, 100);
+                  }
+                  $msgRefreshed.text(msg);
+                  // interrupt any ongoing fadeout
+                  $msgRefreshed.stop(true, true);
+                  $msgRefreshed.show();
+                  $msgRefreshed.fadeOut(30000);
+              }
+          });
+      }
+  </script>
+{% endblock %}

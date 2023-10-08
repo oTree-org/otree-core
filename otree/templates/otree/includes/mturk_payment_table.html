@@ -1,0 +1,55 @@
+
+
+
+<table class="table table-striped">
+  <tr>
+    <th></th>
+    <th>Code</th>
+    <th>Assignment ID</th>
+    <th>Worker ID</th>
+    <th>Progress</th>
+    <th>Completion code</th>
+    <th>
+      Bonus payoff
+    </th>
+    <th>Total pay</th>
+    {% if reviewable %}
+    <th>
+      Select
+      <div class="checkbox">
+        <label>
+          <input name="checkAll" type="checkbox"
+                 value="">
+        </label>
+      </div>
+    </th>
+    {% endif %}
+  </tr>
+
+  {% for p in participants %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td class="codes">{{ p.code }}</td>
+      <td class="codes">{{ p.mturk_assignment_id || "" }}</td>
+      <td class="codes">{{ p.mturk_worker_id || "" }}</td>
+      <td>{{ p.current_page_() }}</td>
+      <td>{{ p.mturk_answers_formatted }}</td>
+      <td>
+        {{ p.payoff_in_real_world_currency() }}
+      </td>
+      <td>{{ p.payoff_plus_participation_fee() }}</td>
+      {% if reviewable %}
+      <td>
+        <div class="checkbox-inline">
+          <label>
+            <input type="checkbox"
+                   name="workers"
+                   data-value="{{ p.payoff_plus_participation_fee()|json }}"
+                   value="{{ p.mturk_worker_id }}">
+          </label>
+        </div>
+      </td>
+      {% endif %}
+    </tr>
+  {% endfor %}
+</table>

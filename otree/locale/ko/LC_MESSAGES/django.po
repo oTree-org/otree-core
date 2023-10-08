@@ -1,0 +1,122 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2019 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version:  otree-core\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-10-18 23:30+0200\n"
+"PO-Revision-Date: 2019-02-12 16:12+0900\n"
+"Last-Translator: Namun Cho <namun.cho@gmail.com>\n"
+"Language: ko\n"
+"Language-Team: Namun Cho <mailto:namun.cho@gmail.com>\n"
+"Plural-Forms: nplurals=1; plural=0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+#. Translators: A player's default chat nickname,
+#. which is "Player" + their ID in group. For example:
+#. "Player 2".
+#: ../otree/chat.py:47
+#, fuzzy, python-brace-format
+msgid "Participant {id_in_group}"
+msgstr "플레이어 {id_in_group}"
+
+#. Translators: the name you see in chat for yourself, for example:
+#. John (Me)
+#: ../otree/chat.py:63
+#, python-brace-format
+msgid "{nickname} (Me)"
+msgstr "{nickname} (본인)"
+
+#: ../otree/constants.py:79
+msgid "This field is required."
+msgstr "이 항목은 필수입니다."
+
+#. Translators: display a number of points,
+#. like "1 point", "2 points", ...
+#. See "Plural-Forms" above for pluralization rules
+#. in this language.
+#. Explanation at http://bit.ly/1IurMu7
+#. In most languages, msgstr[0] is singular,
+#. and msgstr[1] is plural
+#. the {} represents the number;
+#. don't forget to include it in your translation
+#: ../otree/currency.py:199
+msgid "{} point"
+msgid_plural "{} points"
+msgstr[0] "{} 포인트"
+
+#: ../otree/forms/forms.py:178
+msgid "Yes"
+msgstr "네"
+
+#: ../otree/forms/forms.py:178
+msgid "No"
+msgstr "아니오"
+
+#. Translators: the label next to a "points" input field
+#: ../otree/forms/widgets.py:75
+msgid "points"
+msgstr "포인트"
+
+#: ../otree/templates/otree/Page.html:22
+msgid "Please fix the errors."
+msgstr "입력 양식의 내용이 잘못되었습니다. 바로잡아주세요."
+
+#: ../otree/templates/otree/RoomInputLabel.html:7
+msgid "Welcome"
+msgstr "환영합니다"
+
+#: ../otree/templates/otree/RoomInputLabel.html:13
+msgid "This participant label was not found"
+msgstr "잘못된 접근입니다. 다시 시도해주시기 바랍니다."
+
+#: ../otree/templates/otree/RoomInputLabel.html:15
+msgid "Please enter your participant label."
+msgstr "당신의 아이디(participant label)를 입력해주세요."
+
+#: ../otree/templates/otree/WaitPage.html:46
+msgid "An error occurred."
+msgstr "오류가 발생했습니다. 로그를 점검하거나 관리자에게 도움을 요청하시기 바랍니다."
+
+#: ../otree/templates/otree/tags/chat.html:7
+msgid "Send"
+msgstr "보내기"
+
+#. Translators: the text of the 'next' button
+#: ../otree/templating/nodes.py:784
+msgid "Next"
+msgstr "다음"
+
+#: ../otree/views/abstract.py:788
+msgid "Time left to complete this page:"
+msgstr "화면 종료까지 남은 시간:"
+
+#. Translators: the default title of a wait page
+#: ../otree/views/abstract.py:814 ../otree/views/participant.py:261
+msgid "Please wait"
+msgstr "기다려 주세요"
+
+#: ../otree/views/abstract.py:1186
+msgid "Waiting for the other participants."
+msgstr "다른 참가자들을 기다리고 있습니다."
+
+#: ../otree/views/abstract.py:1188
+msgid "Waiting for the other participant."
+msgstr "다른 참가자를 기다리고 있습니다."
+
+#. Translators: for example this is shown if you create a session for 10
+#. participant. The 11th person to click will get this message
+#. It means all participant slots have already been used.
+#: ../otree/views/participant.py:34
+msgid "Session is full."
+msgstr ""
+
+#: ../otree/views/participant.py:262
+msgid "Waiting for your session to begin"
+msgstr "세션 시작을 기다리는중"

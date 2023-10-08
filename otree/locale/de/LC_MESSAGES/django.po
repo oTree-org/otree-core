@@ -1,0 +1,125 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2013 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version:  oTree\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-10-18 23:30+0200\n"
+"PO-Revision-Date: 2013-12-13 13:40+0800\n"
+"Last-Translator: Gregor Müllegger <gregor@muellegger.de>\n"
+"Language: de\n"
+"Language-Team: de <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.9.0\n"
+
+#. Translators: A player's default chat nickname,
+#. which is "Player" + their ID in group. For example:
+#. "Player 2".
+#: ../otree/chat.py:47
+msgid "Participant {id_in_group}"
+msgstr "Teilnehmer {id_in_group}"
+
+#. Translators: the name you see in chat for yourself, for example:
+#. John (Me)
+#: ../otree/chat.py:63
+#, python-brace-format
+msgid "{nickname} (Me)"
+msgstr "{nickname} (Ich)"
+
+#: ../otree/constants.py:79
+msgid "This field is required."
+msgstr "Dieses Feld ist erforderlich."
+
+#. Translators: display a number of points,
+#. like "1 point", "2 points", ...
+#. See "Plural-Forms" above for pluralization rules
+#. in this language.
+#. Explanation at http://bit.ly/1IurMu7
+#. In most languages, msgstr[0] is singular,
+#. and msgstr[1] is plural
+#. the {} represents the number;
+#. don't forget to include it in your translation
+#: ../otree/currency.py:199
+msgid "{} point"
+msgid_plural "{} points"
+msgstr[0] "{} Punkt"
+msgstr[1] "{} Punkte"
+
+#: ../otree/forms/forms.py:178
+msgid "Yes"
+msgstr "Ja"
+
+#: ../otree/forms/forms.py:178
+msgid "No"
+msgstr "Nein"
+
+#. Translators: the label next to a "points" input field
+#: ../otree/forms/widgets.py:75
+msgid "points"
+msgstr "Punkte"
+
+#: ../otree/templates/otree/Page.html:22
+msgid "Please fix the errors."
+msgstr "Bitte korrigieren Sie die Fehler."
+
+#: ../otree/templates/otree/RoomInputLabel.html:7
+msgid "Welcome"
+msgstr "Herzlich willkommen"
+
+#: ../otree/templates/otree/RoomInputLabel.html:13
+msgid "This participant label was not found"
+msgstr "Ungültige Eingabe; Bitte versuchen Sie es noch einmal."
+
+#: ../otree/templates/otree/RoomInputLabel.html:15
+msgid "Please enter your participant label."
+msgstr "Bitte geben Sie Ihr Teilnehmerlabel ein."
+
+#: ../otree/templates/otree/WaitPage.html:46
+msgid "An error occurred."
+msgstr ""
+"Ein Fehler ist aufgetreten. Bitte lesen Sie die Logs oder wenden Sie sich"
+" an einen Administrator für Hilfe."
+
+#: ../otree/templates/otree/tags/chat.html:7
+msgid "Send"
+msgstr "Senden"
+
+#. Translators: the text of the 'next' button
+#: ../otree/templating/nodes.py:784
+msgid "Next"
+msgstr "Weiter"
+
+# incomplete sentence
+#: ../otree/views/abstract.py:788
+msgid "Time left to complete this page:"
+msgstr "Verbleibende Zeit für diese Seite:"
+
+#. Translators: the default title of a wait page
+#: ../otree/views/abstract.py:814 ../otree/views/participant.py:261
+msgid "Please wait"
+msgstr "Bitte warten"
+
+#: ../otree/views/abstract.py:1186
+msgid "Waiting for the other participants."
+msgstr "Bitte warten Sie bis die anderen Teilnehmer bereit sind."
+
+#: ../otree/views/abstract.py:1188
+msgid "Waiting for the other participant."
+msgstr "Bitte warten Sie bis der andere Teilnehmer bereit ist."
+
+#. Translators: for example this is shown if you create a session for 10
+#. participant. The 11th person to click will get this message
+#. It means all participant slots have already been used.
+#: ../otree/views/participant.py:34
+msgid "Session is full."
+msgstr "Die Session ist voll."
+
+#: ../otree/views/participant.py:262
+msgid "Waiting for your session to begin"
+msgstr "Bitte warten Sie bis Ihre Sitzung startet."

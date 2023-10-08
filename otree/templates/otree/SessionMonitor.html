@@ -1,0 +1,72 @@
+{% extends "otree/Session.html" %}
+
+
+{% block content %}
+    {{ super() }}
+    <table id="monitor-table"
+           class="table table-bordered table-hover table-condensed">
+        <thead>
+        <tr>
+            {% for header in column_names %}
+                <th>{{ header }}</th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <p><span id="num_participants_visited">0</span>/{{ session.num_participants }} participants started.</p>
+    <p><small id="msg-refreshed" style="color: darkgreen"></small></p>
+
+    {% if not session.use_browser_bots %}
+        {% csrf_token %}
+        <button id="advance_users" class="btn btn-secondary" type="button"
+                title="Advance the slowest user(s) by one page, by forcing a timeout on their current page."
+                onclick="advanceSlowestUsers()">
+            Advance slowest user(s)
+            {% if session.num_participants > ADVANCE_SLOWEST_BATCH_SIZE %}
+                <small>(max {{ ADVANCE_SLOWEST_BATCH_SIZE }} at a time)</small>
+            {% endif %}
+        </button>
+    {% endif %}
+
+    <div id="refresh_server_error" class="alert alert-danger"
+         style="display: none;">
+        Failed to refresh data from the server.
+    </div>
+
+    <div id="auto_advance_server_error" class="alert alert-danger"
+         style="display: none;">
+        An error occurred and participants could not be advanced.
+        See the server logs for details.
+    </div>
+
+{% endblock %}
+
+
+{% block internal_scripts %}
+    {{ super() }}
+    <script>
+        let recentlyActiveParticipants = {};
+        var $table, $tbody;
+        let visitedParticipants;
+        var monitorSocket;
+        var advanceUrl = '{% url 'AdvanceSession' session.code %}';
+        var socketUrl = {{ socket_url|json }};
+        let numParticipants = {{ session.num_participants|json }};
+    </script>
+
+    <script src="{% static 'otree/js/monitor2.js' %}"></script>
+
+    <script>
+        $(document).ready(function () {
+            visitedParticipants = [];
+            $table = $('#monitor-table');
+            $tbody = $table.find('tbody');
+            initWebSocket(socketUrl, $tbody, visitedParticipants, $('#msg-refreshed'));
+
+            $('[data-bs-toggle="popover"]').popover();
+        });
+
+    </script>
+{% endblock %}
