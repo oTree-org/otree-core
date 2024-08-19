@@ -1,2 +1,2 @@
-__version__ = '5.10.4'
+__version__ = '5.11.0'
 # don't import anything else here because setup.py imports this.
