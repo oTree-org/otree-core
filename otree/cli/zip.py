@@ -97,7 +97,7 @@ def zip_project(project_path: Path):
     # we should just overwrite the existing runtime. because maybe it has something old.
     # (e.g. if it was downloaded from otree hub)
     runtime_txt = project_path / '.python-version'
-    runtime_txt.write_text('3.12.5')
+    runtime_txt.write_text('3.12')
     with tarfile.open(archive_name, 'w:gz') as tar:
         # if i omit arcname, it nests the project 2 levels deep.
         # if i say arcname=proj, it puts the whole project in a folder.
